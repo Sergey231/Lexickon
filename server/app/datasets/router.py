@@ -5,9 +5,15 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.datasets.models import Dataset
-from app.datasets.schemas import DatasetManifestResponse, DatasetResponse
+from app.datasets.schemas import (
+    DatasetManifestResponse,
+    DatasetResponse,
+    DatasetSyncRequest,
+    DatasetSyncResponse,
+)
 from app.datasets.service import (
     build_dataset_manifest,
+    build_dataset_sync,
     get_public_dataset_by_key,
     list_public_datasets,
 )
@@ -23,6 +29,14 @@ def read_dataset_manifest(db: Annotated[Session, Depends(get_db)]) -> DatasetMan
 @router.get("", response_model=list[DatasetResponse])
 def read_datasets(db: Annotated[Session, Depends(get_db)]) -> list[Dataset]:
     return list_public_datasets(db)
+
+
+@router.post("/sync", response_model=DatasetSyncResponse)
+def sync_datasets(
+    payload: DatasetSyncRequest,
+    db: Annotated[Session, Depends(get_db)],
+) -> DatasetSyncResponse:
+    return build_dataset_sync(db, payload)
 
 
 @router.get("/{dataset_key}", response_model=DatasetResponse)

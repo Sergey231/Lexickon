@@ -1,7 +1,18 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+DatasetSyncStatus = Literal[
+    "up_to_date",
+    "missing",
+    "update_available",
+    "not_allowed",
+    "deprecated",
+    "revoked",
+    "unknown_dataset",
+]
 
 
 class DatasetVersionResponse(BaseModel):
@@ -58,3 +69,38 @@ class DatasetManifestResponse(BaseModel):
     schema_version: int
     generated_at: datetime
     datasets: list[DatasetManifestItem]
+
+
+class InstalledDataset(BaseModel):
+    dataset_key: str = Field(min_length=1, max_length=128)
+    version: str = Field(min_length=1, max_length=32)
+    sqlite_schema_version: int = Field(gt=0)
+    checksum_sha256: str = Field(min_length=64, max_length=64)
+
+
+class WantedDataset(BaseModel):
+    language: str = Field(min_length=2, max_length=16)
+    domain: str = Field(min_length=1, max_length=64)
+
+
+class DatasetSyncRequest(BaseModel):
+    client_schema_version: int = Field(gt=0)
+    installed: list[InstalledDataset] = Field(default_factory=list)
+    wanted: list[WantedDataset] = Field(min_length=1)
+
+
+class DatasetSyncAction(BaseModel):
+    dataset_key: str
+    status: DatasetSyncStatus
+    installed_version: str | None = None
+    latest_version: str | None = None
+    version_id: UUID | None = None
+    sqlite_schema_version: int | None = None
+    compressed_size_bytes: int | None = None
+    checksum_sha256: str | None = None
+    required_plan: str | None = None
+
+
+class DatasetSyncResponse(BaseModel):
+    schema_version: int
+    actions: list[DatasetSyncAction]

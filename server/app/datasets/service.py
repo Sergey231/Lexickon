@@ -5,7 +5,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from app.datasets.models import Dataset, DatasetVersion
-from app.datasets.schemas import DatasetManifestItem, DatasetManifestResponse
+from app.datasets.schemas import (
+    DatasetManifestItem,
+    DatasetManifestResponse,
+    DatasetSyncAction,
+    DatasetSyncRequest,
+    DatasetSyncResponse,
+    DatasetSyncStatus,
+    InstalledDataset,
+)
 
 SEMVER_PATTERN = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
@@ -49,6 +57,21 @@ def latest_active_version(dataset: Dataset) -> DatasetVersion | None:
     return max(active_versions, key=lambda version: semver_sort_key(version.version))
 
 
+def dataset_key_for(language: str, domain: str) -> str:
+    return f"{domain.strip().lower()}-{language.strip().lower()}"
+
+
+def find_public_dataset_for_pair(
+    datasets: list[Dataset], language: str, domain: str
+) -> Dataset | None:
+    normalized_language = language.strip().lower()
+    normalized_domain = domain.strip().lower()
+    for dataset in datasets:
+        if dataset.language == normalized_language and dataset.domain == normalized_domain:
+            return dataset
+    return None
+
+
 def build_dataset_manifest(db: Session) -> DatasetManifestResponse:
     items: list[DatasetManifestItem] = []
     for dataset in list_public_datasets(db):
@@ -79,3 +102,78 @@ def build_dataset_manifest(db: Session) -> DatasetManifestResponse:
         generated_at=datetime.now(UTC),
         datasets=items,
     )
+
+
+def build_update_action(
+    dataset: Dataset,
+    version: DatasetVersion,
+    status: DatasetSyncStatus,
+    installed: InstalledDataset | None = None,
+) -> DatasetSyncAction:
+    return DatasetSyncAction(
+        dataset_key=dataset.dataset_key,
+        status=status,
+        installed_version=installed.version if installed is not None else None,
+        latest_version=version.version,
+        version_id=version.id,
+        sqlite_schema_version=version.sqlite_schema_version,
+        compressed_size_bytes=version.compressed_size_bytes,
+        checksum_sha256=version.checksum_sha256,
+        required_plan=dataset.required_plan,
+    )
+
+
+def is_installed_version_current(installed: InstalledDataset, latest: DatasetVersion) -> bool:
+    return (
+        installed.version == latest.version
+        and installed.sqlite_schema_version == latest.sqlite_schema_version
+        and installed.checksum_sha256 == latest.checksum_sha256
+    )
+
+
+def build_dataset_sync(db: Session, payload: DatasetSyncRequest) -> DatasetSyncResponse:
+    public_datasets = list_public_datasets(db)
+    installed_by_key = {dataset.dataset_key: dataset for dataset in payload.installed}
+    actions: list[DatasetSyncAction] = []
+
+    for wanted in payload.wanted:
+        dataset = find_public_dataset_for_pair(public_datasets, wanted.language, wanted.domain)
+        if dataset is None:
+            actions.append(
+                DatasetSyncAction(
+                    dataset_key=dataset_key_for(wanted.language, wanted.domain),
+                    status="unknown_dataset",
+                )
+            )
+            continue
+
+        latest = latest_active_version(dataset)
+        if latest is None:
+            actions.append(
+                DatasetSyncAction(dataset_key=dataset.dataset_key, status="unknown_dataset")
+            )
+            continue
+
+        installed = installed_by_key.get(dataset.dataset_key)
+        if dataset.required_plan != "free":
+            actions.append(build_update_action(dataset, latest, "not_allowed", installed))
+            continue
+
+        if installed is None:
+            actions.append(build_update_action(dataset, latest, "missing"))
+            continue
+
+        if is_installed_version_current(installed, latest):
+            actions.append(
+                DatasetSyncAction(
+                    dataset_key=dataset.dataset_key,
+                    status="up_to_date",
+                    installed_version=installed.version,
+                    latest_version=latest.version,
+                )
+            )
+            continue
+
+        actions.append(build_update_action(dataset, latest, "update_available", installed))
+
+    return DatasetSyncResponse(schema_version=1, actions=actions)
