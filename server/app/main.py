@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.auth.router import router as auth_router
 from app.core.config import get_settings
+from app.datasets.router import router as datasets_router
 from app.users.router import router as users_router
 
 
@@ -14,6 +15,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(auth_router)
     app.include_router(users_router)
+    app.include_router(datasets_router)
 
     @app.get("/health", tags=["health"])
     async def health() -> dict[str, str]:
