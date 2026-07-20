@@ -47,7 +47,9 @@ def semver_sort_key(version: str) -> tuple[int, int, int]:
     match = SEMVER_PATTERN.fullmatch(version)
     if match is None:
         return (-1, -1, -1)
-    return tuple(int(part) for part in match.groups())
+
+    major, minor, patch = match.groups()
+    return int(major), int(minor), int(patch)
 
 
 def latest_active_version(dataset: Dataset) -> DatasetVersion | None:

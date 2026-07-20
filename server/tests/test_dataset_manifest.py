@@ -117,6 +117,27 @@ def test_manifest_returns_latest_active_versions_for_multiple_datasets(
     assert programming_manifest["required_plan"] == "pro"
 
 
+def test_manifest_uses_numeric_semver_sorting(
+    client: TestClient, db_session_factory: sessionmaker[Session]
+) -> None:
+    create_dataset(
+        db_session_factory,
+        dataset_key="core-en",
+        language="en",
+        domain="core",
+        title="Core English",
+        versions=[
+            dataset_version("1.2.0", "active", checksum("a")),
+            dataset_version("1.10.0", "active", checksum("b")),
+        ],
+    )
+
+    response = client.get("/datasets/manifest")
+
+    assert response.status_code == 200
+    assert response.json()["datasets"][0]["latest_version"] == "1.10.0"
+
+
 def test_manifest_excludes_deprecated_revoked_and_private_versions(
     client: TestClient, db_session_factory: sessionmaker[Session]
 ) -> None:
