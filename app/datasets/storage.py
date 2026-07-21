@@ -9,7 +9,7 @@ class StorageAdapter(Protocol):
         raise NotImplementedError
 
 
-class S3StorageAdapter:
+class S3StorageAdapter(StorageAdapter):
     def __init__(
         self,
         endpoint_url: str,
