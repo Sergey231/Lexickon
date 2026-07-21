@@ -19,6 +19,13 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://lexicon:lexicon@localhost:5432/lexicon"
 
+    storage_endpoint_url: str = "http://localhost:9000"
+    storage_bucket: str = "lexicon-datasets"
+    storage_access_key_id: str = "minio"
+    storage_secret_access_key: str = "minio123"
+    storage_region: str = "us-east-1"
+    storage_signed_url_expire_seconds: int = Field(default=900, gt=0)
+
 
 @lru_cache
 def get_settings() -> Settings:

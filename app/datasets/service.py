@@ -1,11 +1,13 @@
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from app.datasets.models import Dataset, DatasetVersion
 from app.datasets.schemas import (
+    DatasetDownloadUrlResponse,
     DatasetManifestItem,
     DatasetManifestResponse,
     DatasetSyncAction,
@@ -14,6 +16,7 @@ from app.datasets.schemas import (
     DatasetSyncStatus,
     InstalledDataset,
 )
+from app.users.models import User
 
 SEMVER_PATTERN = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
@@ -37,6 +40,18 @@ def get_public_dataset_by_key(db: Session, dataset_key: str) -> Dataset | None:
             select(Dataset)
             .where(Dataset.dataset_key == dataset_key, Dataset.is_public.is_(True))
             .options(joinedload(Dataset.versions))
+        )
+        .unique()
+        .one_or_none()
+    )
+
+
+def get_dataset_version_by_id(db: Session, version_id: UUID) -> DatasetVersion | None:
+    return (
+        db.scalars(
+            select(DatasetVersion)
+            .where(DatasetVersion.id == version_id)
+            .options(joinedload(DatasetVersion.dataset))
         )
         .unique()
         .one_or_none()
@@ -179,3 +194,19 @@ def build_dataset_sync(db: Session, payload: DatasetSyncRequest) -> DatasetSyncR
         actions.append(build_update_action(dataset, latest, "update_available", installed))
 
     return DatasetSyncResponse(schema_version=1, actions=actions)
+
+
+def can_download_dataset_version(user: User, version: DatasetVersion) -> bool:
+    return version.dataset.required_plan == "free"
+
+
+def build_download_url_response(
+    version: DatasetVersion, url: str, expires_in_seconds: int
+) -> DatasetDownloadUrlResponse:
+    return DatasetDownloadUrlResponse(
+        url=url,
+        expires_at=datetime.now(UTC) + timedelta(seconds=expires_in_seconds),
+        checksum_sha256=version.checksum_sha256,
+        compressed_size_bytes=version.compressed_size_bytes,
+        compression=version.compression,
+    )

@@ -1,6 +1,7 @@
 # Development Runbook
 
-This runbook describes the local workflow for the FastAPI service in `server/`.
+This runbook describes the local workflow for the FastAPI backend in this
+repository.
 
 ## Expected Local Stack
 
@@ -17,24 +18,24 @@ This runbook describes the local workflow for the FastAPI service in `server/`.
 ## Project Layout
 
 ```text
-server/
-  app/
-    main.py
-    core/
-    auth/
-    users/
-    datasets/
-  migrations/
-  scripts/
-    publish_dataset.py
-    seed_dev_data.py
-  tests/
-  pyproject.toml
-  docker-compose.yml
-  alembic.ini
+app/
+  main.py
+  core/
+  auth/
+  users/
+  datasets/
+migrations/
+scripts/
+  publish_dataset.py
+  seed_dev_data.py
+tests/
+pyproject.toml
+docker-compose.yml
+alembic.ini
 ```
 
-Use `server/` if this repository will contain only the API or if the API will sit beside external data-producer code. Keep API modules independent from dataset-generation runtime modules.
+This repository is the backend application. Keep API modules independent from
+dataset-generation runtime modules.
 
 ## Environment Variables
 
@@ -47,15 +48,15 @@ APP_SECRET_KEY=change-me
 
 DATABASE_URL=postgresql+psycopg://lexicon:lexicon@localhost:5432/lexicon
 
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-STORAGE_PROVIDER=s3
-STORAGE_BUCKET=lexicon-datasets
 STORAGE_ENDPOINT_URL=http://localhost:9000
-STORAGE_REGION=us-east-1
+STORAGE_BUCKET=lexicon-datasets
 STORAGE_ACCESS_KEY_ID=minio
-STORAGE_SECRET_ACCESS_KEY=minio-password
-STORAGE_SIGNED_URL_TTL_SECONDS=900
+STORAGE_SECRET_ACCESS_KEY=minio123
+STORAGE_REGION=us-east-1
+STORAGE_SIGNED_URL_EXPIRE_SECONDS=900
 ```
 
 ## Local Startup
@@ -63,10 +64,8 @@ STORAGE_SIGNED_URL_TTL_SECONDS=900
 Target workflow:
 
 ```bash
-cd server
-docker compose up -d
-alembic upgrade head
-uvicorn app.main:app --reload
+make install
+make dev
 ```
 
 Health check:
@@ -113,7 +112,7 @@ curl http://localhost:8000/me \
 Target CLI shape:
 
 ```bash
-python3 server/scripts/publish_dataset.py \
+python3 scripts/publish_dataset.py \
   --dataset-key core-en \
   --language en \
   --domain core \

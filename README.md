@@ -1,12 +1,14 @@
 # Lexicon API
 
-This repository contains planning documentation for the Lexicon mobile backend. The backend stores account data, authentication sessions, user settings, dataset metadata, and signed download access for ready-made SQLite database packs.
-
-The first backend skeleton lives in [server](server). The broader source of truth for the MVP remains the plan in [docs/fastapi_server_mvp_plan.md](docs/fastapi_server_mvp_plan.md).
+This repository contains the Lexicon mobile backend. The backend stores account
+data, authentication sessions, user settings, dataset metadata, and signed
+download access for ready-made SQLite database packs.
 
 ## Current State
 
-- Repository status: FastAPI skeleton with `/health`, environment-based config, SQLAlchemy session setup, Alembic, PostgreSQL Docker Compose, and a healthcheck test.
+- Repository status: FastAPI backend with auth, user settings, dataset registry,
+  dataset sync, signed download URLs, environment-based config, SQLAlchemy,
+  Alembic, PostgreSQL, MinIO, and automated tests.
 - Planned runtime: Python 3.12+, FastAPI, PostgreSQL, SQLAlchemy, Alembic.
 - Planned storage: S3-compatible object storage, with MinIO for local development.
 - Primary backend role: authentication, profile/settings sync, dataset registry, dataset versioning, access control, and signed download URLs.
@@ -19,6 +21,41 @@ The first backend skeleton lives in [server](server). The broader source of trut
 - [Architecture overview](docs/architecture.md): concise system overview and boundaries.
 - [API contract](docs/api_contract.md): compact endpoint and payload reference for the MVP API.
 - [Development runbook](docs/development_runbook.md): local setup, environment, migration, smoke-test, and dataset publishing notes.
+
+## Local Setup
+
+```bash
+make install
+make dev
+```
+
+`make dev` starts PostgreSQL and MinIO, creates the local storage bucket, applies
+Alembic migrations, and starts the FastAPI server.
+
+Health check:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected response:
+
+```json
+{"status":"ok"}
+```
+
+MinIO console:
+
+```text
+http://localhost:9001
+```
+
+Local credentials:
+
+```text
+login: minio
+password: minio123
+```
 
 ## Planned System Shape
 
@@ -49,7 +86,7 @@ The backend should return manifests, sync decisions, and signed temporary downlo
 
 ## Notes For Implementation
 
-- Keep server code isolated from dataset-generation projects. The server receives ready SQLite packs; it does not know how those packs were built.
+- Keep backend code isolated from dataset-generation projects. The backend receives ready SQLite packs; it does not know how those packs were built.
 - Treat published dataset files as immutable.
 - Keep PostgreSQL as the source of truth for dataset metadata. Object storage metadata is supplementary.
 - Require checksum verification on the client before installing a downloaded dataset pack.

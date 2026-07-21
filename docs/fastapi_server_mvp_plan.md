@@ -172,17 +172,8 @@ backend/
   README.md
 ```
 
-Если backend живет в этом репозитории рядом с data pipeline, можно начать с:
-
-```text
-server/
-```
-
-Вместо:
-
-```text
-backend/
-```
+В этом репозитории backend является основным приложением, поэтому структура живет в корне
+репозитория, без дополнительной вложенной папки `server/`.
 
 Главное правило: код сервера не должен напрямую зависеть от runtime-файлов проектов, которые генерируют SQLite-пакеты. Сервер получает готовый артефакт и его метаданные.
 
@@ -539,7 +530,7 @@ compression
 Команда:
 
 ```bash
-python3 server/scripts/publish_dataset.py \
+python3 scripts/publish_dataset.py \
   --dataset-key core-en \
   --language en \
   --domain core \
@@ -582,7 +573,7 @@ python3 server/scripts/publish_dataset.py \
 
 Задачи:
 
-- создать структуру `server/`;
+- создать структуру backend-приложения в корне репозитория;
 - настроить `pyproject.toml`;
 - добавить FastAPI app;
 - добавить `/health`;
@@ -695,7 +686,7 @@ Acceptance criteria:
 
 Задачи:
 
-- реализовать `server/scripts/publish_dataset.py`;
+- реализовать `scripts/publish_dataset.py`;
 - считать SHA-256 файла;
 - определять размер файла;
 - загружать файл в storage;

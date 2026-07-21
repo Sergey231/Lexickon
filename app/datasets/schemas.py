@@ -104,3 +104,11 @@ class DatasetSyncAction(BaseModel):
 class DatasetSyncResponse(BaseModel):
     schema_version: int
     actions: list[DatasetSyncAction]
+
+
+class DatasetDownloadUrlResponse(BaseModel):
+    url: str
+    expires_at: datetime
+    checksum_sha256: str
+    compressed_size_bytes: int
+    compression: str
