@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 from uuid import UUID
 
@@ -28,6 +29,7 @@ from app.datasets.storage import StorageAdapter, get_storage_adapter
 from app.users.models import User
 
 router = APIRouter(prefix="/datasets", tags=["datasets"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("/manifest", response_model=DatasetManifestResponse)
@@ -63,24 +65,86 @@ def create_dataset_version_download_url(
         )
 
     if version.status == "revoked":
+        logger.warning(
+            "Dataset download URL rejected for revoked version",
+            extra={
+                "user_id": str(current_user.id),
+                "user_email": current_user.email,
+                "dataset_version_id": str(version.id),
+                "dataset_key": version.dataset.dataset_key,
+                "version": version.version,
+                "status": version.status,
+            },
+        )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Dataset version is revoked",
         )
 
-    if version.status not in {"active", "deprecated"}:
+    if version.status == "deprecated":
+        logger.warning(
+            "Dataset download URL rejected for deprecated version",
+            extra={
+                "user_id": str(current_user.id),
+                "user_email": current_user.email,
+                "dataset_version_id": str(version.id),
+                "dataset_key": version.dataset.dataset_key,
+                "version": version.version,
+                "status": version.status,
+            },
+        )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Dataset version is deprecated",
+        )
+
+    if version.status != "active":
+        logger.warning(
+            "Dataset download URL rejected for non-downloadable version",
+            extra={
+                "user_id": str(current_user.id),
+                "user_email": current_user.email,
+                "dataset_version_id": str(version.id),
+                "dataset_key": version.dataset.dataset_key,
+                "version": version.version,
+                "status": version.status,
+            },
+        )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Dataset version is not downloadable",
         )
 
     if not can_download_dataset_version(current_user, version):
+        logger.warning(
+            "Dataset download URL rejected because user lacks access",
+            extra={
+                "user_id": str(current_user.id),
+                "user_email": current_user.email,
+                "dataset_version_id": str(version.id),
+                "dataset_key": version.dataset.dataset_key,
+                "version": version.version,
+                "required_plan": version.dataset.required_plan,
+            },
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User does not have access to this dataset",
         )
 
     settings = get_settings()
+    logger.info(
+        "Dataset download URL requested",
+        extra={
+            "user_id": str(current_user.id),
+            "user_email": current_user.email,
+            "dataset_version_id": str(version.id),
+            "dataset_key": version.dataset.dataset_key,
+            "version": version.version,
+            "storage_key": version.storage_key,
+            "expires_in_seconds": settings.storage_signed_url_expire_seconds,
+        },
+    )
     url = storage.create_presigned_download_url(
         version.storage_key,
         settings.storage_signed_url_expire_seconds,

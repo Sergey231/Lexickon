@@ -7,6 +7,9 @@ from app.core.config import get_settings
 
 
 class StorageAdapter(Protocol):
+    def object_exists(self, storage_key: str) -> bool:
+        raise NotImplementedError
+
     def upload_file(
         self,
         file_path: Path,
@@ -34,6 +37,21 @@ class S3StorageAdapter(StorageAdapter):
         self.secret_access_key = secret_access_key
         self.region = region
         self._client_instance = None
+
+    def object_exists(self, storage_key: str) -> bool:
+        client = self._client()
+
+        from botocore.exceptions import ClientError
+
+        try:
+            client.head_object(Bucket=self.bucket, Key=storage_key)
+        except ClientError as error:
+            error_code = error.response.get("Error", {}).get("Code")
+            if error_code in {"404", "NoSuchKey", "NotFound"}:
+                return False
+            raise
+
+        return True
 
     def upload_file(
         self,

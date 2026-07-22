@@ -1,6 +1,8 @@
+import logging
 from datetime import datetime
 from uuid import UUID, uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -16,6 +18,12 @@ PASSWORD = "password123"
 class FakeStorageAdapter:
     def __init__(self) -> None:
         self.calls: list[tuple[str, int]] = []
+
+    def object_exists(self, storage_key: str) -> bool:
+        return False
+
+    def upload_file(self, *args, **kwargs) -> None:
+        raise NotImplementedError
 
     def create_presigned_download_url(self, storage_key: str, expires_in_seconds: int) -> str:
         self.calls.append((storage_key, expires_in_seconds))
@@ -82,6 +90,43 @@ def test_download_url_returns_signed_url_with_expiration(
     assert fake_storage.calls == [("datasets/core-en/1.0.0.sqlite.gz", 900)]
 
 
+def test_download_url_writes_audit_log(
+    client: TestClient,
+    db_session_factory: sessionmaker[Session],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    fake_storage = FakeStorageAdapter()
+    app.dependency_overrides[get_storage_adapter] = lambda: fake_storage
+    caplog.set_level(logging.INFO, logger="app.datasets.router")
+
+    version_id, version = version_with_id("active", compressed_size_bytes=120)
+    create_dataset(
+        db_session_factory,
+        dataset_key="core-en",
+        language="en",
+        domain="core",
+        title="Core English",
+        versions=[version],
+    )
+    register(client)
+    token = login_token(client)
+
+    response = client.post(
+        f"/datasets/versions/{version_id}/download-url",
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 200
+    audit_records = [
+        record for record in caplog.records if record.message == "Dataset download URL requested"
+    ]
+    assert len(audit_records) == 1
+    assert audit_records[0].user_email == EMAIL
+    assert audit_records[0].dataset_version_id == str(version_id)
+    assert audit_records[0].dataset_key == "core-en"
+    assert audit_records[0].storage_key == "datasets/core-en/1.0.0.sqlite.gz"
+
+
 def test_download_url_requires_valid_access_token(
     client: TestClient, db_session_factory: sessionmaker[Session]
 ) -> None:
@@ -125,6 +170,34 @@ def test_revoked_version_does_not_issue_download_url(
 
     assert response.status_code == 409
     assert response.json() == {"detail": "Dataset version is revoked"}
+    assert fake_storage.calls == []
+
+
+def test_deprecated_version_does_not_issue_download_url(
+    client: TestClient, db_session_factory: sessionmaker[Session]
+) -> None:
+    fake_storage = FakeStorageAdapter()
+    app.dependency_overrides[get_storage_adapter] = lambda: fake_storage
+
+    version_id, version = version_with_id("deprecated")
+    create_dataset(
+        db_session_factory,
+        dataset_key="core-en",
+        language="en",
+        domain="core",
+        title="Core English",
+        versions=[version],
+    )
+    register(client)
+    token = login_token(client)
+
+    response = client.post(
+        f"/datasets/versions/{version_id}/download-url",
+        headers=auth_headers(token),
+    )
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "Dataset version is deprecated"}
     assert fake_storage.calls == []
 
 

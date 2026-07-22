@@ -12,6 +12,10 @@ from scripts.publish_dataset import PublishDatasetCommand, PublishError, publish
 class FakeStorageAdapter:
     def __init__(self) -> None:
         self.uploads: list[tuple[Path, str, Mapping[str, str] | None]] = []
+        self.existing_keys: set[str] = set()
+
+    def object_exists(self, storage_key: str) -> bool:
+        return storage_key in self.existing_keys
 
     def upload_file(
         self,
@@ -118,3 +122,18 @@ def test_publish_dataset_dry_run_does_not_upload_or_commit(
     assert summary.created_version is True
     assert storage.uploads == []
     assert manifest.datasets == []
+
+
+def test_publish_dataset_rejects_existing_storage_object(
+    tmp_path: Path,
+    db_session_factory: sessionmaker[Session],
+) -> None:
+    file_path = create_sqlite_gzip_file(tmp_path)
+    storage = FakeStorageAdapter()
+    storage.existing_keys.add("core/en/1.0.0/core-en-v1.0.0.sqlite.gz")
+
+    with db_session_factory() as db:
+        with pytest.raises(PublishError, match="Storage object already exists"):
+            publish_dataset(publish_command(file_path), db, storage)
+
+    assert storage.uploads == []

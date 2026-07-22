@@ -4,6 +4,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import logging
 import sys
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
@@ -21,6 +22,7 @@ from app.datasets.storage import StorageAdapter, get_storage_adapter
 
 CHUNK_SIZE = 1024 * 1024
 VALID_STATUSES = {"active", "draft"}
+logger = logging.getLogger(__name__)
 
 
 class PublishError(Exception):
@@ -182,6 +184,14 @@ def publish_dataset(
         find_dataset_version(dataset, command.version) if dataset is not None else None
     )
     if existing_version is not None and not command.force:
+        logger.warning(
+            "Dataset publish rejected because version already exists",
+            extra={
+                "dataset_key": command.dataset_key,
+                "version": command.version,
+                "storage_key": storage_key,
+            },
+        )
         raise PublishError(
             f"Dataset version already exists: {command.dataset_key} {command.version}. "
             "Use --force to replace it."
@@ -206,9 +216,40 @@ def publish_dataset(
         replaced_version=existing_version is not None,
     )
     if command.dry_run:
+        logger.info(
+            "Dataset publish dry run completed",
+            extra={
+                "dataset_key": command.dataset_key,
+                "version": command.version,
+                "storage_key": storage_key,
+                "checksum_sha256": checksum_sha256,
+            },
+        )
         return summary
 
+    if storage.object_exists(storage_key):
+        logger.warning(
+            "Dataset publish rejected because storage object already exists",
+            extra={
+                "dataset_key": command.dataset_key,
+                "version": command.version,
+                "storage_key": storage_key,
+            },
+        )
+        raise PublishError(
+            f"Storage object already exists and published files are immutable: {storage_key}"
+        )
+
     metadata = build_storage_metadata(command, checksum_sha256)
+    logger.info(
+        "Dataset publish upload started",
+        extra={
+            "dataset_key": command.dataset_key,
+            "version": command.version,
+            "storage_key": storage_key,
+            "force": command.force,
+        },
+    )
     storage.upload_file(command.file, storage_key, metadata)
 
     if dataset is None:
@@ -267,6 +308,16 @@ def publish_dataset(
         existing_version.published_at = published_at
 
     db.commit()
+    logger.info(
+        "Dataset publish completed",
+        extra={
+            "dataset_key": command.dataset_key,
+            "version": command.version,
+            "storage_key": storage_key,
+            "checksum_sha256": checksum_sha256,
+            "status": command.status,
+        },
+    )
     return PublishDatasetSummary(**{**asdict(summary), "uploaded": True})
 
 
@@ -313,6 +364,10 @@ def print_json(payload: dict[str, Any], *, stream: Any = sys.stdout) -> None:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
     parser = build_parser()
     args = parser.parse_args(argv)
     command = command_from_args(args)
