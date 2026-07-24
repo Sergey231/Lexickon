@@ -21,11 +21,9 @@ Response:
 ```http
 POST /auth/register
 POST /auth/login
-POST /auth/refresh
-POST /auth/logout
 ```
 
-MVP can begin with only `register` and `login`. Keep `refresh` and `logout` in the public contract so token lifecycle can be extended without changing client route names.
+`register` returns the created user. `login` returns a bearer access token.
 
 ## Current User
 
@@ -53,8 +51,6 @@ Settings patch example:
 ```http
 GET /datasets
 GET /datasets/{dataset_key}
-GET /datasets/{dataset_key}/versions
-GET /datasets/{dataset_key}/versions/latest
 ```
 
 `dataset_key` should follow `{domain}-{language}`, for example `core-en`.
@@ -178,7 +174,7 @@ Rules:
 - endpoint requires authentication;
 - API checks the user's access to the dataset version;
 - signed URL has a short TTL;
-- revoked versions return an error;
+- revoked and deprecated versions return explicit errors;
 - client verifies checksum after download.
 
 ## Dataset Content

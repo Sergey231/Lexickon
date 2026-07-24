@@ -329,18 +329,9 @@ GET /health
 ```http
 POST /auth/register
 POST /auth/login
-POST /auth/refresh
-POST /auth/logout
 ```
 
-На первом MVP можно сделать только:
-
-```http
-POST /auth/register
-POST /auth/login
-```
-
-`/auth/refresh` лучше заложить в контракт сразу, даже если refresh token появится во втором этапе.
+Refresh/logout можно добавить позже, когда появится отдельная модель refresh token lifecycle.
 
 ### Me
 
@@ -366,8 +357,6 @@ PATCH /me/settings
 ```http
 GET /datasets
 GET /datasets/{dataset_key}
-GET /datasets/{dataset_key}/versions
-GET /datasets/{dataset_key}/versions/latest
 ```
 
 ### Manifest

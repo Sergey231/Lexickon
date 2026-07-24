@@ -24,6 +24,11 @@ download access for ready-made SQLite database packs.
 
 ## Local Setup
 
+Prerequisites:
+
+- Python 3.12+
+- Docker Desktop or another Docker Compose runtime
+
 ```bash
 make install
 make dev
@@ -55,6 +60,143 @@ Local credentials:
 ```text
 login: minio
 password: minio123
+```
+
+## Environment
+
+Local defaults are defined in `.env.example` and mirrored in `app/core/config.py`.
+The project also reads an optional `.env` file from the repository root.
+
+```bash
+cp .env.example .env
+```
+
+Important local values:
+
+```text
+DATABASE_URL=postgresql+psycopg://lexicon:lexicon@localhost:5432/lexicon
+STORAGE_ENDPOINT_URL=http://localhost:9000
+STORAGE_BUCKET=lexicon-datasets
+STORAGE_ACCESS_KEY_ID=minio
+STORAGE_SECRET_ACCESS_KEY=minio123
+```
+
+## Migrations
+
+Run Alembic migrations manually:
+
+```bash
+make migrate
+```
+
+Create a new migration:
+
+```bash
+.venv/bin/alembic revision --autogenerate -m "describe change"
+```
+
+## Publish A Dataset Pack
+
+The API does not build datasets. It registers ready `.sqlite.gz` packs.
+
+Create a tiny local smoke-test pack:
+
+```bash
+mkdir -p artifacts
+python3 - <<'PY'
+import gzip
+from pathlib import Path
+
+Path("artifacts").mkdir(exist_ok=True)
+with gzip.open("artifacts/core-en-v1.0.0.sqlite.gz", "wb") as file:
+    file.write(b"local smoke test sqlite payload")
+PY
+```
+
+Dry run:
+
+```bash
+.venv/bin/python scripts/publish_dataset.py \
+  --dataset-key core-en \
+  --language en \
+  --domain core \
+  --version 1.0.0 \
+  --sqlite-schema-version 1 \
+  --file artifacts/core-en-v1.0.0.sqlite.gz \
+  --compression gzip \
+  --title "Core English" \
+  --dry-run
+```
+
+Publish:
+
+```bash
+.venv/bin/python scripts/publish_dataset.py \
+  --dataset-key core-en \
+  --language en \
+  --domain core \
+  --version 1.0.0 \
+  --sqlite-schema-version 1 \
+  --file artifacts/core-en-v1.0.0.sqlite.gz \
+  --compression gzip \
+  --title "Core English"
+```
+
+The CLI prints JSON with `dataset_key`, `version`, `storage_key`,
+`compressed_size_bytes`, and `checksum_sha256`. Published storage objects are
+treated as immutable; publishing the same version again is rejected unless
+`--force` is passed, and an existing storage object is never overwritten.
+
+## API Smoke Test
+
+Register:
+
+```bash
+curl -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"dev@example.com","password":"password123"}'
+```
+
+Login and save a token:
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"dev@example.com","password":"password123"}' \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')
+```
+
+Read manifest:
+
+```bash
+curl http://localhost:8000/datasets/manifest
+```
+
+Mobile-style sync:
+
+```bash
+curl -X POST http://localhost:8000/datasets/sync \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_schema_version": 1,
+    "installed": [],
+    "wanted": [
+      {
+        "language": "en",
+        "domain": "core"
+      }
+    ]
+  }'
+```
+
+Get the published `version_id` from the manifest and request a signed download
+URL:
+
+```bash
+VERSION_ID="<version_id_from_manifest>"
+
+curl -X POST "http://localhost:8000/datasets/versions/${VERSION_ID}/download-url" \
+  -H "Authorization: Bearer ${TOKEN}"
 ```
 
 ## Planned System Shape
