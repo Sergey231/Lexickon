@@ -125,6 +125,301 @@ Features/Presentation -> Domain <- Data
 DTO API и Domain-модели должны быть раздельными. Преобразование выполняется в
 Data layer.
 
+## MVVM в Presentation layer
+
+### Выбранный presentation-паттерн
+
+Каждый feature-модуль и каждый его экран используют MVVM, адаптированный для
+SwiftUI и Observation. MVVM является внутренним паттерном Presentation layer и
+не заменяет pragmatic Clean Architecture или Step-Driven Coordinator:
+
+- View отвечает за отображение и передачу пользовательских действий;
+- ViewModel управляет presentation state и вызывает Domain use cases;
+- Coordinator управляет навигацией и жизненным циклом feature flow;
+- use cases содержат прикладные сценарии;
+- repositories скрывают источники данных и инфраструктуру.
+
+Типичный поток данных:
+
+```text
+User action
+  -> SwiftUI View
+  -> ViewModel
+  -> Domain use case
+  -> Repository protocol
+  -> Data implementation (API, Keychain, SQLite, filesystem)
+  -> ViewModel state
+  -> SwiftUI View
+```
+
+Навигация является отдельным потоком:
+
+```text
+ViewModel navigation intent / feature event
+  -> feature output handler
+  -> Coordinator
+  -> typed Step
+  -> presentation or child Coordinator
+```
+
+### Структура feature-модуля
+
+Рекомендуемая структура одного feature или экрана:
+
+```text
+Features/Frequency
+  FrequencyView.swift
+  FrequencyViewModel.swift          # ViewModel, ViewState, UIModel, Action и Output
+  FrequencyFactory.swift            # сборка View и ViewModel
+```
+
+`ViewState`, `UIModel`, `Action` и `Output` по умолчанию объявляются рядом с
+ViewModel в `<Feature>ViewModel.swift`, а не раскладываются по отдельным файлам.
+Они могут быть top-level типами с подходящим access level или вложенными типами,
+если это не усложняет использование из View и тестов.
+
+Сами типы создаются только при необходимости: не следует добавлять пустые
+`ViewState`, `UIModel`, `Action` или `Output` ради симметрии структуры. При росте
+числа состояний или появлении взаимоисключающих состояний используется
+`ViewState`, но он всё равно остаётся в файле ViewModel.
+
+Тип выносится из `<Feature>ViewModel.swift` в отдельный файл только если он:
+
+- переиспользуется несколькими экранами;
+- стал достаточно сложным и получил самостоятельную ответственность;
+- имеет крупные независимые extensions или generated/conformance-код;
+- делает файл ViewModel объективно трудным для чтения и навигации.
+
+Разделение не выполняется только ради правила «один тип — один файл». Решение о
+выносе должно улучшать связность и читаемость feature, а не увеличивать число
+файлов без практической пользы.
+
+Пример состояния:
+
+```swift
+enum FrequencyViewState: Equatable {
+    case idle
+    case loading
+    case empty
+    case success(FrequencyUIModel)
+    case error(FrequencyErrorUIModel)
+}
+```
+
+Имена состояний могут отличаться между features, но каждый экран должен явно
+представлять применимые состояния loading, empty, error и success. Нельзя
+кодировать несколько взаимоисключающих состояний независимыми флагами вроде
+`isLoading`, `hasError` и `hasResult`, если их комбинации могут стать
+противоречивыми.
+
+UI-модели содержат уже подготовленные для отображения значения: локализуемые
+идентификаторы сообщений, форматированное значение метрики, название языка,
+домена и версии датасета. UI-модели не являются API DTO, Domain entities или
+SQLite records и не должны утекать обратно в Domain/Data.
+
+Feature factory или assembly создаёт ViewModel с явными зависимостями, связывает
+feature outputs с Coordinator и возвращает View. Фабрика не содержит
+бизнес-правил, не выполняет запросы и не используется как service locator.
+
+### Обязанности View
+
+SwiftUI View:
+
+- декларативно отображает текущее состояние ViewModel;
+- передаёт ViewModel пользовательские действия и lifecycle-события;
+- содержит только локальную UI-механику: layout, focus, animation, accessibility
+  и presentation-specific formatting;
+- показывает loading, empty, error и success без самостоятельного определения
+  бизнес-результата;
+- не хранит дублирующую копию долгоживущего feature state;
+- не инициирует навигацию через прямое изменение path родительского Coordinator.
+
+Во View запрещены:
+
+- бизнес-правила и оркестрация прикладных сценариев;
+- прямые сетевые запросы и работа с `URLSession`;
+- прямые Keychain-, filesystem- и SQLite-вызовы;
+- обращение к repository implementations, API DTO или Data layer;
+- создание production-зависимостей и чтение их из глобального singleton;
+- fire-and-forget `Task`, жизненный цикл и отмена которого не контролируются
+  feature.
+
+Простое синхронное форматирование, связанное исключительно с layout, допустимо
+во View. Форматирование, которое определяет смысл результата, единицы метрики
+или продуктовые правила, выполняется до View.
+
+### Обязанности ViewModel
+
+ViewModel является `@Observable` reference type и для UI-bound состояния
+изолируется `@MainActor`. Она:
+
+- хранит единый источник presentation state;
+- принимает типизированные действия View;
+- валидирует presentation-level ввод, например пустое поле;
+- запускает Domain use cases и преобразует их результат в `ViewState` и
+  UI-модели;
+- преобразует Domain errors в понятные UI-состояния и доступные действия
+  retry/login/update;
+- предотвращает повторные запросы и устаревшие результаты;
+- формирует feature outputs/navigation intents, но не выполняет навигацию;
+- не знает о `NavigationStack`, `NavigationPath`, sheet или конкретном Step
+  родительского Coordinator.
+
+ViewModel не должна импортировать SwiftUI без необходимости в чисто
+presentation-типах. В её состоянии не хранятся `View`, `NavigationPath`, API DTO,
+SQLite handles или concrete repository implementations.
+
+ViewModel по умолчанию зависит от узких use cases. Прямая зависимость от
+repository protocol допускается только для действительно простого чтения, если
+отдельный use case не добавляет семантики; это решение должно оставаться
+тестируемым и не раскрывать Data layer.
+
+### Обязанности Coordinator, use cases и repositories
+
+Coordinator:
+
+- принимает feature outputs и преобразует их в собственные типизированные Step;
+- выполняет push, pop, sheet, full-screen presentation и root replacement;
+- создаёт и освобождает дочерние Coordinator;
+- инициирует сборку feature через factory/assembly;
+- не хранит presentation state полей формы и не выполняет бизнес-операции.
+
+Use case:
+
+- описывает одно прикладное действие или законченную оркестрацию;
+- работает с Domain entities и repository protocols;
+- не зависит от SwiftUI, ViewModel, Coordinator и UI-моделей;
+- определяет бизнес-валидацию и правила последовательности операций;
+- возвращает типизированный результат и поддерживает cancellation, когда
+  операция длительная.
+
+Repository protocol:
+
+- объявляется на границе Domain;
+- описывает операции в терминах Domain, а не API/SQLite;
+- не раскрывает DTO, HTTP status codes, database rows или file handles.
+
+Repository implementation:
+
+- находится в Data layer;
+- преобразует DTO/records в Domain-модели;
+- инкапсулирует `URLSession`, Keychain, SQLite, filesystem и кэш;
+- нормализует инфраструктурные ошибки в согласованные Domain/Data errors;
+- обеспечивает необходимую actor isolation и потокобезопасность.
+
+### Правила зависимостей и сборки
+
+Зависимости направлены только внутрь:
+
+```text
+View -> ViewModel -> UseCase -> Repository protocol
+                              ^
+                              |
+                 Data repository implementation
+
+Coordinator -> FeatureFactory -> View + ViewModel
+AppContainer -----------------> Use cases and implementations
+```
+
+- View знает конкретную ViewModel своего экрана, но не знает Data layer.
+- ViewModel знает use case protocol/type и Domain results, но не concrete
+  repository implementation.
+- Use case знает repository protocol, но не знает его Data-реализацию.
+- Repository implementation не импортирует feature и не вызывает Coordinator.
+- Coordinator знает feature output и factory, но не детали API/SQLite.
+- Между feature-модулями не передаются ViewModel; общий сценарий связывает
+  родительский Coordinator через типизированные Domain/input/output значения.
+
+Production-зависимости создаются только в `AppContainer`. Use cases и
+repositories передаются через initializer injection. Coordinator получает
+feature factory или необходимые factory dependencies через initializer.
+ViewModel также получает все обязательные зависимости через initializer; у неё
+нет скрытого доступа к `AppContainer`.
+
+`AppContainer` остаётся ручным Composition Root. Swinject, Needle, Resolver и
+другие DI-фреймворки для MVVM не добавляются.
+
+### Concurrency, async и cancellation
+
+- ViewModel и изменение её observable state выполняются на `@MainActor`.
+- Use cases и repositories не должны наследовать MainActor isolation только
+  потому, что их вызывает ViewModel.
+- Сетевые, файловые, checksum, installation и SQLite-операции выполняются вне
+  MainActor через async API и actor-isolated сервисы.
+- Долгие действия ViewModel хранят контролируемую ссылку на `Task` либо
+  используют structured concurrency.
+- Новый взаимоисключающий запрос отменяет предыдущий или помечает его результат
+  устаревшим; старый ответ не может перезаписать более новое состояние.
+- Task отменяется при явном пользовательском cancel, завершении применимого
+  сценария или освобождении ViewModel, если операция не должна жить дольше
+  экрана.
+- `CancellationError` не показывается как пользовательская ошибка, если отмена
+  была ожидаемой.
+- `Task.detached` не используется для обхода actor isolation.
+
+Для длительной загрузки датасета lifetime операции может принадлежать
+actor-сервису/Coordinator flow, а не конкретному View. В этом случае ViewModel
+подписывается на типизированный progress state и её исчезновение не должно
+случайно повреждать установку. Такое решение фиксируется явно для feature.
+
+### Navigation intents и feature outputs
+
+ViewModel сообщает о намерении, а не выбирает механизм навигации. Например:
+
+```swift
+enum FrequencyOutput {
+    case manageDatasets
+    case sessionExpired
+}
+```
+
+Output передаётся через явно внедрённый callback/delegate/output handler с
+предсказуемым lifetime. Coordinator преобразует его в `MainStep`,
+`DatasetSetupStep` или результат дочернего flow. ViewModel не должна импортировать
+Step родителя: это сохраняет независимость feature и позволяет тестировать
+navigation intent без SwiftUI navigation stack.
+
+Событие успешного бизнес-действия не обязано быть navigation intent. Если экран
+остаётся на месте, ViewModel обновляет state. Output отправляется только когда
+решение действительно принадлежит Coordinator или родительскому flow.
+
+### Тестируемость MVVM
+
+ViewModel должна создаваться в unit-тесте без запуска приложения, сети, Keychain,
+SQLite и реального Coordinator. Для этого:
+
+- все обязательные use cases и output handler внедряются через initializer;
+- async-зависимости имеют детерминированные stubs/fakes;
+- ViewState и UI-модели сравнимы в тестах;
+- clock, scheduler или UUID внедряются только если влияют на результат;
+- тест не использует произвольные sleep для ожидания async state.
+
+Минимальные критерии unit-тестов ViewModel:
+
+- начальное состояние;
+- переходы `idle -> loading -> success`;
+- переходы `idle -> loading -> empty/error`;
+- presentation validation без вызова use case;
+- retry после recoverable error;
+- защита от повторной отправки;
+- cancellation и отсутствие показа `CancellationError`;
+- медленный старый ответ не перезаписывает новый;
+- корректная UI-модель для Domain result;
+- ожидаемый output/navigation intent отправляется ровно один раз.
+
+Минимальные критерии UI-тестов feature:
+
+- ключевые loading, empty, error и success состояния доступны пользователю;
+- ввод и основное действие запускают ожидаемый сценарий;
+- retry восстанавливает экран после ошибки;
+- navigation intent приводит к правильному экрану через Coordinator;
+- completed root flow нельзя открыть жестом назад;
+- VoiceOver labels, Dynamic Type и keyboard/focus не блокируют основной путь.
+
+Unit-тесты ViewModel доказывают state transitions и presentation-логику. UI-тесты
+проверяют wiring View, ViewModel и Coordinator; они не должны повторять все
+варианты Domain-логики, уже покрытые use case/repository тестами.
+
 ## Навигация
 
 ### Выбранный вариант Coordinator
