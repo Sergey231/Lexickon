@@ -1,0 +1,16 @@
+// Settings shared by Debug and Release variants of the unit-test target.
+
+CODE_SIGN_STYLE = Automatic
+GENERATE_INFOPLIST_FILE = YES
+PRODUCT_BUNDLE_IDENTIFIER = com.lexickon.ios.tests
+PRODUCT_NAME = $(TARGET_NAME)
+
+SDKROOT = iphoneos
+SUPPORTED_PLATFORMS = iphoneos iphonesimulator
+TARGETED_DEVICE_FAMILY = 1,2
+SWIFT_EMIT_LOC_STRINGS = NO
+
+// Hosted unit tests load into the application process. BUNDLE_LOADER also
+// exposes the app binary's symbols to the test bundle at link time.
+TEST_HOST = $(BUILT_PRODUCTS_DIR)/Lexickon.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Lexickon
+BUNDLE_LOADER = $(TEST_HOST)

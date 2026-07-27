@@ -1,0 +1,14 @@
+// Settings shared by Debug and Release variants of the UI-test target.
+
+CODE_SIGN_STYLE = Automatic
+GENERATE_INFOPLIST_FILE = YES
+PRODUCT_BUNDLE_IDENTIFIER = com.lexickon.ios.uitests
+PRODUCT_NAME = $(TARGET_NAME)
+
+SDKROOT = iphoneos
+SUPPORTED_PLATFORMS = iphoneos iphonesimulator
+TARGETED_DEVICE_FAMILY = 1,2
+SWIFT_EMIT_LOC_STRINGS = NO
+
+// Identifies the application that Xcode installs before launching UI tests.
+TEST_TARGET_NAME = Lexickon

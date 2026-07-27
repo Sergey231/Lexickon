@@ -1,0 +1,3 @@
+#include "UITests.xcconfig"
+
+// Debug-only UI-test overrides belong in this file.
