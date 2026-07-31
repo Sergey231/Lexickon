@@ -1,0 +1,36 @@
+@testable import Lexickon
+
+struct TestAppGraph {
+    let container: AppContainer
+    let authRepository: AuthRepositoryStub
+    let userRepository: UserRepositoryStub
+    let datasetRepository: DatasetRepositoryStub
+    let frequencyRepository: FrequencyRepositoryStub
+}
+
+@MainActor
+enum TestAssembly {
+    static func makeGraph(
+        authRepository: AuthRepositoryStub,
+        userRepository: UserRepositoryStub,
+        datasetRepository: DatasetRepositoryStub,
+        frequencyRepository: FrequencyRepositoryStub
+    ) -> TestAppGraph {
+        let container = AppContainer(
+            repositories: AppRepositories(
+                auth: authRepository,
+                user: userRepository,
+                dataset: datasetRepository,
+                frequency: frequencyRepository
+            )
+        )
+
+        return TestAppGraph(
+            container: container,
+            authRepository: authRepository,
+            userRepository: userRepository,
+            datasetRepository: datasetRepository,
+            frequencyRepository: frequencyRepository
+        )
+    }
+}
