@@ -1,93 +1,100 @@
 import Observation
+import SwiftUI
+
+enum AppStep: CoordinatorStep {
+    case authenticationRequired
+    case authenticated
+    case datasetSetupRequired
+    case datasetSetupCompleted
+    case mainRequired
+    case logout
+    case sessionExpired
+}
 
 @Observable
 @MainActor
 final class AppCoordinator: Coordinator {
-    private(set) var root: AppRoot
-    private(set) var rootRevision = 0
+    private(set) var currentStep: AppStep
 
-    private(set) var authCoordinator: AuthCoordinator?
-    private(set) var datasetSetupCoordinator: DatasetSetupCoordinator?
-    private(set) var mainCoordinator: MainCoordinator?
-
-    init(initialStep: AppStep = .showAuthentication) {
-        root = .authentication
-        handle(initialStep)
+    init(initialStep: AppStep = .authenticationRequired) {
+        currentStep = .authenticationRequired
+        navigate(to: initialStep)
     }
 
-    func handle(_ step: AppStep) {
-        switch step {
-        case .showAuthentication, .logout, .sessionExpired:
-            replaceRoot(with: .authentication)
-        case .showDatasetSetup:
-            replaceRoot(with: .datasetSetup)
-        case .showMain:
-            replaceRoot(with: .main)
+    func navigate(to step: AppStep) {
+        currentStep = switch step {
+        case .authenticationRequired, .logout, .sessionExpired:
+            .authenticationRequired
+        case .authenticated, .datasetSetupRequired:
+            .datasetSetupRequired
+        case .datasetSetupCompleted, .mainRequired:
+            .mainRequired
         }
     }
+}
 
-    func handle(_ result: AuthCoordinatorResult) {
-        switch result {
-        case .authenticated:
-            handle(.showDatasetSetup)
-        }
-    }
+@MainActor
+struct AppCoordinatorView: View {
+    @Bindable var coordinator: AppCoordinator
 
-    func handle(_ result: DatasetSetupCoordinatorResult) {
-        switch result {
-        case .completed:
-            handle(.showMain)
-        }
-    }
-
-    func handle(_ result: MainCoordinatorResult) {
-        switch result {
-        case .logout:
-            handle(AppStep.logout)
-        case .sessionExpired:
-            handle(AppStep.sessionExpired)
-        }
-    }
-
-    private func replaceRoot(with newRoot: AppRoot) {
-        if root == newRoot, activeChildExists(for: newRoot) {
-            return
-        }
-
-        releaseChildren()
-        root = newRoot
-        rootRevision += 1
-
-        switch newRoot {
-        case .authentication:
-            authCoordinator = AuthCoordinator { [weak self] result in
-                self?.handle(result)
-            }
-        case .datasetSetup:
-            datasetSetupCoordinator = DatasetSetupCoordinator { [weak self] result in
-                self?.handle(result)
-            }
-        case .main:
-            mainCoordinator = MainCoordinator { [weak self] result in
-                self?.handle(result)
+    var body: some View {
+        Group {
+            switch coordinator.currentStep {
+            case .authenticationRequired:
+                AuthFlow { [weak coordinator] step in
+                    coordinator?.navigate(to: step)
+                }
+            case .datasetSetupRequired:
+                DatasetSetupFlow { [weak coordinator] step in
+                    coordinator?.navigate(to: step)
+                }
+            case .mainRequired:
+                MainFlow { [weak coordinator] step in
+                    coordinator?.navigate(to: step)
+                }
+            case .authenticated, .datasetSetupCompleted, .logout, .sessionExpired:
+                EmptyView()
             }
         }
+        .id(coordinator.currentStep)
+    }
+}
+
+@MainActor
+private struct AuthFlow: View {
+    @State private var coordinator: AuthCoordinator
+
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        _coordinator = State(initialValue: AuthCoordinator(onStep: onStep))
     }
 
-    private func activeChildExists(for root: AppRoot) -> Bool {
-        switch root {
-        case .authentication:
-            authCoordinator != nil
-        case .datasetSetup:
-            datasetSetupCoordinator != nil
-        case .main:
-            mainCoordinator != nil
-        }
+    var body: some View {
+        AuthCoordinatorView(coordinator: coordinator)
+    }
+}
+
+@MainActor
+private struct DatasetSetupFlow: View {
+    @State private var coordinator: DatasetSetupCoordinator
+
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        _coordinator = State(initialValue: DatasetSetupCoordinator(onStep: onStep))
     }
 
-    private func releaseChildren() {
-        authCoordinator = nil
-        datasetSetupCoordinator = nil
-        mainCoordinator = nil
+    var body: some View {
+        DatasetSetupCoordinatorView(coordinator: coordinator)
+    }
+}
+
+@MainActor
+private struct MainFlow: View {
+    @State private var coordinator: MainCoordinator
+
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        _coordinator = State(initialValue: MainCoordinator(onStep: onStep))
+    }
+
+    var body: some View {
+        MainCoordinatorView(coordinator: coordinator)
     }
 }

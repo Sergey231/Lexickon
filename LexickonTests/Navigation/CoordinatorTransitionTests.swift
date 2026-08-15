@@ -4,7 +4,8 @@ import XCTest
 @MainActor
 final class CoordinatorTransitionTests: XCTestCase {
     func testAuthCoordinatorTransitionTableAndPresentations() {
-        let coordinator = AuthCoordinator { _ in }
+        var emittedStep: AppStep?
+        let coordinator = AuthCoordinator { emittedStep = $0 }
         let transitions: [(step: AuthStep, expectedPath: [AuthStep])] = [
             (.login, [.login]),
             (.login, [.login]),
@@ -13,19 +14,23 @@ final class CoordinatorTransitionTests: XCTestCase {
         ]
 
         for transition in transitions {
-            coordinator.handle(transition.step)
+            coordinator.navigate(to: transition.step)
             XCTAssertEqual(coordinator.path, transition.expectedPath)
         }
 
-        coordinator.handle(.help)
-        coordinator.handle(.privacy)
+        coordinator.navigate(to: .help)
+        coordinator.navigate(to: .privacy)
 
         XCTAssertEqual(coordinator.sheet, .help)
         XCTAssertEqual(coordinator.fullScreenCover, .privacy)
+
+        coordinator.navigate(to: .authenticated)
+        XCTAssertEqual(emittedStep, .authenticated)
     }
 
     func testDatasetSetupCoordinatorTransitionTableAndPresentations() {
-        let coordinator = DatasetSetupCoordinator { _ in }
+        var emittedStep: AppStep?
+        let coordinator = DatasetSetupCoordinator { emittedStep = $0 }
         let transitions: [(step: DatasetSetupStep, expectedPath: [DatasetSetupStep])] = [
             (.selection, [.selection]),
             (.selection, [.selection]),
@@ -34,19 +39,23 @@ final class CoordinatorTransitionTests: XCTestCase {
         ]
 
         for transition in transitions {
-            coordinator.handle(transition.step)
+            coordinator.navigate(to: transition.step)
             XCTAssertEqual(coordinator.path, transition.expectedPath)
         }
 
-        coordinator.handle(.storageInfo)
-        coordinator.handle(.installationDetails)
+        coordinator.navigate(to: .storageInfo)
+        coordinator.navigate(to: .installationDetails)
 
         XCTAssertEqual(coordinator.sheet, .storageInfo)
         XCTAssertEqual(coordinator.fullScreenCover, .installationDetails)
+
+        coordinator.navigate(to: .completed)
+        XCTAssertEqual(emittedStep, .datasetSetupCompleted)
     }
 
     func testMainCoordinatorTransitionTableAndSelectedTab() {
-        let coordinator = MainCoordinator { _ in }
+        var emittedStep: AppStep?
+        let coordinator = MainCoordinator { emittedStep = $0 }
         let transitions: [(step: MainStep, expectedPath: [MainStep])] = [
             (.frequency, [.frequency]),
             (.frequency, [.frequency]),
@@ -56,77 +65,41 @@ final class CoordinatorTransitionTests: XCTestCase {
         ]
 
         for transition in transitions {
-            coordinator.handle(transition.step)
+            coordinator.navigate(to: transition.step)
             XCTAssertEqual(coordinator.path, transition.expectedPath)
         }
 
-        coordinator.handle(.selectTab(.profile))
-        coordinator.handle(.about)
-        coordinator.handle(.onboarding)
+        coordinator.navigate(to: .selectTab(.profile))
+        coordinator.navigate(to: .about)
+        coordinator.navigate(to: .onboarding)
 
         XCTAssertEqual(coordinator.selectedTab, .profile)
         XCTAssertEqual(coordinator.sheet, .about)
         XCTAssertEqual(coordinator.fullScreenCover, .onboarding)
+
+        coordinator.navigate(to: .logout)
+        XCTAssertEqual(emittedStep, .logout)
+
+        coordinator.navigate(to: .sessionExpired)
+        XCTAssertEqual(emittedStep, .sessionExpired)
     }
 
-    func testAppCoordinatorMapsTypedChildResultsToRootSteps() {
+    func testAppCoordinatorNormalizesStepsToPresentationSteps() {
         let coordinator = AppCoordinator()
 
-        XCTAssertEqual(coordinator.root, .authentication)
+        XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
 
-        coordinator.handle(AuthCoordinatorResult.authenticated)
-        XCTAssertEqual(coordinator.root, .datasetSetup)
+        coordinator.navigate(to: .authenticated)
+        XCTAssertEqual(coordinator.currentStep, .datasetSetupRequired)
 
-        coordinator.handle(DatasetSetupCoordinatorResult.completed)
-        XCTAssertEqual(coordinator.root, .main)
+        coordinator.navigate(to: .datasetSetupCompleted)
+        XCTAssertEqual(coordinator.currentStep, .mainRequired)
 
-        coordinator.handle(MainCoordinatorResult.sessionExpired)
-        XCTAssertEqual(coordinator.root, .authentication)
+        coordinator.navigate(to: .sessionExpired)
+        XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
 
-        coordinator.handle(.showMain)
-        coordinator.handle(MainCoordinatorResult.logout)
-        XCTAssertEqual(coordinator.root, .authentication)
-    }
-
-    func testRootReplacementReleasesCompletedChildAndClearsItsPath() {
-        let coordinator = AppCoordinator()
-        weak var releasedAuthCoordinator: AuthCoordinator?
-
-        do {
-            let authCoordinator = try XCTUnwrap(coordinator.authCoordinator)
-            releasedAuthCoordinator = authCoordinator
-            authCoordinator.handle(.login)
-            XCTAssertEqual(authCoordinator.path, [.login])
-
-            authCoordinator.finish(with: .authenticated)
-        } catch {
-            XCTFail("Expected an authentication child coordinator: \(error)")
-        }
-
-        XCTAssertNil(releasedAuthCoordinator)
-        XCTAssertNil(coordinator.authCoordinator)
-        XCTAssertEqual(coordinator.datasetSetupCoordinator?.path, [])
-    }
-
-    func testRepeatedRootStepKeepsSingleChildCoordinator() throws {
-        let coordinator = AppCoordinator()
-        let authCoordinator = try XCTUnwrap(coordinator.authCoordinator)
-        let initialRevision = coordinator.rootRevision
-
-        coordinator.handle(.showAuthentication)
-        coordinator.handle(.showAuthentication)
-
-        XCTAssertTrue(authCoordinator === coordinator.authCoordinator)
-        XCTAssertEqual(coordinator.rootRevision, initialRevision)
-
-        coordinator.handle(.showDatasetSetup)
-        let datasetCoordinator = try XCTUnwrap(coordinator.datasetSetupCoordinator)
-        let datasetRevision = coordinator.rootRevision
-
-        coordinator.handle(.showDatasetSetup)
-        coordinator.handle(.showDatasetSetup)
-
-        XCTAssertTrue(datasetCoordinator === coordinator.datasetSetupCoordinator)
-        XCTAssertEqual(coordinator.rootRevision, datasetRevision)
+        coordinator.navigate(to: .mainRequired)
+        coordinator.navigate(to: .logout)
+        XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
     }
 }

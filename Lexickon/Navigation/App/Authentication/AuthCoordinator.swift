@@ -1,4 +1,40 @@
+import Observation
 import SwiftUI
+
+enum AuthStep: CoordinatorStep {
+    case login
+    case registration
+    case help
+    case privacy
+    case authenticated
+}
+
+@Observable
+@MainActor
+final class AuthCoordinator: Coordinator {
+    var path: [AuthStep] = []
+    var sheet: AuthStep?
+    var fullScreenCover: AuthStep?
+
+    private let onStep: @MainActor (AppStep) -> Void
+
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        self.onStep = onStep
+    }
+
+    func navigate(to step: AuthStep) {
+        switch step {
+        case .login, .registration:
+            path.pushUnique(step)
+        case .help:
+            sheet = .help
+        case .privacy:
+            fullScreenCover = .privacy
+        case .authenticated:
+            onStep(.authenticated)
+        }
+    }
+}
 
 @MainActor
 struct AuthCoordinatorView: View {
@@ -24,6 +60,8 @@ struct AuthCoordinatorView: View {
                         coordinator.sheet = nil
                     }
                 }
+            case .login, .registration, .privacy, .authenticated:
+                EmptyView()
             }
         }
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
@@ -39,6 +77,8 @@ struct AuthCoordinatorView: View {
                         coordinator.fullScreenCover = nil
                     }
                 }
+            case .login, .registration, .help, .authenticated:
+                EmptyView()
             }
         }
     }
@@ -51,17 +91,17 @@ struct AuthCoordinatorView: View {
             accessibilityIdentifier: "auth.placeholder"
         ) {
             Button("navigation.auth.continue") {
-                coordinator.finish(with: .authenticated)
+                coordinator.navigate(to: .authenticated)
             }
             .accessibilityIdentifier("auth.complete")
 
             Button("navigation.auth.login") {
-                coordinator.handle(.login)
+                coordinator.navigate(to: .login)
             }
             .buttonStyle(.bordered)
 
             Button("navigation.auth.help") {
-                coordinator.handle(.help)
+                coordinator.navigate(to: .help)
             }
             .buttonStyle(.bordered)
         }
@@ -78,7 +118,7 @@ struct AuthCoordinatorView: View {
                 accessibilityIdentifier: "auth.login.title"
             ) {
                 Button("navigation.auth.continue") {
-                    coordinator.finish(with: .authenticated)
+                    coordinator.navigate(to: .authenticated)
                 }
             }
         case .registration:
@@ -89,11 +129,12 @@ struct AuthCoordinatorView: View {
                 accessibilityIdentifier: "auth.registration.title"
             ) {
                 Button("navigation.auth.continue") {
-                    coordinator.finish(with: .authenticated)
+                    coordinator.navigate(to: .authenticated)
                 }
             }
-        case .help, .privacy:
+        case .help, .privacy, .authenticated:
             EmptyView()
         }
     }
 }
+

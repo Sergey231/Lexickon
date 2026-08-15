@@ -1,5 +1,54 @@
+import Observation
 import SwiftUI
 
+enum MainStep: CoordinatorStep {
+    case frequency
+    case profile
+    case settings
+    case about
+    case onboarding
+    case selectTab(MainTab)
+    case logout
+    case sessionExpired
+}
+
+enum MainTab: String, Hashable, Sendable {
+    case search
+    case frequency
+    case profile
+}
+
+@Observable
+@MainActor
+final class MainCoordinator: Coordinator {
+    var path: [MainStep] = []
+    var sheet: MainStep?
+    var fullScreenCover: MainStep?
+    var selectedTab: MainTab = .search
+
+    private let onStep: @MainActor (AppStep) -> Void
+
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        self.onStep = onStep
+    }
+
+    func navigate(to step: MainStep) {
+        switch step {
+        case .frequency, .profile, .settings:
+            path.pushUnique(step)
+        case .about:
+            sheet = .about
+        case .onboarding:
+            fullScreenCover = .onboarding
+        case let .selectTab(tab):
+            selectedTab = tab
+        case .logout:
+            onStep(.logout)
+        case .sessionExpired:
+            onStep(.sessionExpired)
+        }
+    }
+}
 @MainActor
 struct MainCoordinatorView: View {
     @Bindable var coordinator: MainCoordinator
@@ -42,6 +91,9 @@ struct MainCoordinatorView: View {
                         coordinator.sheet = nil
                     }
                 }
+            case .frequency, .profile, .settings, .onboarding, .selectTab,
+                 .logout, .sessionExpired:
+                EmptyView()
             }
         }
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
@@ -57,6 +109,9 @@ struct MainCoordinatorView: View {
                         coordinator.fullScreenCover = nil
                     }
                 }
+            case .frequency, .profile, .settings, .about, .selectTab,
+                 .logout, .sessionExpired:
+                EmptyView()
             }
         }
     }
@@ -69,17 +124,17 @@ struct MainCoordinatorView: View {
             accessibilityIdentifier: "main.placeholder"
         ) {
             Button("navigation.main.frequency") {
-                coordinator.handle(.selectTab(.frequency))
+                coordinator.navigate(to: .selectTab(.frequency))
             }
 
             Button("navigation.main.logout") {
-                coordinator.finish(with: .logout)
+                coordinator.navigate(to: .logout)
             }
             .accessibilityIdentifier("main.logout")
             .buttonStyle(.bordered)
 
             Button("navigation.main.sessionExpired") {
-                coordinator.finish(with: .sessionExpired)
+                coordinator.navigate(to: .sessionExpired)
             }
             .accessibilityIdentifier("main.sessionExpired")
             .buttonStyle(.bordered)
@@ -94,7 +149,7 @@ struct MainCoordinatorView: View {
             accessibilityIdentifier: "main.frequency.title"
         ) {
             Button("navigation.main.openFrequency") {
-                coordinator.handle(.frequency)
+                coordinator.navigate(to: .frequency)
             }
         }
     }
@@ -107,11 +162,11 @@ struct MainCoordinatorView: View {
             accessibilityIdentifier: "main.profile.title"
         ) {
             Button("navigation.main.settings") {
-                coordinator.handle(.settings)
+                coordinator.navigate(to: .settings)
             }
 
             Button("navigation.main.about") {
-                coordinator.handle(.about)
+                coordinator.navigate(to: .about)
             }
             .buttonStyle(.bordered)
         }
@@ -141,7 +196,7 @@ struct MainCoordinatorView: View {
                 systemImage: "gearshape",
                 accessibilityIdentifier: "main.settings.title"
             ) { EmptyView() }
-        case .about, .onboarding, .selectTab:
+        case .about, .onboarding, .selectTab, .logout, .sessionExpired:
             EmptyView()
         }
     }

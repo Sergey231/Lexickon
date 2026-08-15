@@ -2,10 +2,14 @@
 protocol Coordinator: AnyObject {
     associatedtype Step: CoordinatorStep
 
-    func handle(_ step: Step)
+    func navigate(to step: Step)
 }
 
-protocol CoordinatorStep: Hashable, Sendable {}
+protocol CoordinatorStep: Hashable, Identifiable, Sendable {}
+
+extension CoordinatorStep {
+    var id: Self { self }
+}
 
 extension Array where Element: CoordinatorStep {
     mutating func pushUnique(_ step: Element) {

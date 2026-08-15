@@ -1,4 +1,40 @@
+import Observation
 import SwiftUI
+
+enum DatasetSetupStep: CoordinatorStep {
+    case selection
+    case installation
+    case storageInfo
+    case installationDetails
+    case completed
+}
+
+@Observable
+@MainActor
+final class DatasetSetupCoordinator: Coordinator {
+    var path: [DatasetSetupStep] = []
+    var sheet: DatasetSetupStep?
+    var fullScreenCover: DatasetSetupStep?
+
+    private let onStep: @MainActor (AppStep) -> Void
+
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        self.onStep = onStep
+    }
+
+    func navigate(to step: DatasetSetupStep) {
+        switch step {
+        case .selection, .installation:
+            path.pushUnique(step)
+        case .storageInfo:
+            sheet = .storageInfo
+        case .installationDetails:
+            fullScreenCover = .installationDetails
+        case .completed:
+            onStep(.datasetSetupCompleted)
+        }
+    }
+}
 
 @MainActor
 struct DatasetSetupCoordinatorView: View {
@@ -24,6 +60,8 @@ struct DatasetSetupCoordinatorView: View {
                         coordinator.sheet = nil
                     }
                 }
+            case .selection, .installation, .installationDetails, .completed:
+                EmptyView()
             }
         }
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
@@ -39,6 +77,8 @@ struct DatasetSetupCoordinatorView: View {
                         coordinator.fullScreenCover = nil
                     }
                 }
+            case .selection, .installation, .storageInfo, .completed:
+                EmptyView()
             }
         }
     }
@@ -51,17 +91,17 @@ struct DatasetSetupCoordinatorView: View {
             accessibilityIdentifier: "datasetSetup.placeholder"
         ) {
             Button("navigation.dataset.complete") {
-                coordinator.finish(with: .completed)
+                coordinator.navigate(to: .completed)
             }
             .accessibilityIdentifier("datasetSetup.complete")
 
             Button("navigation.dataset.selection") {
-                coordinator.handle(.selection)
+                coordinator.navigate(to: .selection)
             }
             .buttonStyle(.bordered)
 
             Button("navigation.dataset.storage") {
-                coordinator.handle(.storageInfo)
+                coordinator.navigate(to: .storageInfo)
             }
             .buttonStyle(.bordered)
         }
@@ -78,7 +118,7 @@ struct DatasetSetupCoordinatorView: View {
                 accessibilityIdentifier: "datasetSetup.selection.title"
             ) {
                 Button("navigation.dataset.install") {
-                    coordinator.handle(.installation)
+                    coordinator.navigate(to: .installation)
                 }
             }
         case .installation:
@@ -89,11 +129,12 @@ struct DatasetSetupCoordinatorView: View {
                 accessibilityIdentifier: "datasetSetup.installation.title"
             ) {
                 Button("navigation.dataset.complete") {
-                    coordinator.finish(with: .completed)
+                    coordinator.navigate(to: .completed)
                 }
             }
-        case .storageInfo, .installationDetails:
+        case .storageInfo, .installationDetails, .completed:
             EmptyView()
         }
     }
 }
+
