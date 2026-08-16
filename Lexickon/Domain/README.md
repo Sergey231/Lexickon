@@ -22,7 +22,7 @@ convenience. Transport DTOs belong in `Data/API/DTO`; Data maps them explicitly:
 
 ## Dependency direction checklist
 
-- `Features` may depend on Domain use cases and entities.
+- `Presentation` may depend on Domain use cases and entities.
 - `Data` may depend on and implement Domain repository protocols.
 - Domain entities and value objects do not depend on Data DTOs.
 - Domain must not import `SwiftUI`, `UIKit`, `Security`, or `SQLite3`.

@@ -1,4 +1,43 @@
-# Навигация
+# Presentation
+
+Presentation содержит всё, что относится к пользовательскому интерфейсу и
+управлению пользовательскими сценариями: SwiftUI View, ViewModel, экранные
+состояния, координаторы и переиспользуемые UI-компоненты.
+
+## Структура
+
+Структура сценариев следует дереву координаторов:
+
+```text
+Presentation/
+├── Components/
+│   └── NavigationPlaceholderScreen.swift
+└── Navigation/
+    ├── Core/
+    │   └── Coordinator.swift
+    └── App/
+        ├── AppCoordinator.swift
+        ├── Authentication/
+        │   └── AuthCoordinator.swift
+        ├── DatasetSetup/
+        │   └── DatasetSetupCoordinator.swift
+        └── Main/
+            └── MainCoordinator.swift
+```
+
+Навигационная инфраструктура и дерево координаторов располагаются в
+`Presentation/Navigation`. Каждый Coordinator находится в директории своего
+сценария. Его дочерние Coordinator и уникальные экранные модули размещаются
+внутри этой директории.
+Если экран или компонент используется несколькими соседними сценариями, он
+поднимается до их ближайшего общего уровня. Общие UI-компоненты без бизнес-логики
+располагаются в `Presentation/Components`.
+
+Presentation зависит от Domain, но Domain ничего не знает о Presentation. Data
+не используется из View или ViewModel напрямую: доступ к данным происходит
+через Domain use case’ы, переданные фабриками из `App/DependencyInjection`.
+
+## Навигация
 
 Навигация Lexickon построена как иерархическая система Step-Driven Coordinator,
 адаптированная для декларативной модели SwiftUI. Внешняя навигационная библиотека

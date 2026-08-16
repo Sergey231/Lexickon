@@ -45,8 +45,7 @@
 				Core/Logging/LoggingPolicy.md,
 				Data/README.md,
 				Domain/README.md,
-				Features/README.md,
-				Navigation/README.md,
+				Presentation/README.md,
 			);
 			target = 000000000000000000000080 /* Lexickon */;
 		};
