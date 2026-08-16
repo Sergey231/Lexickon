@@ -11,7 +11,7 @@ enum ProductionAssembly {
             dataset: UnavailableDatasetRepository(),
             frequency: UnavailableFrequencyRepository()
         )
-        
+
         return AppContainer(repositories: repositories)
     }
 }

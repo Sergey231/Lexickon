@@ -41,6 +41,7 @@
 		0000000000000000000000B0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				App/DependencyInjection/README.md,
 				Core/Logging/LoggingPolicy.md,
 				Data/README.md,
 				Domain/README.md,

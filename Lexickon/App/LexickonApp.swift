@@ -13,7 +13,10 @@ struct LexickonApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppCoordinatorView(coordinator: coordinator)
+            AppCoordinatorView(
+                coordinator: coordinator,
+                featureFactories: container.featureFactories
+            )
         }
     }
 }

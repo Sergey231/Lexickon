@@ -5,7 +5,7 @@ struct AppRepositories: Sendable {
     let frequency: any FrequencyRepository
 }
 
-struct AppUseCases: Sendable {
+private struct AppUseCases: Sendable {
     let register: RegisterUseCase
     let login: LoginUseCase
     let logout: LogoutUseCase
@@ -17,14 +17,14 @@ struct AppUseCases: Sendable {
     let lookupFrequency: LookupFrequencyUseCase
 }
 
-/// Composition root output. Feature code receives individual use cases from a
-/// feature factory; it never receives this container.
+/// Composition root output. Feature code receives its feature factory; it
+/// never receives this container or the complete set of application use cases.
 @MainActor
 final class AppContainer {
-    let useCases: AppUseCases
+    let featureFactories: AppFeatureFactories
 
     init(repositories: AppRepositories) {
-        useCases = AppUseCases(
+        let useCases = AppUseCases(
             register: RegisterUseCase(repository: repositories.auth),
             login: LoginUseCase(repository: repositories.auth),
             logout: LogoutUseCase(repository: repositories.auth),
@@ -43,6 +43,30 @@ final class AppContainer {
             ),
             lookupFrequency: LookupFrequencyUseCase(
                 repository: repositories.frequency
+            )
+        )
+
+        featureFactories = AppFeatureFactories(
+            auth: AuthFeatureFactory(
+                dependencies: AuthFeatureDependencies(
+                    register: useCases.register,
+                    login: useCases.login,
+                    authenticationState: useCases.authenticationState
+                )
+            ),
+            datasetSetup: DatasetSetupFeatureFactory(
+                dependencies: DatasetSetupFeatureDependencies(
+                    datasetCatalog: useCases.datasetCatalog,
+                    synchronizeDatasets: useCases.synchronizeDatasets
+                )
+            ),
+            main: MainFeatureFactory(
+                dependencies: MainFeatureDependencies(
+                    logout: useCases.logout,
+                    currentUser: useCases.currentUser,
+                    updateUserSettings: useCases.updateUserSettings,
+                    lookupFrequency: useCases.lookupFrequency
+                )
             )
         )
     }
