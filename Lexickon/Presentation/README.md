@@ -10,28 +10,42 @@ Presentation содержит всё, что относится к пользо�
 
 ```text
 Presentation/
+├── App/
+│   ├── AppCoordinator.swift
+│   ├── Authentication/
+│   │   └── AuthCoordinator.swift
+│   ├── DatasetSetup/
+│   │   └── DatasetSetupCoordinator.swift
+│   └── Main/
+│       └── MainCoordinator.swift
 ├── Components/
 │   └── NavigationPlaceholderScreen.swift
 └── Navigation/
-    ├── Core/
-    │   └── Coordinator.swift
-    └── App/
-        ├── AppCoordinator.swift
-        ├── Authentication/
-        │   └── AuthCoordinator.swift
-        ├── DatasetSetup/
-        │   └── DatasetSetupCoordinator.swift
-        └── Main/
-            └── MainCoordinator.swift
+    └── Coordinator.swift
 ```
 
-Навигационная инфраструктура и дерево координаторов располагаются в
-`Presentation/Navigation`. Каждый Coordinator находится в директории своего
-сценария. Его дочерние Coordinator и уникальные экранные модули размещаются
-внутри этой директории.
+В `Presentation/Navigation` располагается только общая навигационная
+инфраструктура. Корневой пользовательский сценарий находится в
+`Presentation/App`. Каждый конкретный Coordinator расположен в директории
+своего сценария. Его дочерние Coordinator и уникальные экранные модули
+размещаются внутри этой директории.
 Если экран или компонент используется несколькими соседними сценариями, он
 поднимается до их ближайшего общего уровня. Общие UI-компоненты без бизнес-логики
 располагаются в `Presentation/Components`.
+
+Например, экранные модули авторизации, которые используются только
+`AuthCoordinator`, размещаются так:
+
+```text
+Presentation/App/Authentication/
+├── AuthCoordinator.swift
+├── Login/
+│   ├── LoginView.swift
+│   └── LoginViewModel.swift
+└── Registration/
+    ├── RegistrationView.swift
+    └── RegistrationViewModel.swift
+```
 
 Presentation зависит от Domain, но Domain ничего не знает о Presentation. Data
 не используется из View или ViewModel напрямую: доступ к данным происходит
