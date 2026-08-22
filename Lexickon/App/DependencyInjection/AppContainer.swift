@@ -22,8 +22,10 @@ private struct AppUseCases: Sendable {
 @MainActor
 final class AppContainer {
     let featureFactories: AppFeatureFactories
+    let infrastructure: AppInfrastructure
 
-    init(repositories: AppRepositories) {
+    init(repositories: AppRepositories, infrastructure: AppInfrastructure) {
+        self.infrastructure = infrastructure
         let useCases = AppUseCases(
             register: RegisterUseCase(repository: repositories.auth),
             login: LoginUseCase(repository: repositories.auth),

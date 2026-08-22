@@ -43,6 +43,7 @@
 			membershipExceptions = (
 				App/DependencyInjection/README.md,
 				Core/Logging/LoggingPolicy.md,
+				Data/DataSources/Remote/API/README.md,
 				Data/README.md,
 				Domain/README.md,
 				Presentation/README.md,

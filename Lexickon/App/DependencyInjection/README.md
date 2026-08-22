@@ -24,8 +24,17 @@ FeatureFactory → ViewModel / Coordinator → View
 ### ProductionAssembly
 
 Единственное место, где создаётся production-граф. Здесь выбираются конкретные
-реализации репозиториев: API, Keychain, SQLite и другие адаптеры. Сейчас вместо
-ещё не реализованных адаптеров используются `Unavailable...Repository`.
+реализации репозиториев и инфраструктуры: API, Keychain, SQLite и другие
+адаптеры. `URLSessionTransport`, `APIClient`, `KeychainTokenStore` и
+`SessionController` уже собираются здесь. Продуктовые репозитории пока остаются
+`Unavailable...Repository`, поскольку их endpoint-запросы реализуются на
+следующих этапах.
+
+Сетевые и сессионные объекты объединены в `AppInfrastructure`. Presentation не
+получает этот объект: будущие Data-репозитории будут получать только нужные им
+зависимости. Неопределённая refresh-стратегия представлена контрактом
+`SessionRefreshing`; текущая реализация `RefreshNotConfigured` не выполняет
+запросов и не запускает retry.
 
 ### AppContainer
 

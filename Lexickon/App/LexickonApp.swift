@@ -17,6 +17,9 @@ struct LexickonApp: App {
                 coordinator: coordinator,
                 featureFactories: container.featureFactories
             )
+            .task {
+                _ = try? await container.infrastructure.session.bootstrap()
+            }
         }
     }
 }

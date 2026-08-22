@@ -1,8 +1,24 @@
 # Data
 
-Data owns concrete implementations of Domain repository protocols and mapping
-between infrastructure representations and Domain values.
+Слой `Data` содержит инфраструктуру приложения и конкретные реализации
+протоколов репозиториев из `Domain`.
 
-Stage 2 contains only unavailable adapters so the production composition root
-can be assembled without prematurely introducing URLSession, Keychain, or
-SQLite. Later stages replace those adapters with real implementations.
+## Текущая структура
+
+- `DataSources/Remote/API` — типизированные запросы, DTO, `APIClient`,
+  `URLSession` transport, нормализация ошибок и безопасные сообщения для логов;
+- `DataSources/Local/Keychain` — конкретное защищённое хранилище токена;
+- `DataSources/Local/Database` — место для будущего локального источника данных;
+- `Session` — access token, контракты хранения/авторизации и actor состояния
+  сессии;
+- `Repositories` — адаптеры между инфраструктурой и Domain. Продуктовые
+  репозитории пока остаются `Unavailable...`, поскольку их запросы не входят в
+  этап сетевой инфраструктуры.
+
+Конкретный репозиторий может объединять несколько источников, например API и
+локальную базу. Он преобразует DTO или database record в Domain-модель и наружу
+возвращает только типы `Domain`. Обратное преобразование выполняется перед
+записью или отправкой запроса.
+
+Подробности API описаны в `Data/DataSources/Remote/API/README.md`, а общий
+контракт сети и сессии — в `docs/network_and_session.md`.
