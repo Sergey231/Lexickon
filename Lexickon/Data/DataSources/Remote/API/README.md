@@ -114,7 +114,7 @@ backend не требуется.
 
 `SessionRefreshing` изолирует будущую refresh-стратегию. Пока backend-контракт
 не определён, используется `RefreshNotConfigured`, который не выполняет
-сетевых запросов и возвращает `SessionRefreshError.notConfigured`.
+сетевых запросов и бросает `SessionRefreshError.notConfigured`.
 
 ### Безопасное логирование
 
@@ -140,7 +140,8 @@ response DTO в Domain-модель, а Domain input — в request DTO.
 
 - `AccessToken` не принимает пустые значения, пробелы и управляющие символы;
   его `description` и `debugDescription` всегда равны `<redacted>`.
-- `TokenStore` объявляет сохранение, чтение и удаление токена.
+- `TokenStore` — протокол, который объявляет сохранение, чтение и удаление
+  токена.
 - `KeychainTokenStore` находится в `DataSources/Local/Keychain` и хранит токен
   как generic-password item с режимом
   `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`.
