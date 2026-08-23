@@ -21,14 +21,26 @@ enum AuthFormState: Equatable, Sendable {
 @Observable
 @MainActor
 final class LoginViewModel {
-    var email = ""
-    var password = ""
+    var email: String
+    var password: String
     private(set) var state: AuthFormState = .idle
 
     private let login: LoginUseCase
 
     init(login: LoginUseCase) {
         self.login = login
+        #if DEBUG
+        if DebugLoginCredentials.shouldPrefill {
+            email = DebugLoginCredentials.email
+            password = DebugLoginCredentials.password
+        } else {
+            email = ""
+            password = ""
+        }
+        #else
+        email = ""
+        password = ""
+        #endif
     }
 
     var isLoading: Bool {
@@ -42,8 +54,13 @@ final class LoginViewModel {
         state = .loading
         do {
             let result = try await login(request)
-            state = result == .signedIn ? .success : .error(.application(.authorization(.unauthenticated)))
+            
+            state = result == .signedIn
+            ? .success
+            : .error(.application(.authorization(.unauthenticated)))
+            
             return result == .signedIn
+            
         } catch let error as AppError {
             state = .error(.application(error))
             return false
@@ -72,6 +89,17 @@ final class LoginViewModel {
         return !parts[0].isEmpty && domain.contains(".") && !domain.hasSuffix(".")
     }
 }
+
+#if DEBUG
+private enum DebugLoginCredentials {
+    static let email = "dev@example.com"
+    static let password = "password123"
+
+    static var shouldPrefill: Bool {
+        !ProcessInfo.processInfo.arguments.contains("--uitest-auth-repository")
+    }
+}
+#endif
 
 @Observable
 @MainActor
