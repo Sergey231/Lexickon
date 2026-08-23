@@ -88,6 +88,18 @@ final class CoordinatorTransitionTests: XCTestCase {
     func testAppCoordinatorNormalizesStepsToPresentationSteps() {
         let coordinator = AppCoordinator()
 
+        XCTAssertEqual(coordinator.currentStep, .launchRequired)
+
+        coordinator.navigate(to: .launchCompleted(.login))
+        XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
+
+        coordinator.navigate(to: .launchRequired)
+        XCTAssertEqual(coordinator.currentStep, .launchRequired)
+
+        coordinator.navigate(to: .launchCompleted(.main))
+        XCTAssertEqual(coordinator.currentStep, .mainRequired)
+
+        coordinator.navigate(to: .authenticationRequired)
         XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
 
         coordinator.navigate(to: .authenticated)

@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct UseCases: Sendable {
+    let resolveLaunchDestination: ResolveLaunchDestinationUseCase
     let register: RegisterUseCase
     let login: LoginUseCase
     let logout: LogoutUseCase
-    let authenticationState: GetAuthenticationStateUseCase
     let currentUser: GetCurrentUserUseCase
     let updateUserSettings: UpdateUserSettingsUseCase
     let datasetCatalog: GetDatasetCatalogUseCase
@@ -12,12 +12,12 @@ struct UseCases: Sendable {
     let lookupFrequency: LookupFrequencyUseCase
 
     init(repositories: RepositoriesAssembly) {
+        self.resolveLaunchDestination = ResolveLaunchDestinationUseCase(
+            repository: repositories.authRepository
+        )
         self.register = RegisterUseCase(repository: repositories.authRepository)
         self.login = LoginUseCase(repository: repositories.authRepository)
         self.logout = LogoutUseCase(repository: repositories.authRepository)
-        self.authenticationState = GetAuthenticationStateUseCase(
-            repository: repositories.authRepository
-        )
         self.currentUser = GetCurrentUserUseCase(
             repository: repositories.userRepository
         )

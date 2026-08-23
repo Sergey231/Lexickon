@@ -15,9 +15,6 @@ struct LexickonApp: App {
         WindowGroup {
             AppCoordinatorView(coordinator: coordinator)
                 .environment(\.useCases, container.useCases)
-                .task {
-                    _ = try? await container.infrastructure.session.bootstrap()
-                }
         }
     }
 }

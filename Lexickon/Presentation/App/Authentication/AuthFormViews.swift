@@ -3,28 +3,17 @@ import SwiftUI
 
 @MainActor
 struct AuthRootView: View {
-    @State private var viewModel: AuthRestoreViewModel
-
     let onLogin: () -> Void
     let onRegistration: () -> Void
-    let onAuthenticated: () -> Void
     let onHelp: () -> Void
 
     init(
-        authenticationState: GetAuthenticationStateUseCase,
         onLogin: @escaping () -> Void,
         onRegistration: @escaping () -> Void,
-        onAuthenticated: @escaping () -> Void,
         onHelp: @escaping () -> Void
     ) {
-        _viewModel = State(
-            initialValue: AuthRestoreViewModel(
-                authenticationState: authenticationState
-            )
-        )
         self.onLogin = onLogin
         self.onRegistration = onRegistration
-        self.onAuthenticated = onAuthenticated
         self.onHelp = onHelp
     }
 
@@ -43,8 +32,6 @@ struct AuthRootView: View {
             Text("Sign in or create an account to continue.")
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-
-            AuthErrorText(state: viewModel.state)
 
             VStack(spacing: 12) {
                 Button("Log in") {
@@ -68,11 +55,6 @@ struct AuthRootView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
-        .task {
-            if await viewModel.restore() {
-                onAuthenticated()
-            }
-        }
     }
 }
 

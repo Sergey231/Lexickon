@@ -78,11 +78,9 @@ final class LexickonUITests: XCTestCase {
         app = launchApplication(resetAuth: false)
 
         XCTAssertTrue(
-            app.staticTexts["datasetSetup.placeholder"].waitForExistence(timeout: 5)
+            app.staticTexts["main.placeholder"].waitForExistence(timeout: 5)
         )
         dismissKeyboard(in: app)
-        tapDatasetSetupComplete(in: app)
-        XCTAssertTrue(app.staticTexts["main.placeholder"].waitForExistence(timeout: 5))
         app.buttons["main.logout"].tap()
 
         XCTAssertTrue(app.staticTexts["auth.placeholder"].waitForExistence(timeout: 5))

@@ -121,32 +121,3 @@ final class RegistrationViewModel {
         return RegistrationRequest(email: normalizedEmail, password: password)
     }
 }
-
-@Observable
-@MainActor
-final class AuthRestoreViewModel {
-    private(set) var state: AuthFormState = .idle
-
-    private let authenticationState: GetAuthenticationStateUseCase
-
-    init(authenticationState: GetAuthenticationStateUseCase) {
-        self.authenticationState = authenticationState
-    }
-
-    func restore() async -> Bool {
-        guard state != .loading else { return false }
-
-        state = .loading
-        do {
-            let result = try await authenticationState()
-            state = result == .signedIn ? .success : .idle
-            return result == .signedIn
-        } catch let error as AppError {
-            state = .error(.application(error))
-            return false
-        } catch {
-            state = .error(.application(.unexpected(.invariantViolation)))
-            return false
-        }
-    }
-}

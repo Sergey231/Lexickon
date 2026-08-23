@@ -21,6 +21,7 @@ final class AppContainerTests: XCTestCase {
         )
         try await useCases.logout()
         let restoredState = try await useCases.authenticationState()
+        let launchDestination = try await useCases.resolveLaunchDestination()
         let currentUser = try await useCases.currentUser()
         let updatedSettings = try await useCases.updateUserSettings(
             fixture.settingsPatch
@@ -36,6 +37,7 @@ final class AppContainerTests: XCTestCase {
         XCTAssertEqual(registeredUser, fixture.user)
         XCTAssertEqual(authenticationState, .signedIn)
         XCTAssertEqual(restoredState, .signedIn)
+        XCTAssertEqual(launchDestination, .main)
         XCTAssertEqual(currentUser, fixture.user)
         XCTAssertEqual(updatedSettings, fixture.updatedSettings)
         XCTAssertEqual(datasets, [fixture.dataset])
@@ -55,7 +57,7 @@ final class AppContainerTests: XCTestCase {
         XCTAssertEqual(registrationRequests, [fixture.registrationRequest])
         XCTAssertEqual(loginRequests, [fixture.loginRequest])
         XCTAssertEqual(logoutCallCount, 1)
-        XCTAssertEqual(stateCallCount, 1)
+        XCTAssertEqual(stateCallCount, 2)
         XCTAssertEqual(currentUserCallCount, 1)
         XCTAssertEqual(settingsPatches, [fixture.settingsPatch])
         XCTAssertEqual(catalogCallCount, 1)
@@ -67,8 +69,10 @@ final class AppContainerTests: XCTestCase {
         let container = ProductionAssembly.makeContainer()
 
         let state = try await container.useCases.authenticationState()
+        let launchDestination = try await container.useCases.resolveLaunchDestination()
 
         XCTAssertEqual(state, .signedOut)
+        XCTAssertEqual(launchDestination, .login)
     }
 }
 

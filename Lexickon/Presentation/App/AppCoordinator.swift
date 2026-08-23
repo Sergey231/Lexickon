@@ -2,6 +2,8 @@ import Observation
 import SwiftUI
 
 enum AppStep: CoordinatorStep {
+    case launchRequired
+    case launchCompleted(LaunchDestination)
     case authenticationRequired
     case authenticated
     case datasetSetupRequired
@@ -16,13 +18,19 @@ enum AppStep: CoordinatorStep {
 final class AppCoordinator: Coordinator {
     private(set) var currentStep: AppStep
 
-    init(initialStep: AppStep = .authenticationRequired) {
-        currentStep = .authenticationRequired
+    init(initialStep: AppStep = .launchRequired) {
+        currentStep = .launchRequired
         navigate(to: initialStep)
     }
 
     func navigate(to step: AppStep) {
         currentStep = switch step {
+        case .launchRequired:
+            .launchRequired
+        case .launchCompleted(.login):
+            .authenticationRequired
+        case .launchCompleted(.main):
+            .mainRequired
         case .authenticationRequired, .logout, .sessionExpired:
             .authenticationRequired
         case .authenticated, .datasetSetupRequired:
@@ -41,6 +49,10 @@ struct AppCoordinatorView: View {
     var body: some View {
         Group {
             switch coordinator.currentStep {
+            case .launchRequired:
+                LaunchFlow(useCases: useCases) { [weak coordinator] step in
+                    coordinator?.navigate(to: step)
+                }
             case .authenticationRequired:
                 AuthFlow(useCases: useCases) { [weak coordinator] step in
                     coordinator?.navigate(to: step)
@@ -53,11 +65,32 @@ struct AppCoordinatorView: View {
                 MainFlow(useCases: useCases) { [weak coordinator] step in
                     coordinator?.navigate(to: step)
                 }
-            case .authenticated, .datasetSetupCompleted, .logout, .sessionExpired:
+            case .launchCompleted, .authenticated, .datasetSetupCompleted,
+                 .logout, .sessionExpired:
                 EmptyView()
             }
         }
         .id(coordinator.currentStep)
+    }
+}
+
+@MainActor
+private struct LaunchFlow: View {
+    private let useCases: UseCases
+    private let onStep: @MainActor (AppStep) -> Void
+
+    init(
+        useCases: UseCases,
+        onStep: @escaping @MainActor (AppStep) -> Void
+    ) {
+        self.useCases = useCases
+        self.onStep = onStep
+    }
+
+    var body: some View {
+        LaunchView(resolveDestination: useCases.resolveLaunchDestination) { destination in
+            onStep(.launchCompleted(destination))
+        }
     }
 }
 

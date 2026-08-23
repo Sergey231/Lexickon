@@ -33,15 +33,3 @@ struct LogoutUseCase: Sendable {
         try await repository.logout()
     }
 }
-
-struct GetAuthenticationStateUseCase: Sendable {
-    private let repository: any AuthRepository
-
-    init(repository: any AuthRepository) {
-        self.repository = repository
-    }
-
-    func callAsFunction() async throws -> AuthenticationState {
-        try await repository.authenticationState()
-    }
-}

@@ -91,15 +91,11 @@ struct AuthCoordinatorView: View {
 
     private var authenticationRoot: some View {
         AuthRootView(
-            authenticationState: useCases.authenticationState,
             onLogin: {
                 coordinator.navigate(to: .login)
             },
             onRegistration: {
                 coordinator.navigate(to: .registration)
-            },
-            onAuthenticated: {
-                coordinator.navigate(to: .authenticated)
             },
             onHelp: {
                 coordinator.navigate(to: .help)
