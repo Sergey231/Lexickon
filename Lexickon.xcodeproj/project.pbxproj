@@ -45,6 +45,7 @@
 				Core/Logging/LoggingPolicy.md,
 				Data/DataSources/Remote/API/README.md,
 				Data/README.md,
+				Data/Session/README.md,
 				Domain/README.md,
 				Presentation/README.md,
 			);
@@ -91,7 +92,6 @@
 				000000000000000000000020 /* LexickonTests */,
 				000000000000000000000021 /* LexickonUITests */,
 				000000000000000000000022 /* Configurations */,
-				000000000000000000000003 /* Products */,
 				ECB3283C3019C48000FB30D1 /* Recovered References */,
 			);
 			sourceTree = "<group>";
@@ -109,6 +109,7 @@
 		ECB3283C3019C48000FB30D1 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
+				000000000000000000000003 /* Products */,
 				000000000000000000000056 /* Configurations/App/App-Debug.xcconfig */,
 				000000000000000000000057 /* Configurations/App/App-Release.xcconfig */,
 				000000000000000000000053 /* Configurations/Shared/Debug.xcconfig */,

@@ -36,27 +36,21 @@ final class AppCoordinator: Coordinator {
 @MainActor
 struct AppCoordinatorView: View {
     @Bindable var coordinator: AppCoordinator
-    let featureFactories: AppFeatureFactories
+    @Environment(\.useCases) private var useCases
 
     var body: some View {
         Group {
             switch coordinator.currentStep {
             case .authenticationRequired:
-                AuthFlow(
-                    factory: featureFactories.auth
-                ) { [weak coordinator] step in
+                AuthFlow(useCases: useCases) { [weak coordinator] step in
                     coordinator?.navigate(to: step)
                 }
             case .datasetSetupRequired:
-                DatasetSetupFlow(
-                    factory: featureFactories.datasetSetup
-                ) { [weak coordinator] step in
+                DatasetSetupFlow { [weak coordinator] step in
                     coordinator?.navigate(to: step)
                 }
             case .mainRequired:
-                MainFlow(
-                    factory: featureFactories.main
-                ) { [weak coordinator] step in
+                MainFlow(useCases: useCases) { [weak coordinator] step in
                     coordinator?.navigate(to: step)
                 }
             case .authenticated, .datasetSetupCompleted, .logout, .sessionExpired:
@@ -70,18 +64,23 @@ struct AppCoordinatorView: View {
 @MainActor
 private struct AuthFlow: View {
     @State private var coordinator: AuthCoordinator
+    private let useCases: UseCases
 
     init(
-        factory: AuthFeatureFactory,
+        useCases: UseCases,
         onStep: @escaping @MainActor (AppStep) -> Void
     ) {
+        self.useCases = useCases
         _coordinator = State(
-            initialValue: factory.makeCoordinator(onStep: onStep)
+            initialValue: AuthCoordinator(onStep: onStep)
         )
     }
 
     var body: some View {
-        AuthCoordinatorView(coordinator: coordinator)
+        AuthCoordinatorView(
+            coordinator: coordinator,
+            useCases: useCases
+        )
     }
 }
 
@@ -90,11 +89,10 @@ private struct DatasetSetupFlow: View {
     @State private var coordinator: DatasetSetupCoordinator
 
     init(
-        factory: DatasetSetupFeatureFactory,
         onStep: @escaping @MainActor (AppStep) -> Void
     ) {
         _coordinator = State(
-            initialValue: factory.makeCoordinator(onStep: onStep)
+            initialValue: DatasetSetupCoordinator(onStep: onStep)
         )
     }
 
@@ -106,17 +104,22 @@ private struct DatasetSetupFlow: View {
 @MainActor
 private struct MainFlow: View {
     @State private var coordinator: MainCoordinator
+    private let useCases: UseCases
 
     init(
-        factory: MainFeatureFactory,
+        useCases: UseCases,
         onStep: @escaping @MainActor (AppStep) -> Void
     ) {
+        self.useCases = useCases
         _coordinator = State(
-            initialValue: factory.makeCoordinator(onStep: onStep)
+            initialValue: MainCoordinator(onStep: onStep)
         )
     }
 
     var body: some View {
-        MainCoordinatorView(coordinator: coordinator)
+        MainCoordinatorView(
+            coordinator: coordinator,
+            logout: useCases.logout
+        )
     }
 }

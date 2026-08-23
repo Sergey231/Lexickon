@@ -158,9 +158,10 @@ response DTO в Domain-модель, а Domain input — в request DTO.
 
 ## Сборка графа
 
-`ProductionAssembly` создаёт `KeychainTokenStore`, `SessionController`,
-`URLSessionTransport` и `APIClient`, после чего объединяет их в
-`AppInfrastructure`. Bootstrap запускается из корня приложения.
+`ProductionAssembly` создаёт `DataSourcesAssembly`. Внутри него собираются
+`KeychainTokenStore`, `SessionController`, `URLSessionTransport` и `APIClient`,
+после чего они объединяются в `AppInfrastructure`. Bootstrap запускается из
+корня приложения.
 
 Пока production URL не подтверждён, Debug использует
 `http://127.0.0.1:8000`, а Release — намеренно нерабочий
@@ -173,6 +174,6 @@ response DTO в Domain-модель, а Domain input — в request DTO.
 2. Создать тип, реализующий `APIRequest`.
 3. В реализации Domain-репозитория вызвать `APIClient.send(_:)`.
 4. Преобразовать DTO в Domain-модель до возврата результата.
-5. Передать репозиторию `APIClient` через `ProductionAssembly`.
+5. Передать репозиторию `APIClient` через `RepositoriesAssembly`.
 6. Добавить тесты URL, headers, body, decoding и mapping ошибок через
    `URLProtocolStub`.

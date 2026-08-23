@@ -17,24 +17,20 @@ enum TestAssembly {
         datasetRepository: DatasetRepositoryStub,
         frequencyRepository: FrequencyRepositoryStub
     ) -> TestAppGraph {
-        let tokenStore = InMemoryTokenStore()
-        let session = SessionController(tokenStore: tokenStore)
+        let dataSources = DataSourcesAssembly(
+            baseURL: URL(string: "https://unit.test")!,
+            transport: URLSessionTransport(),
+            tokenStore: InMemoryTokenStore()
+        )
+        let repositories = RepositoriesAssembly(
+            authRepository: authRepository,
+            userRepository: userRepository,
+            datasetRepository: datasetRepository,
+            frequencyRepository: frequencyRepository
+        )
         let container = AppContainer(
-            repositories: AppRepositories(
-                auth: authRepository,
-                user: userRepository,
-                dataset: datasetRepository,
-                frequency: frequencyRepository
-            ),
-            infrastructure: AppInfrastructure(
-                apiClient: APIClient(
-                    baseURL: URL(string: "https://unit.test")!,
-                    transport: URLSessionTransport(),
-                    session: session
-                ),
-                session: session,
-                sessionRefresher: RefreshNotConfigured()
-            )
+            dataSources: dataSources,
+            repositories: repositories
         )
 
         return TestAppGraph(

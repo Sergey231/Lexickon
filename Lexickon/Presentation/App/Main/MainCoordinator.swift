@@ -52,6 +52,14 @@ final class MainCoordinator: Coordinator {
 @MainActor
 struct MainCoordinatorView: View {
     @Bindable var coordinator: MainCoordinator
+    @State private var sessionViewModel: MainSessionViewModel
+
+    init(coordinator: MainCoordinator, logout: LogoutUseCase) {
+        self.coordinator = coordinator
+        _sessionViewModel = State(
+            initialValue: MainSessionViewModel(logout: logout)
+        )
+    }
 
     var body: some View {
         NavigationStack(path: $coordinator.path) {
@@ -128,10 +136,15 @@ struct MainCoordinatorView: View {
             }
 
             Button("navigation.main.logout") {
-                coordinator.navigate(to: .logout)
+                Task {
+                    if await sessionViewModel.performLogout() {
+                        coordinator.navigate(to: .logout)
+                    }
+                }
             }
             .accessibilityIdentifier("main.logout")
             .buttonStyle(.bordered)
+            .disabled(sessionViewModel.isLoggingOut)
 
             Button("navigation.main.sessionExpired") {
                 coordinator.navigate(to: .sessionExpired)

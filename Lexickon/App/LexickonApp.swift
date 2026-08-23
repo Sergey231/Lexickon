@@ -13,13 +13,11 @@ struct LexickonApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppCoordinatorView(
-                coordinator: coordinator,
-                featureFactories: container.featureFactories
-            )
-            .task {
-                _ = try? await container.infrastructure.session.bootstrap()
-            }
+            AppCoordinatorView(coordinator: coordinator)
+                .environment(\.useCases, container.useCases)
+                .task {
+                    _ = try? await container.infrastructure.session.bootstrap()
+                }
         }
     }
 }

@@ -4,6 +4,7 @@ import SwiftUI
 enum AuthStep: CoordinatorStep {
     case login
     case registration
+    case registrationCompleted
     case help
     case privacy
     case authenticated
@@ -26,6 +27,8 @@ final class AuthCoordinator: Coordinator {
         switch step {
         case .login, .registration:
             path.pushUnique(step)
+        case .registrationCompleted:
+            path = [.login]
         case .help:
             sheet = .help
         case .privacy:
@@ -39,6 +42,7 @@ final class AuthCoordinator: Coordinator {
 @MainActor
 struct AuthCoordinatorView: View {
     @Bindable var coordinator: AuthCoordinator
+    let useCases: UseCases
 
     var body: some View {
         NavigationStack(path: $coordinator.path) {
@@ -60,7 +64,8 @@ struct AuthCoordinatorView: View {
                         coordinator.sheet = nil
                     }
                 }
-            case .login, .registration, .privacy, .authenticated:
+            case .login, .registration, .registrationCompleted, .privacy,
+                 .authenticated:
                 EmptyView()
             }
         }
@@ -77,62 +82,52 @@ struct AuthCoordinatorView: View {
                         coordinator.fullScreenCover = nil
                     }
                 }
-            case .login, .registration, .help, .authenticated:
+            case .login, .registration, .registrationCompleted, .help,
+                 .authenticated:
                 EmptyView()
             }
         }
     }
 
     private var authenticationRoot: some View {
-        NavigationPlaceholderScreen(
-            title: "navigation.auth.title",
-            subtitle: "navigation.placeholder.subtitle",
-            systemImage: "person.crop.circle.badge.key",
-            accessibilityIdentifier: "auth.placeholder"
-        ) {
-            Button("navigation.auth.continue") {
-                coordinator.navigate(to: .authenticated)
-            }
-            .accessibilityIdentifier("auth.complete")
-
-            Button("navigation.auth.login") {
+        AuthRootView(
+            authenticationState: useCases.authenticationState,
+            onLogin: {
                 coordinator.navigate(to: .login)
-            }
-            .buttonStyle(.bordered)
-
-            Button("navigation.auth.help") {
+            },
+            onRegistration: {
+                coordinator.navigate(to: .registration)
+            },
+            onAuthenticated: {
+                coordinator.navigate(to: .authenticated)
+            },
+            onHelp: {
                 coordinator.navigate(to: .help)
             }
-            .buttonStyle(.bordered)
-        }
+        )
     }
 
     @ViewBuilder
     private func destination(for step: AuthStep) -> some View {
         switch step {
         case .login:
-            NavigationPlaceholderScreen(
-                title: "navigation.auth.login.title",
-                subtitle: "navigation.placeholder.subtitle",
-                systemImage: "key",
-                accessibilityIdentifier: "auth.login.title"
-            ) {
-                Button("navigation.auth.continue") {
+            LoginView(
+                login: useCases.login,
+                onAuthenticated: {
                     coordinator.navigate(to: .authenticated)
+                },
+                onRegistration: {
+                    coordinator.navigate(to: .registration)
                 }
-            }
+            )
         case .registration:
-            NavigationPlaceholderScreen(
-                title: "navigation.auth.registration.title",
-                subtitle: "navigation.placeholder.subtitle",
-                systemImage: "person.badge.plus",
-                accessibilityIdentifier: "auth.registration.title"
-            ) {
-                Button("navigation.auth.continue") {
-                    coordinator.navigate(to: .authenticated)
+            RegistrationView(
+                register: useCases.register,
+                onRegistered: {
+                    coordinator.navigate(to: .registrationCompleted)
                 }
-            }
-        case .help, .privacy, .authenticated:
+            )
+        case .registrationCompleted, .help, .privacy, .authenticated:
             EmptyView()
         }
     }

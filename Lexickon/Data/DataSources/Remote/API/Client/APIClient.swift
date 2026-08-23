@@ -22,7 +22,8 @@ struct APIClient: Sendable {
         return try await decode(
             Request.Response.self,
             from: data,
-            response: response
+            response: response,
+            authorization: request.authorization
         )
     }
 
@@ -81,7 +82,8 @@ struct APIClient: Sendable {
     private func decode<Response: Decodable & Sendable>(
         _ type: Response.Type,
         from data: Data,
-        response: HTTPURLResponse
+        response: HTTPURLResponse,
+        authorization: RequestAuthorization
     ) async throws -> Response {
         switch response.statusCode {
         case 200..<300:
@@ -97,7 +99,9 @@ struct APIClient: Sendable {
         case 400:
             throw NetworkError.badRequest(code: errorCode(from: data))
         case 401:
-            await session.didReceiveUnauthorized()
+            if case .bearer = authorization {
+                await session.didReceiveUnauthorized()
+            }
             throw NetworkError.unauthorized
         case 403:
             throw NetworkError.forbidden

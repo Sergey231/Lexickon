@@ -71,8 +71,23 @@ final class APIClientTests: XCTestCase, @unchecked Sendable {
             }
 
             let unauthorizedCount = await session.unauthorizedCount
-            XCTAssertEqual(unauthorizedCount, testCase.statusCode == 401 ? 1 : 0)
+            XCTAssertEqual(unauthorizedCount, 0)
         }
+    }
+
+    func testBearerUnauthorizedInvalidatesSession() async {
+        let session = SessionSpy(token: AccessToken(rawValue: "token"))
+        let client = makeClient(session: session)
+        URLProtocolStub.registry.setHandler { request in
+            .response(Self.response(for: request, statusCode: 401), Data())
+        }
+
+        await XCTAssertThrowsNetworkError(.unauthorized) {
+            try await client.send(ProbeRequest(authorization: .bearer))
+        }
+
+        let unauthorizedCount = await session.unauthorizedCount
+        XCTAssertEqual(unauthorizedCount, 1)
     }
 
     func testMapsTimeout() async {

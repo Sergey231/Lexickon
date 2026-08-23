@@ -1,8 +1,7 @@
-# Внедрение зависимостей (Dependency Injection)
+# Внедрение зависимостей
 
-В Lexickon используется ручной Dependency Injection через инициализаторы.
-Стороннего DI-контейнера, глобального service locator и скрытого `resolve()` в
-проекте нет. Корректность графа зависимостей проверяется компилятором Swift.
+В Lexickon используется ручной DI без стороннего контейнера, service locator и
+`resolve(Type.self)`.
 
 ## Схема
 
@@ -11,85 +10,55 @@ ProductionAssembly
         ↓
    AppContainer
         ↓
-AppFeatureFactories
+DataSourcesAssembly → RepositoriesAssembly → UseCases
         ↓
-FeatureFactory → ViewModel / Coordinator → View
+SwiftUI Environment(\.useCases)
+        ↓
+View / ViewModel
 ```
 
-Зависимости направлены от слоя композиции к сценариям в `Presentation`. Domain
-не знает о конкретных реализациях репозиториев, SwiftUI и DI-инфраструктуре.
-
-## Основные компоненты
+## Компоненты
 
 ### ProductionAssembly
 
-Единственное место, где создаётся production-граф. Здесь выбираются конкретные
-реализации репозиториев и инфраструктуры: API, Keychain, SQLite и другие
-адаптеры. `URLSessionTransport`, `APIClient`, `KeychainTokenStore` и
-`SessionController` уже собираются здесь. Продуктовые репозитории пока остаются
-`Unavailable...Repository`, поскольку их endpoint-запросы реализуются на
-следующих этапах.
+Создаёт production `DataSourcesAssembly` и отдаёт его в `AppContainer`.
 
-Сетевые и сессионные объекты объединены в `AppInfrastructure`. Presentation не
-получает этот объект: будущие Data-репозитории будут получать только нужные им
-зависимости. Неопределённая refresh-стратегия представлена контрактом
-`SessionRefreshing`; текущая реализация `RefreshNotConfigured` не выполняет
-запросов и не запускает retry.
+### DataSourcesAssembly
 
-### AppContainer
+Хранит инфраструктуру и низкоуровневые источники данных: `APIClient`,
+`SessionController`, token store, transport и refresh-стратегию.
 
-Получает репозитории через `AppRepositories`, создаёт Domain use case’ы и
-распределяет их по фабрикам сценариев. Полный набор `AppUseCases` остаётся внутри
-контейнера и не передаётся в UI.
+### RepositoriesAssembly
 
-### FeatureDependencies
+Хранит реализации доменных репозиториев. В production строится из
+`DataSourcesAssembly`; в тестах принимает stub-репозитории через явный init.
 
-Каждый сценарий получает только необходимые ему операции:
+### UseCases
 
-- `AuthFeatureDependencies` — регистрация, вход и восстановление состояния;
-- `DatasetSetupFeatureDependencies` — каталог и синхронизация наборов данных;
-- `MainFeatureDependencies` — выход, профиль, настройки и поиск частотности.
+Единый список use case’ов приложения. UI получает именно `UseCases`, а не
+репозитории, API-клиент или data sources.
 
-Это ограничивает область видимости зависимостей и не позволяет feature случайно
-обратиться к несвязанной части приложения. Фабрика и зависимости называются
-`Feature...`, поскольку представляют законченный пользовательский сценарий, но
-сами экранные модули располагаются в слое `Presentation`.
+`UseCases` кладётся в SwiftUI Environment:
 
-### FeatureFactory
+```swift
+AppCoordinatorView(coordinator: coordinator)
+    .environment(\.useCases, container.useCases)
+```
 
-Фабрика является точкой создания объектов конкретного сценария. Сейчас фабрики
-создают координаторы. Когда экраны-заглушки будут заменены настоящими экранами,
-здесь же следует создавать их ViewModel с нужными use case’ами.
+Экран или coordinator-view берёт нужный use case и передаёт его дальше:
 
-Coordinator получает только навигационные обязанности. Бизнес-логика и вызовы
-репозиториев должны находиться в use case’ах и ViewModel, а не в Coordinator.
+```swift
+@Environment(\.useCases) private var useCases
 
-## Тесты
-
-`TestAssembly` собирает тот же `AppContainer`, но передаёт ему заглушки
-репозиториев. Тест может настроить ответы заглушек, получить
-feature-зависимости из графа и проверить результат и обращения к репозиторию.
-
-Основной и тестовый графы используют одинаковые протоколы и use case’ы;
-меняются только реализации репозиториев.
-
-## Как добавить зависимость
-
-1. Определить протокол репозитория в `Domain/Repositories`.
-2. Создать use case в `Domain/UseCases` и принять репозиторий в инициализаторе.
-3. Реализовать репозиторий в Data.
-4. Добавить репозиторий в `AppRepositories` и собрать его в
-   `ProductionAssembly`.
-5. Создать use case в `AppContainer`.
-6. Передать use case только в нужную структуру `FeatureDependencies`.
-7. Добавить stub и проверить test-граф через `TestAssembly`.
+LoginView(login: useCases.login)
+```
 
 ## Правила
 
-- Сценарий в Presentation не получает `AppContainer` целиком.
-- View и ViewModel не обращаются к `ProductionAssembly`.
-- Зависимости передаются явно через инициализаторы или feature-фабрики.
-- Глобальные singleton-контейнеры не используются.
-- SwiftUI Environment не используется как контейнер бизнес-зависимостей.
-- При росте сценария его фабрику можно вынести в отдельный файл или модуль, не
-  меняя общий принцип сборки графа.
+- Presentation не получает `AppContainer`, `RepositoriesAssembly` или
+  `DataSourcesAssembly`.
+- ViewModel принимает конкретные use case’ы через init.
+- SwiftUI Environment используется только как простой способ доставить
+  `UseCases` в дерево view.
+- Новая зависимость добавляется явно: репозиторий в `RepositoriesAssembly`, use
+  case в `UseCases`, затем конкретный экран берёт его из `Environment`.

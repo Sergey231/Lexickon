@@ -1,197 +1,544 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Create account" : {
+
+    },
+    "Email" : {
+
+    },
+    "Help" : {
+
+    },
+    "Log in" : {
+
+    },
     "navigation.auth.continue" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Продолжить" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Продолжить"
+          }
+        }
       }
     },
     "navigation.auth.help" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Help" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Помощь" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помощь"
+          }
+        }
       }
     },
     "navigation.auth.help.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Authentication Help" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Помощь с авторизацией" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentication Help"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помощь с авторизацией"
+          }
+        }
       }
     },
     "navigation.auth.login" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open login" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть вход" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open login"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть вход"
+          }
+        }
       }
     },
     "navigation.auth.login.title" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Login" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Вход" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Login"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вход"
+          }
+        }
       }
     },
     "navigation.auth.privacy.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Privacy" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Конфиденциальность" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Конфиденциальность"
+          }
+        }
       }
     },
     "navigation.auth.registration.title" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Registration" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Регистрация" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registration"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Регистрация"
+          }
+        }
       }
     },
     "navigation.auth.title" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Authentication" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Авторизация" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentication"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Авторизация"
+          }
+        }
       }
     },
     "navigation.close" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Закрыть" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть"
+          }
+        }
       }
     },
     "navigation.dataset.complete" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Complete setup" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Завершить настройку" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete setup"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Завершить настройку"
+          }
+        }
       }
     },
     "navigation.dataset.install" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue to installation" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Перейти к установке" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue to installation"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перейти к установке"
+          }
+        }
       }
     },
     "navigation.dataset.installation.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dataset Installation" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Установка датасета" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dataset Installation"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установка датасета"
+          }
+        }
       }
     },
     "navigation.dataset.selection" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose datasets" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выбрать датасеты" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose datasets"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать датасеты"
+          }
+        }
       }
     },
     "navigation.dataset.selection.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dataset Selection" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выбор датасета" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dataset Selection"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбор датасета"
+          }
+        }
       }
     },
     "navigation.dataset.storage" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Storage information" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Информация о хранилище" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Storage information"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Информация о хранилище"
+          }
+        }
       }
     },
     "navigation.dataset.storage.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Storage" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Хранилище" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Storage"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Хранилище"
+          }
+        }
       }
     },
     "navigation.dataset.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dataset Setup" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройка датасета" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dataset Setup"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройка датасета"
+          }
+        }
       }
     },
     "navigation.main.about" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "О приложении" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О приложении"
+          }
+        }
       }
     },
     "navigation.main.about.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "About Lexickon" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "О Lexickon" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About Lexickon"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "О Lexickon"
+          }
+        }
       }
     },
     "navigation.main.frequency" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Frequency" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Частотность" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequency"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Частотность"
+          }
+        }
       }
     },
     "navigation.main.frequency.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Frequency" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Частотность" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequency"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Частотность"
+          }
+        }
       }
     },
     "navigation.main.logout" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Log out" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выйти" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log out"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выйти"
+          }
+        }
       }
     },
     "navigation.main.onboarding.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Main Onboarding" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Знакомство с приложением" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main Onboarding"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Знакомство с приложением"
+          }
+        }
       }
     },
     "navigation.main.openFrequency" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open frequency details" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть подробности" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open frequency details"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть подробности"
+          }
+        }
       }
     },
     "navigation.main.profile" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Profile" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Профиль" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Профиль"
+          }
+        }
       }
     },
     "navigation.main.profile.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Profile" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Профиль" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profile"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Профиль"
+          }
+        }
       }
     },
     "navigation.main.search" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Поиск" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск"
+          }
+        }
       }
     },
     "navigation.main.sessionExpired" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Simulate expired session" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Имитировать истечение сессии" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulate expired session"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имитировать истечение сессии"
+          }
+        }
       }
     },
     "navigation.main.settings" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки"
+          }
+        }
       }
     },
     "navigation.main.settings.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки"
+          }
+        }
       }
     },
     "navigation.main.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Lexickon" } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Lexickon" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lexickon"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lexickon"
+          }
+        }
       }
     },
     "navigation.placeholder.subtitle" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This screen is a navigation placeholder." } },
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Это временный экран для проверки навигации." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This screen is a navigation placeholder."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Это временный экран для проверки навигации."
+          }
+        }
       }
+    },
+    "Password" : {
+
+    },
+    "Sign in or create an account to continue." : {
+
+    },
+    "Welcome to Lexickon" : {
+
     }
   },
   "version" : "1.0"

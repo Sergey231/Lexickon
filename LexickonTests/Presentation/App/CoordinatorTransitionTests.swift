@@ -10,7 +10,8 @@ final class CoordinatorTransitionTests: XCTestCase {
             (.login, [.login]),
             (.login, [.login]),
             (.registration, [.login, .registration]),
-            (.login, [.login])
+            (.login, [.login]),
+            (.registrationCompleted, [.login])
         ]
 
         for transition in transitions {

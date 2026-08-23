@@ -11,19 +11,27 @@ final class AppContainerTests: XCTestCase {
             datasetRepository: fixture.datasetRepository,
             frequencyRepository: fixture.frequencyRepository
         )
-        let auth = graph.container.featureFactories.auth.dependencies
-        let datasetSetup = graph.container.featureFactories.datasetSetup.dependencies
-        let main = graph.container.featureFactories.main.dependencies
+        let useCases = graph.container.useCases
 
-        let registeredUser = try await auth.register(fixture.registrationRequest)
-        let authenticationState = try await auth.login(fixture.loginRequest)
-        try await main.logout()
-        let restoredState = try await auth.authenticationState()
-        let currentUser = try await main.currentUser()
-        let updatedSettings = try await main.updateUserSettings(fixture.settingsPatch)
-        let datasets = try await datasetSetup.datasetCatalog()
-        let syncResult = try await datasetSetup.synchronizeDatasets(fixture.syncRequest)
-        let frequency = try await main.lookupFrequency(fixture.frequencyQuery)
+        let registeredUser = try await useCases.register(
+            fixture.registrationRequest
+        )
+        let authenticationState = try await useCases.login(
+            fixture.loginRequest
+        )
+        try await useCases.logout()
+        let restoredState = try await useCases.authenticationState()
+        let currentUser = try await useCases.currentUser()
+        let updatedSettings = try await useCases.updateUserSettings(
+            fixture.settingsPatch
+        )
+        let datasets = try await useCases.datasetCatalog()
+        let syncResult = try await useCases.synchronizeDatasets(
+            fixture.syncRequest
+        )
+        let frequency = try await useCases.lookupFrequency(
+            fixture.frequencyQuery
+        )
 
         XCTAssertEqual(registeredUser, fixture.user)
         XCTAssertEqual(authenticationState, .signedIn)
@@ -55,20 +63,12 @@ final class AppContainerTests: XCTestCase {
         XCTAssertEqual(frequencyQueries, [fixture.frequencyQuery])
     }
 
-    func testProductionAssemblyUsesExplicitUnavailableAdapters() async {
+    func testProductionAssemblyUsesRemoteAuthAdapter() async throws {
         let container = ProductionAssembly.makeContainer()
 
-        do {
-            _ = try await container.featureFactories.auth.dependencies.authenticationState()
-            XCTFail("The stage-2 production adapter must not fabricate a session.")
-        } catch let error as AppError {
-            XCTAssertEqual(
-                error,
-                .unexpected(.dependencyNotConfigured(.authRepository))
-            )
-        } catch {
-            XCTFail("Expected AppError, received \(error).")
-        }
+        let state = try await container.useCases.authenticationState()
+
+        XCTAssertEqual(state, .signedOut)
     }
 }
 
