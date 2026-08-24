@@ -16,17 +16,8 @@ TARGETED_DEVICE_FAMILY = 1,2
 ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = YES
 ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES
 
-// Xcode synthesizes Info.plist from INFOPLIST_KEY_* settings, so the project
-// does not need a manually maintained plist file.
-GENERATE_INFOPLIST_FILE = YES
-INFOPLIST_KEY_CFBundleDisplayName = Lexickon
-INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.reference
-
-// Enables indirect input devices such as a trackpad or mouse on supported iPad.
-INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES
-
-// Requests the standard generated launch screen until a custom one is needed.
-INFOPLIST_KEY_UILaunchScreen_Generation = YES
+GENERATE_INFOPLIST_FILE = NO
+INFOPLIST_FILE = Lexickon/Resources/Info.plist
 
 // Extracts localizable literals emitted by Swift into the localization workflow.
 SWIFT_EMIT_LOC_STRINGS = YES

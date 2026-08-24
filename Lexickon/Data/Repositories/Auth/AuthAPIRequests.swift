@@ -1,7 +1,7 @@
 import Foundation
 
 struct AuthRegistrationAPIRequest: APIRequest {
-    typealias Response = UserDTO
+    typealias Response = UserProfileDTO
 
     let method = HTTPMethod.post
     let path = "/auth/register"
@@ -33,11 +33,29 @@ struct AuthLoginAPIRequest: APIRequest {
 }
 
 struct CurrentUserAPIRequest: APIRequest {
-    typealias Response = UserDTO
+    typealias Response = UserProfileDTO
 
     let method = HTTPMethod.get
     let path = "/me"
     let authorization = RequestAuthorization.bearer
+}
+
+struct UserProfileDTO: Decodable, Sendable {
+    let id: String
+    let email: String
+
+    func domainModel() -> User {
+        User(
+            id: UserID(rawValue: id),
+            email: email,
+            settings: UserSettings(
+                preferredLanguage: LanguageCode(rawValue: "en"),
+                selectedDomains: [DatasetDomain(rawValue: "core")],
+                offlineMode: false,
+                syncOverCellular: false
+            )
+        )
+    }
 }
 
 struct AuthCredentialsDTO: Encodable, Sendable {

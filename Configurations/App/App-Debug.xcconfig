@@ -1,3 +1,4 @@
 #include "App.xcconfig"
 
 // Debug-only application overrides belong in this file.
+INFOPLIST_FILE = Lexickon/Resources/Info-Debug.plist

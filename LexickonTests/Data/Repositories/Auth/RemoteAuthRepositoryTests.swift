@@ -9,7 +9,7 @@ final class RemoteAuthRepositoryTests: XCTestCase, @unchecked Sendable {
         let repository = makeRepository(session: session)
         URLProtocolStub.registry.setHandler { request in
             XCTAssertEqual(request.url?.path, "/v1/auth/register")
-            return .response(Self.response(for: request, statusCode: 200), Self.userData)
+            return .response(Self.response(for: request, statusCode: 201), Self.userProfileData)
         }
 
         let user = try await repository.register(
@@ -18,6 +18,10 @@ final class RemoteAuthRepositoryTests: XCTestCase, @unchecked Sendable {
 
         let savedTokens = await store.savedTokens
         XCTAssertEqual(user.email, "reader@example.com")
+        XCTAssertEqual(user.settings.preferredLanguage, LanguageCode(rawValue: "en"))
+        XCTAssertEqual(user.settings.selectedDomains, [DatasetDomain(rawValue: "core")])
+        XCTAssertFalse(user.settings.offlineMode)
+        XCTAssertFalse(user.settings.syncOverCellular)
         XCTAssertTrue(savedTokens.isEmpty)
     }
 
@@ -78,7 +82,7 @@ final class RemoteAuthRepositoryTests: XCTestCase, @unchecked Sendable {
                 request.value(forHTTPHeaderField: "Authorization"),
                 "Bearer stored-token"
             )
-            return .response(Self.response(for: request, statusCode: 200), Self.userData)
+            return .response(Self.response(for: request, statusCode: 200), Self.userProfileData)
         }
 
         let state = try await repository.authenticationState()
@@ -134,17 +138,15 @@ final class RemoteAuthRepositoryTests: XCTestCase, @unchecked Sendable {
     }
 
     private static let tokenData = Data(#"{"access_token":"login-token"}"#.utf8)
-    private static let userData = Data(
+    private static let userProfileData = Data(
         """
         {
           "id": "user-1",
           "email": "reader@example.com",
-          "settings": {
-            "preferred_language": "en",
-            "selected_domains": ["core"],
-            "offline_mode": false,
-            "sync_over_cellular": false
-          }
+          "is_active": true,
+          "created_at": "2026-08-23T11:27:37.412003Z",
+          "updated_at": "2026-08-23T15:56:51.598831Z",
+          "last_login_at": "2026-08-23T15:56:51.657079Z"
         }
         """.utf8
     )

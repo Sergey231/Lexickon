@@ -48,6 +48,8 @@
 				Data/Session/README.md,
 				Domain/README.md,
 				Presentation/README.md,
+				"Resources/Info-Debug.plist",
+				Resources/Info.plist,
 			);
 			target = 000000000000000000000080 /* Lexickon */;
 		};
@@ -311,6 +313,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 000000000000000000000056 /* Configurations/App/App-Debug.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = ZKL4A9Z8LX;
 			};
 			name = Debug;
 		};
@@ -318,6 +321,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 000000000000000000000057 /* Configurations/App/App-Release.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 6R8JR72J6T;
 			};
 			name = Release;
 		};

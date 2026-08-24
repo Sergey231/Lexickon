@@ -9,7 +9,11 @@ struct AppInfrastructure: Sendable {
 enum AppConfiguration {
     static var apiBaseURL: URL {
         #if DEBUG
+        #if targetEnvironment(simulator)
         return URL(string: "http://127.0.0.1:8000")!
+        #else
+        return URL(string: "http://192.168.0.100:8000")!
+        #endif
         #else
         return URL(string: "https://api.lexickon.invalid")!
         #endif
