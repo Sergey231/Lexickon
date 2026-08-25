@@ -6,6 +6,8 @@ enum DatasetSetupStep: CoordinatorStep {
     case installation
     case storageInfo
     case installationDetails
+    case storageInfoDismissed
+    case installationDetailsDismissed
     case completed
 }
 
@@ -30,6 +32,10 @@ final class DatasetSetupCoordinator: Coordinator {
             sheet = .storageInfo
         case .installationDetails:
             fullScreenCover = .installationDetails
+        case .storageInfoDismissed:
+            sheet = nil
+        case .installationDetailsDismissed:
+            fullScreenCover = nil
         case .completed:
             onStep(.datasetSetupCompleted)
         }
@@ -50,60 +56,32 @@ struct DatasetSetupCoordinatorView: View {
         .sheet(item: $coordinator.sheet) { sheet in
             switch sheet {
             case .storageInfo:
-                NavigationPlaceholderScreen(
-                    title: "navigation.dataset.storage.title",
-                    subtitle: "navigation.placeholder.subtitle",
-                    systemImage: "internaldrive",
-                    accessibilityIdentifier: "datasetSetup.storage.title"
-                ) {
-                    Button("navigation.close") {
-                        coordinator.sheet = nil
-                    }
+                DatasetStorageInfoView { step in
+                    coordinator.navigate(to: step)
                 }
-            case .selection, .installation, .installationDetails, .completed:
+            case .selection, .installation, .installationDetails,
+                 .storageInfoDismissed, .installationDetailsDismissed,
+                 .completed:
                 EmptyView()
             }
         }
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
             switch cover {
             case .installationDetails:
-                NavigationPlaceholderScreen(
-                    title: "navigation.dataset.installation.title",
-                    subtitle: "navigation.placeholder.subtitle",
-                    systemImage: "arrow.down.circle",
-                    accessibilityIdentifier: "datasetSetup.installationDetails.title"
-                ) {
-                    Button("navigation.close") {
-                        coordinator.fullScreenCover = nil
-                    }
+                DatasetInstallationDetailsView { step in
+                    coordinator.navigate(to: step)
                 }
-            case .selection, .installation, .storageInfo, .completed:
+            case .selection, .installation, .storageInfo,
+                 .storageInfoDismissed, .installationDetailsDismissed,
+                 .completed:
                 EmptyView()
             }
         }
     }
 
     private var setupRoot: some View {
-        NavigationPlaceholderScreen(
-            title: "navigation.dataset.title",
-            subtitle: "navigation.placeholder.subtitle",
-            systemImage: "square.stack.3d.up",
-            accessibilityIdentifier: "datasetSetup.placeholder"
-        ) {
-            Button("navigation.dataset.complete") {
-                coordinator.navigate(to: .completed)
-            }
-            .accessibilityIdentifier("datasetSetup.complete")
-
-            Button("navigation.dataset.selection") {
-                coordinator.navigate(to: .selection)
-            }
-            .buttonStyle(.bordered)
-
-            Button("navigation.dataset.storage") {
-                coordinator.navigate(to: .storageInfo)
-            }
-            .buttonStyle(.bordered)
+        DatasetSetupRootView { step in
+            coordinator.navigate(to: step)
         }
     }
 
@@ -111,28 +89,15 @@ struct DatasetSetupCoordinatorView: View {
     private func destination(for step: DatasetSetupStep) -> some View {
         switch step {
         case .selection:
-            NavigationPlaceholderScreen(
-                title: "navigation.dataset.selection.title",
-                subtitle: "navigation.placeholder.subtitle",
-                systemImage: "checklist",
-                accessibilityIdentifier: "datasetSetup.selection.title"
-            ) {
-                Button("navigation.dataset.install") {
-                    coordinator.navigate(to: .installation)
-                }
+            DatasetSelectionView { step in
+                coordinator.navigate(to: step)
             }
         case .installation:
-            NavigationPlaceholderScreen(
-                title: "navigation.dataset.installation.title",
-                subtitle: "navigation.placeholder.subtitle",
-                systemImage: "arrow.down.circle",
-                accessibilityIdentifier: "datasetSetup.installation.title"
-            ) {
-                Button("navigation.dataset.complete") {
-                    coordinator.navigate(to: .completed)
-                }
+            DatasetInstallationView { step in
+                coordinator.navigate(to: step)
             }
-        case .storageInfo, .installationDetails, .completed:
+        case .storageInfo, .installationDetails, .storageInfoDismissed,
+             .installationDetailsDismissed, .completed:
             EmptyView()
         }
     }

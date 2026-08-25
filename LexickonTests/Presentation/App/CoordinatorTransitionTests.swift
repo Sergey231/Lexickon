@@ -25,6 +25,12 @@ final class CoordinatorTransitionTests: XCTestCase {
         XCTAssertEqual(coordinator.sheet, .help)
         XCTAssertEqual(coordinator.fullScreenCover, .privacy)
 
+        coordinator.navigate(to: .helpDismissed)
+        coordinator.navigate(to: .privacyDismissed)
+
+        XCTAssertNil(coordinator.sheet)
+        XCTAssertNil(coordinator.fullScreenCover)
+
         coordinator.navigate(to: .authenticated)
         XCTAssertEqual(emittedStep, .authenticated)
     }
@@ -49,6 +55,12 @@ final class CoordinatorTransitionTests: XCTestCase {
 
         XCTAssertEqual(coordinator.sheet, .storageInfo)
         XCTAssertEqual(coordinator.fullScreenCover, .installationDetails)
+
+        coordinator.navigate(to: .storageInfoDismissed)
+        coordinator.navigate(to: .installationDetailsDismissed)
+
+        XCTAssertNil(coordinator.sheet)
+        XCTAssertNil(coordinator.fullScreenCover)
 
         coordinator.navigate(to: .completed)
         XCTAssertEqual(emittedStep, .datasetSetupCompleted)
@@ -77,6 +89,12 @@ final class CoordinatorTransitionTests: XCTestCase {
         XCTAssertEqual(coordinator.selectedTab, .profile)
         XCTAssertEqual(coordinator.sheet, .about)
         XCTAssertEqual(coordinator.fullScreenCover, .onboarding)
+
+        coordinator.navigate(to: .aboutDismissed)
+        coordinator.navigate(to: .onboardingDismissed)
+
+        XCTAssertNil(coordinator.sheet)
+        XCTAssertNil(coordinator.fullScreenCover)
 
         coordinator.navigate(to: .logout)
         XCTAssertEqual(emittedStep, .logout)

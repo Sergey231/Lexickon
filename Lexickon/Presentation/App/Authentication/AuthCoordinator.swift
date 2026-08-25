@@ -7,6 +7,8 @@ enum AuthStep: CoordinatorStep {
     case registrationCompleted
     case help
     case privacy
+    case helpDismissed
+    case privacyDismissed
     case authenticated
 }
 
@@ -33,6 +35,10 @@ final class AuthCoordinator: Coordinator {
             sheet = .help
         case .privacy:
             fullScreenCover = .privacy
+        case .helpDismissed:
+            sheet = nil
+        case .privacyDismissed:
+            fullScreenCover = nil
         case .authenticated:
             onStep(.authenticated)
         }
@@ -54,53 +60,31 @@ struct AuthCoordinatorView: View {
         .sheet(item: $coordinator.sheet) { sheet in
             switch sheet {
             case .help:
-                NavigationPlaceholderScreen(
-                    title: "navigation.auth.help.title",
-                    subtitle: "navigation.placeholder.subtitle",
-                    systemImage: "questionmark.circle",
-                    accessibilityIdentifier: "auth.help.title"
-                ) {
-                    Button("navigation.close") {
-                        coordinator.sheet = nil
-                    }
+                AuthHelpView { step in
+                    coordinator.navigate(to: step)
                 }
             case .login, .registration, .registrationCompleted, .privacy,
-                 .authenticated:
+                 .helpDismissed, .privacyDismissed, .authenticated:
                 EmptyView()
             }
         }
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
             switch cover {
             case .privacy:
-                NavigationPlaceholderScreen(
-                    title: "navigation.auth.privacy.title",
-                    subtitle: "navigation.placeholder.subtitle",
-                    systemImage: "hand.raised",
-                    accessibilityIdentifier: "auth.privacy.title"
-                ) {
-                    Button("navigation.close") {
-                        coordinator.fullScreenCover = nil
-                    }
+                AuthPrivacyView { step in
+                    coordinator.navigate(to: step)
                 }
             case .login, .registration, .registrationCompleted, .help,
-                 .authenticated:
+                 .helpDismissed, .privacyDismissed, .authenticated:
                 EmptyView()
             }
         }
     }
 
     private var authenticationRoot: some View {
-        AuthRootView(
-            onLogin: {
-                coordinator.navigate(to: .login)
-            },
-            onRegistration: {
-                coordinator.navigate(to: .registration)
-            },
-            onHelp: {
-                coordinator.navigate(to: .help)
-            }
-        )
+        AuthRootView { step in
+            coordinator.navigate(to: step)
+        }
     }
 
     @ViewBuilder
@@ -109,21 +93,19 @@ struct AuthCoordinatorView: View {
         case .login:
             LoginView(
                 login: useCases.login,
-                onAuthenticated: {
-                    coordinator.navigate(to: .authenticated)
-                },
-                onRegistration: {
-                    coordinator.navigate(to: .registration)
+                navigate: { step in
+                    coordinator.navigate(to: step)
                 }
             )
         case .registration:
             RegistrationView(
                 register: useCases.register,
-                onRegistered: {
-                    coordinator.navigate(to: .registrationCompleted)
+                navigate: { step in
+                    coordinator.navigate(to: step)
                 }
             )
-        case .registrationCompleted, .help, .privacy, .authenticated:
+        case .registrationCompleted, .help, .privacy, .helpDismissed,
+             .privacyDismissed, .authenticated:
             EmptyView()
         }
     }

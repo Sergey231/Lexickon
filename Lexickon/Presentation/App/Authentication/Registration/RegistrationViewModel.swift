@@ -9,30 +9,33 @@ final class RegistrationViewModel {
     private(set) var state: AuthFormState = .idle
 
     private let register: RegisterUseCase
+    @ObservationIgnored private let navigate: @MainActor (AuthStep) -> Void
 
-    init(register: RegisterUseCase) {
+    init(
+        register: RegisterUseCase,
+        navigate: @escaping @MainActor (AuthStep) -> Void
+    ) {
         self.register = register
+        self.navigate = navigate
     }
 
     var isLoading: Bool {
         state == .loading
     }
 
-    func submit() async -> Bool {
-        guard state != .loading else { return false }
-        guard let request = validatedRequest() else { return false }
+    func submit() async {
+        guard state != .loading else { return }
+        guard let request = validatedRequest() else { return }
 
         state = .loading
         do {
             _ = try await register(request)
             state = .success
-            return true
+            navigate(.registrationCompleted)
         } catch let error as AppError {
             state = .error(.application(error))
-            return false
         } catch {
             state = .error(.application(.unexpected(.invariantViolation)))
-            return false
         }
     }
 

@@ -4,17 +4,14 @@ import SwiftUI
 struct LoginView: View {
     @State private var viewModel: LoginViewModel
     @FocusState private var focusedField: AuthField?
-    let onAuthenticated: () -> Void
-    let onRegistration: () -> Void
 
     init(
         login: LoginUseCase,
-        onAuthenticated: @escaping () -> Void,
-        onRegistration: @escaping () -> Void
+        navigate: @escaping @MainActor (AuthStep) -> Void
     ) {
-        _viewModel = State(initialValue: LoginViewModel(login: login))
-        self.onAuthenticated = onAuthenticated
-        self.onRegistration = onRegistration
+        _viewModel = State(
+            initialValue: LoginViewModel(login: login, navigate: navigate)
+        )
     }
 
     var body: some View {
@@ -33,9 +30,7 @@ struct LoginView: View {
             Button {
                 Task {
                     focusedField = nil
-                    if await viewModel.submit() {
-                        onAuthenticated()
-                    }
+                    await viewModel.submit()
                 }
             } label: {
                 AuthSubmitLabel(title: "Log in", isLoading: viewModel.isLoading)
@@ -45,7 +40,7 @@ struct LoginView: View {
             .accessibilityIdentifier("auth.login.submit")
 
             Button("Create account") {
-                onRegistration()
+                viewModel.registrationTapped()
             }
             .buttonStyle(.bordered)
             .disabled(viewModel.isLoading)

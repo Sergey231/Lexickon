@@ -17,7 +17,20 @@ struct APIClient: Sendable {
 
     func send<Request: APIRequest>(_ request: Request) async throws -> Request.Response {
         let urlRequest = try await makeURLRequest(for: request)
-        let (data, response) = try await transport.data(for: urlRequest)
+        #if DEBUG
+        AppLogger.network.info("\(NetworkLogMessage.request(urlRequest), privacy: .public)")
+        #endif
+
+        let data: Data
+        let response: HTTPURLResponse
+        do {
+            (data, response) = try await transport.data(for: urlRequest)
+        } catch {
+            #if DEBUG
+            AppLogger.network.error("\(NetworkLogMessage.failure(error, request: urlRequest), privacy: .public)")
+            #endif
+            throw error
+        }
 
         return try await decode(
             Request.Response.self,

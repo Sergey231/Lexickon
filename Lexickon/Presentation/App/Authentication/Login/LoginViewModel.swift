@@ -9,9 +9,14 @@ final class LoginViewModel {
     private(set) var state: AuthFormState = .idle
 
     private let login: LoginUseCase
+    @ObservationIgnored private let navigate: @MainActor (AuthStep) -> Void
 
-    init(login: LoginUseCase) {
+    init(
+        login: LoginUseCase,
+        navigate: @escaping @MainActor (AuthStep) -> Void
+    ) {
         self.login = login
+        self.navigate = navigate
         #if DEBUG
         if DebugLoginCredentials.shouldPrefill {
             email = DebugLoginCredentials.email
@@ -30,26 +35,29 @@ final class LoginViewModel {
         state == .loading
     }
 
-    func submit() async -> Bool {
-        guard state != .loading else { return false }
-        guard let request = validatedRequest() else { return false }
+    func submit() async {
+        guard state != .loading else { return }
+        guard let request = validatedRequest() else { return }
 
         state = .loading
         do {
             let result = try await login(request)
 
-            state = result == .signedIn
-                ? .success
-                : .error(.application(.authorization(.unauthenticated)))
-
-            return result == .signedIn
+            if result == .signedIn {
+                state = .success
+                navigate(.authenticated)
+            } else {
+                state = .error(.application(.authorization(.unauthenticated)))
+            }
         } catch let error as AppError {
             state = .error(.application(error))
-            return false
         } catch {
             state = .error(.application(.unexpected(.invariantViolation)))
-            return false
         }
+    }
+
+    func registrationTapped() {
+        navigate(.registration)
     }
 
     private func validatedRequest() -> LoginRequest? {

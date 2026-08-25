@@ -7,15 +7,17 @@ final class LaunchViewModelTests: XCTestCase {
         let repository = LaunchAuthRepository(
             stateResult: .success(.signedIn)
         )
+        var routedStep: AppStep?
         let viewModel = LaunchViewModel(
             resolveDestination: ResolveLaunchDestinationUseCase(
                 repository: repository
-            )
+            ),
+            navigate: { routedStep = $0 }
         )
 
-        let destination = await viewModel.resolveDestination()
+        await viewModel.resolveDestination()
 
-        XCTAssertEqual(destination, .main)
+        XCTAssertEqual(routedStep, .launchCompleted(.main))
         XCTAssertEqual(viewModel.state, .resolved(.main))
         let stateCallCount = await repository.authenticationStateCallCount()
         XCTAssertEqual(stateCallCount, 1)
@@ -25,15 +27,17 @@ final class LaunchViewModelTests: XCTestCase {
         let repository = LaunchAuthRepository(
             stateResult: .success(.signedOut)
         )
+        var routedStep: AppStep?
         let viewModel = LaunchViewModel(
             resolveDestination: ResolveLaunchDestinationUseCase(
                 repository: repository
-            )
+            ),
+            navigate: { routedStep = $0 }
         )
 
-        let destination = await viewModel.resolveDestination()
+        await viewModel.resolveDestination()
 
-        XCTAssertEqual(destination, .login)
+        XCTAssertEqual(routedStep, .launchCompleted(.login))
         XCTAssertEqual(viewModel.state, .resolved(.login))
         let stateCallCount = await repository.authenticationStateCallCount()
         XCTAssertEqual(stateCallCount, 1)
@@ -43,18 +47,34 @@ final class LaunchViewModelTests: XCTestCase {
         let repository = LaunchAuthRepository(
             stateResult: .failure(.transport(.offline))
         )
+        var routedStep: AppStep?
         let viewModel = LaunchViewModel(
             resolveDestination: ResolveLaunchDestinationUseCase(
                 repository: repository
-            )
+            ),
+            navigate: { routedStep = $0 }
         )
 
-        let destination = await viewModel.resolveDestination()
+        await viewModel.resolveDestination()
 
-        XCTAssertNil(destination)
+        XCTAssertNil(routedStep)
         XCTAssertEqual(viewModel.state, .error(.transport(.offline)))
         let stateCallCount = await repository.authenticationStateCallCount()
         XCTAssertEqual(stateCallCount, 1)
+    }
+
+    func testLoginTapRoutesToLogin() {
+        var routedStep: AppStep?
+        let viewModel = LaunchViewModel(
+            resolveDestination: ResolveLaunchDestinationUseCase(
+                repository: LaunchAuthRepository(stateResult: .success(.signedOut))
+            ),
+            navigate: { routedStep = $0 }
+        )
+
+        viewModel.loginTapped()
+
+        XCTAssertEqual(routedStep, .launchCompleted(.login))
     }
 }
 

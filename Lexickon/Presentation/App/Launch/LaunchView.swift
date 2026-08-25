@@ -4,16 +4,16 @@ import SwiftUI
 struct LaunchView: View {
     @State private var viewModel: LaunchViewModel
 
-    let onResolved: (LaunchDestination) -> Void
-
     init(
         resolveDestination: ResolveLaunchDestinationUseCase,
-        onResolved: @escaping (LaunchDestination) -> Void
+        navigate: @escaping @MainActor (AppStep) -> Void
     ) {
         _viewModel = State(
-            initialValue: LaunchViewModel(resolveDestination: resolveDestination)
+            initialValue: LaunchViewModel(
+                resolveDestination: resolveDestination,
+                navigate: navigate
+            )
         )
-        self.onResolved = onResolved
     }
 
     var body: some View {
@@ -34,14 +34,14 @@ struct LaunchView: View {
                 VStack(spacing: 12) {
                     Button("Try again") {
                         Task {
-                            await resolve()
+                            await viewModel.resolveDestination()
                         }
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("launch.retry")
 
                     Button("Log in") {
-                        onResolved(.login)
+                        viewModel.loginTapped()
                     }
                     .buttonStyle(.bordered)
                     .accessibilityIdentifier("launch.login")
@@ -51,13 +51,7 @@ struct LaunchView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
         .task {
-            await resolve()
-        }
-    }
-
-    private func resolve() async {
-        if let destination = await viewModel.resolveDestination() {
-            onResolved(destination)
+            await viewModel.resolveDestination()
         }
     }
 }

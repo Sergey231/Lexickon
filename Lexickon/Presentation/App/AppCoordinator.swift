@@ -88,8 +88,8 @@ private struct LaunchFlow: View {
     }
 
     var body: some View {
-        LaunchView(resolveDestination: useCases.resolveLaunchDestination) { destination in
-            onStep(.launchCompleted(destination))
+        LaunchView(resolveDestination: useCases.resolveLaunchDestination) { step in
+            onStep(step)
         }
     }
 }

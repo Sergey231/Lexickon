@@ -3,14 +3,73 @@ import XCTest
 
 @MainActor
 final class AuthViewModelTests: XCTestCase {
+    func testAuthRootRoutesLoginTap() {
+        var routedStep: AuthStep?
+        let viewModel = AuthRootViewModel { step in
+            routedStep = step
+        }
+
+        viewModel.loginTapped()
+
+        XCTAssertEqual(routedStep, .login)
+    }
+
+    func testAuthRootRoutesRegistrationTap() {
+        var routedStep: AuthStep?
+        let viewModel = AuthRootViewModel { step in
+            routedStep = step
+        }
+
+        viewModel.registrationTapped()
+
+        XCTAssertEqual(routedStep, .registration)
+    }
+
+    func testAuthRootRoutesHelpTap() {
+        var routedStep: AuthStep?
+        let viewModel = AuthRootViewModel { step in
+            routedStep = step
+        }
+
+        viewModel.helpTapped()
+
+        XCTAssertEqual(routedStep, .help)
+    }
+
+    func testAuthHelpRoutesCloseTap() {
+        var routedStep: AuthStep?
+        let viewModel = AuthHelpViewModel { step in
+            routedStep = step
+        }
+
+        viewModel.closeTapped()
+
+        XCTAssertEqual(routedStep, .helpDismissed)
+    }
+
+    func testAuthPrivacyRoutesCloseTap() {
+        var routedStep: AuthStep?
+        let viewModel = AuthPrivacyViewModel { step in
+            routedStep = step
+        }
+
+        viewModel.closeTapped()
+
+        XCTAssertEqual(routedStep, .privacyDismissed)
+    }
+
     func testLoginValidationKeepsClientErrorsSeparateFromApplicationErrors() async {
-        let viewModel = LoginViewModel(login: LoginUseCase(repository: EmptyAuthRepository()))
+        var routedStep: AuthStep?
+        let viewModel = LoginViewModel(
+            login: LoginUseCase(repository: EmptyAuthRepository()),
+            navigate: { routedStep = $0 }
+        )
         viewModel.email = "invalid"
         viewModel.password = "password-1"
 
-        let didSubmit = await viewModel.submit()
+        await viewModel.submit()
 
-        XCTAssertFalse(didSubmit)
+        XCTAssertNil(routedStep)
         XCTAssertEqual(viewModel.state, .error(.validation(.invalidEmail)))
     }
 
@@ -18,13 +77,17 @@ final class AuthViewModelTests: XCTestCase {
         let repository = StaticAuthRepository(
             loginResult: .failure(.authorization(.invalidCredentials))
         )
-        let viewModel = LoginViewModel(login: LoginUseCase(repository: repository))
+        var routedStep: AuthStep?
+        let viewModel = LoginViewModel(
+            login: LoginUseCase(repository: repository),
+            navigate: { routedStep = $0 }
+        )
         viewModel.email = "reader@example.com"
         viewModel.password = "password-1"
 
-        let didSubmit = await viewModel.submit()
+        await viewModel.submit()
 
-        XCTAssertFalse(didSubmit)
+        XCTAssertNil(routedStep)
         XCTAssertEqual(
             viewModel.state,
             .error(.application(.authorization(.invalidCredentials)))
@@ -33,45 +96,67 @@ final class AuthViewModelTests: XCTestCase {
 
     func testLoginSuccessTransitionsToSuccess() async {
         let repository = StaticAuthRepository(loginResult: .success(.signedIn))
-        let viewModel = LoginViewModel(login: LoginUseCase(repository: repository))
+        var routedStep: AuthStep?
+        let viewModel = LoginViewModel(
+            login: LoginUseCase(repository: repository),
+            navigate: { routedStep = $0 }
+        )
         viewModel.email = "reader@example.com"
         viewModel.password = "password-1"
 
-        let didSubmit = await viewModel.submit()
+        await viewModel.submit()
 
-        XCTAssertTrue(didSubmit)
+        XCTAssertEqual(routedStep, .authenticated)
         XCTAssertEqual(viewModel.state, .success)
     }
 
     func testRepeatedSubmitIsBlockedWhileLoading() async throws {
         let repository = SlowAuthRepository()
-        let viewModel = LoginViewModel(login: LoginUseCase(repository: repository))
+        var routedSteps: [AuthStep] = []
+        let viewModel = LoginViewModel(
+            login: LoginUseCase(repository: repository),
+            navigate: { routedSteps.append($0) }
+        )
         viewModel.email = "reader@example.com"
         viewModel.password = "password-1"
 
         let firstSubmit = Task { await viewModel.submit() }
         try await Task.sleep(nanoseconds: 50_000_000)
-        let secondSubmit = await viewModel.submit()
+        await viewModel.submit()
         await repository.completeLogin()
-        let firstResult = await firstSubmit.value
+        await firstSubmit.value
 
         let loginCallCount = await repository.loginCallCount
-        XCTAssertFalse(secondSubmit)
-        XCTAssertTrue(firstResult)
+        XCTAssertEqual(routedSteps, [.authenticated])
         XCTAssertEqual(loginCallCount, 1)
+    }
+
+    func testLoginRoutesRegistrationTap() {
+        let repository = StaticAuthRepository(loginResult: .success(.signedIn))
+        var routedStep: AuthStep?
+        let viewModel = LoginViewModel(
+            login: LoginUseCase(repository: repository),
+            navigate: { routedStep = $0 }
+        )
+
+        viewModel.registrationTapped()
+
+        XCTAssertEqual(routedStep, .registration)
     }
 
     func testRegistrationSuccessReturnsToCallerWithoutSigningIn() async {
         let repository = StaticAuthRepository(registrationResult: .success(Self.user))
+        var routedStep: AuthStep?
         let viewModel = RegistrationViewModel(
-            register: RegisterUseCase(repository: repository)
+            register: RegisterUseCase(repository: repository),
+            navigate: { routedStep = $0 }
         )
         viewModel.email = "reader@example.com"
         viewModel.password = "password-1"
 
-        let didSubmit = await viewModel.submit()
+        await viewModel.submit()
 
-        XCTAssertTrue(didSubmit)
+        XCTAssertEqual(routedStep, .registrationCompleted)
         XCTAssertEqual(viewModel.state, .success)
     }
 

@@ -39,12 +39,18 @@ Presentation/
 ```text
 Presentation/App/Authentication/
 ├── AuthCoordinator.swift
+├── AuthRoot/
+│   ├── AuthRootView.swift
+│   └── AuthRootViewModel.swift
 ├── Login/
 │   ├── LoginView.swift
 │   └── LoginViewModel.swift
-└── Registration/
-    ├── RegistrationView.swift
-    └── RegistrationViewModel.swift
+├── Registration/
+│   ├── RegistrationView.swift
+│   └── RegistrationViewModel.swift
+└── Shared/
+    ├── AuthFormContainer.swift
+    └── AuthFormState.swift
 ```
 
 Presentation зависит от Domain, но Domain ничего не знает о Presentation. Data
@@ -63,7 +69,9 @@ Presentation зависит от Domain, но Domain ничего не знае�
 событие или требуемое состояние, но не способ отображения интерфейса.
 
 ```text
-View / ViewModel
+View
+      ↓ пользовательское действие
+ViewModel
       ↓ Step
 Coordinator.navigate(to:)
       ↓
@@ -74,7 +82,12 @@ CoordinatorView → SwiftUI
 
 Решение о том, станет Step push-переходом, sheet, full-screen cover, сменой
 вкладки или заменой корневого сценария, принимает Coordinator. Благодаря этому
-источник Step не зависит от конкретного способа presentation.
+ViewModel не зависит от конкретного способа presentation.
+
+Экранный View не вызывает Coordinator напрямую. Пользовательские действия,
+которые приводят к навигации, проходят через ViewModel и выражаются Step.
+ViewModel может отправить Step через callback, но не владеет Coordinator и не
+изменяет navigation state самостоятельно.
 
 Навигация разделена на независимые сценарии. Каждый сценарий имеет собственный
 Step-тип, Coordinator и CoordinatorView. Дочерний сценарий завершается обычным
@@ -130,8 +143,8 @@ CoordinatorView связывает наблюдаемое состояние Coo
 - `TabView` для вкладок;
 - замену View subtree для перехода между корневыми сценариями.
 
-CoordinatorView сопоставляет presentation Step с конкретным экраном и отправляет
-пользовательские действия обратно в Coordinator как новые Step.
+CoordinatorView сопоставляет presentation Step с конкретным экраном и связывает
+Step callback экранного ViewModel с `Coordinator.navigate(to:)`.
 
 ## Navigation state
 
@@ -156,6 +169,8 @@ SwiftUI требует явного состояния для построени
 ## Основные правила
 
 - все навигационные намерения и результаты выражаются Step;
+- экранный View не вызывает Coordinator напрямую;
+- пользовательское действие, приводящее к навигации, проходит через ViewModel;
 - каждый Coordinator принимает только Step своего сценария;
 - Step не выбирает способ presentation;
 - дочерний Coordinator сообщает о завершении Step родительского уровня, но не

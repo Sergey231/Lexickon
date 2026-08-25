@@ -7,6 +7,8 @@ enum MainStep: CoordinatorStep {
     case settings
     case about
     case onboarding
+    case aboutDismissed
+    case onboardingDismissed
     case selectTab(MainTab)
     case logout
     case sessionExpired
@@ -40,6 +42,10 @@ final class MainCoordinator: Coordinator {
             sheet = .about
         case .onboarding:
             fullScreenCover = .onboarding
+        case .aboutDismissed:
+            sheet = nil
+        case .onboardingDismissed:
+            fullScreenCover = nil
         case let .selectTab(tab):
             selectedTab = tab
         case .logout:
@@ -52,13 +58,11 @@ final class MainCoordinator: Coordinator {
 @MainActor
 struct MainCoordinatorView: View {
     @Bindable var coordinator: MainCoordinator
-    @State private var sessionViewModel: MainSessionViewModel
+    private let logout: LogoutUseCase
 
     init(coordinator: MainCoordinator, logout: LogoutUseCase) {
         self.coordinator = coordinator
-        _sessionViewModel = State(
-            initialValue: MainSessionViewModel(logout: logout)
-        )
+        self.logout = logout
     }
 
     var body: some View {
@@ -89,99 +93,43 @@ struct MainCoordinatorView: View {
         .sheet(item: $coordinator.sheet) { sheet in
             switch sheet {
             case .about:
-                NavigationPlaceholderScreen(
-                    title: "navigation.main.about.title",
-                    subtitle: "navigation.placeholder.subtitle",
-                    systemImage: "info.circle",
-                    accessibilityIdentifier: "main.about.title"
-                ) {
-                    Button("navigation.close") {
-                        coordinator.sheet = nil
-                    }
+                MainAboutView { step in
+                    coordinator.navigate(to: step)
                 }
-            case .frequency, .profile, .settings, .onboarding, .selectTab,
-                 .logout, .sessionExpired:
+            case .frequency, .profile, .settings, .onboarding,
+                 .aboutDismissed, .onboardingDismissed, .selectTab, .logout,
+                 .sessionExpired:
                 EmptyView()
             }
         }
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
             switch cover {
             case .onboarding:
-                NavigationPlaceholderScreen(
-                    title: "navigation.main.onboarding.title",
-                    subtitle: "navigation.placeholder.subtitle",
-                    systemImage: "sparkles",
-                    accessibilityIdentifier: "main.onboarding.title"
-                ) {
-                    Button("navigation.close") {
-                        coordinator.fullScreenCover = nil
-                    }
+                MainOnboardingView { step in
+                    coordinator.navigate(to: step)
                 }
-            case .frequency, .profile, .settings, .about, .selectTab,
-                 .logout, .sessionExpired:
+            case .frequency, .profile, .settings, .about, .aboutDismissed,
+                 .onboardingDismissed, .selectTab, .logout, .sessionExpired:
                 EmptyView()
             }
         }
     }
 
     private var searchTab: some View {
-        NavigationPlaceholderScreen(
-            title: "navigation.main.title",
-            subtitle: "navigation.placeholder.subtitle",
-            systemImage: "character.book.closed",
-            accessibilityIdentifier: "main.placeholder"
-        ) {
-            Button("navigation.main.frequency") {
-                coordinator.navigate(to: .selectTab(.frequency))
-            }
-
-            Button("navigation.main.logout") {
-                Task {
-                    if await sessionViewModel.performLogout() {
-                        coordinator.navigate(to: .logout)
-                    }
-                }
-            }
-            .accessibilityIdentifier("main.logout")
-            .buttonStyle(.bordered)
-            .disabled(sessionViewModel.isLoggingOut)
-
-            Button("navigation.main.sessionExpired") {
-                coordinator.navigate(to: .sessionExpired)
-            }
-            .accessibilityIdentifier("main.sessionExpired")
-            .buttonStyle(.bordered)
+        MainSearchView(logout: logout) { step in
+            coordinator.navigate(to: step)
         }
     }
 
     private var frequencyTab: some View {
-        NavigationPlaceholderScreen(
-            title: "navigation.main.frequency.title",
-            subtitle: "navigation.placeholder.subtitle",
-            systemImage: "chart.bar",
-            accessibilityIdentifier: "main.frequency.title"
-        ) {
-            Button("navigation.main.openFrequency") {
-                coordinator.navigate(to: .frequency)
-            }
+        MainFrequencyView { step in
+            coordinator.navigate(to: step)
         }
     }
 
     private var profileTab: some View {
-        NavigationPlaceholderScreen(
-            title: "navigation.main.profile.title",
-            subtitle: "navigation.placeholder.subtitle",
-            systemImage: "person.crop.circle",
-            accessibilityIdentifier: "main.profile.title"
-        ) {
-            Button("navigation.main.settings") {
-                coordinator.navigate(to: .settings)
-            }
-
-            Button("navigation.main.about") {
-                coordinator.navigate(to: .about)
-            }
-            .buttonStyle(.bordered)
+        MainProfileView { step in
+            coordinator.navigate(to: step)
         }
     }
 
@@ -209,7 +157,8 @@ struct MainCoordinatorView: View {
                 systemImage: "gearshape",
                 accessibilityIdentifier: "main.settings.title"
             ) { EmptyView() }
-        case .about, .onboarding, .selectTab, .logout, .sessionExpired:
+        case .about, .onboarding, .aboutDismissed, .onboardingDismissed,
+             .selectTab, .logout, .sessionExpired:
             EmptyView()
         }
     }

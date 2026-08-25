@@ -13,29 +13,36 @@ final class LaunchViewModel {
     private(set) var state: LaunchState = .idle
 
     private let resolveLaunchDestination: ResolveLaunchDestinationUseCase
+    @ObservationIgnored private let navigate: @MainActor (AppStep) -> Void
 
-    init(resolveDestination: ResolveLaunchDestinationUseCase) {
+    init(
+        resolveDestination: ResolveLaunchDestinationUseCase,
+        navigate: @escaping @MainActor (AppStep) -> Void
+    ) {
         self.resolveLaunchDestination = resolveDestination
+        self.navigate = navigate
     }
 
     var isLoading: Bool {
         state == .loading
     }
 
-    func resolveDestination() async -> LaunchDestination? {
-        guard state != .loading else { return nil }
+    func resolveDestination() async {
+        guard state != .loading else { return }
 
         state = .loading
         do {
             let destination = try await resolveLaunchDestination()
             state = .resolved(destination)
-            return destination
+            navigate(.launchCompleted(destination))
         } catch let appError as AppError {
             state = .error(appError)
-            return nil
         } catch {
             state = .error(.unexpected(.invariantViolation))
-            return nil
         }
+    }
+
+    func loginTapped() {
+        navigate(.launchCompleted(.login))
     }
 }

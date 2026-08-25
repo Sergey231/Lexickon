@@ -2,18 +2,10 @@ import SwiftUI
 
 @MainActor
 struct AuthRootView: View {
-    let onLogin: () -> Void
-    let onRegistration: () -> Void
-    let onHelp: () -> Void
+    @State private var viewModel: AuthRootViewModel
 
-    init(
-        onLogin: @escaping () -> Void,
-        onRegistration: @escaping () -> Void,
-        onHelp: @escaping () -> Void
-    ) {
-        self.onLogin = onLogin
-        self.onRegistration = onRegistration
-        self.onHelp = onHelp
+    init(navigate: @escaping @MainActor (AuthStep) -> Void) {
+        _viewModel = State(initialValue: AuthRootViewModel(navigate: navigate))
     }
 
     var body: some View {
@@ -34,19 +26,19 @@ struct AuthRootView: View {
 
             VStack(spacing: 12) {
                 Button("Log in") {
-                    onLogin()
+                    viewModel.loginTapped()
                 }
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("auth.login")
 
                 Button("Create account") {
-                    onRegistration()
+                    viewModel.registrationTapped()
                 }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("auth.registration")
 
                 Button("Help") {
-                    onHelp()
+                    viewModel.helpTapped()
                 }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("auth.help")

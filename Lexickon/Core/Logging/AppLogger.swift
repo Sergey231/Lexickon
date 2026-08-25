@@ -8,4 +8,5 @@ enum AppLogger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "Lexickon"
 
     static let app = Logger(subsystem: subsystem, category: "app")
+    static let network = Logger(subsystem: subsystem, category: "network")
 }

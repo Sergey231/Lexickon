@@ -4,16 +4,17 @@ import SwiftUI
 struct RegistrationView: View {
     @State private var viewModel: RegistrationViewModel
     @FocusState private var focusedField: AuthField?
-    let onRegistered: () -> Void
 
     init(
         register: RegisterUseCase,
-        onRegistered: @escaping () -> Void
+        navigate: @escaping @MainActor (AuthStep) -> Void
     ) {
         _viewModel = State(
-            initialValue: RegistrationViewModel(register: register)
+            initialValue: RegistrationViewModel(
+                register: register,
+                navigate: navigate
+            )
         )
-        self.onRegistered = onRegistered
     }
 
     var body: some View {
@@ -32,9 +33,7 @@ struct RegistrationView: View {
             Button {
                 Task {
                     focusedField = nil
-                    if await viewModel.submit() {
-                        onRegistered()
-                    }
+                    await viewModel.submit()
                 }
             } label: {
                 AuthSubmitLabel(title: "Create account", isLoading: viewModel.isLoading)
