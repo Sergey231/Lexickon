@@ -13,23 +13,23 @@ final class AppContainerTests: XCTestCase {
         )
         let useCases = graph.container.useCases
 
-        let registeredUser = try await useCases.register(
+        let registeredUser = try await useCases.registerUseCase(
             fixture.registrationRequest
         )
-        let authenticationState = try await useCases.login(
+        let authenticationState = try await useCases.loginUseCase(
             fixture.loginRequest
         )
-        try await useCases.logout()
-        let launchDestination = try await useCases.resolveLaunchDestination()
-        let currentUser = try await useCases.currentUser()
-        let updatedSettings = try await useCases.updateUserSettings(
+        try await useCases.logoutUseCase()
+        let launchDestination = try await useCases.resolveLaunchDestinationUseCase()
+        let currentUser = try await useCases.currentUserUseCase()
+        let updatedSettings = try await useCases.updateUserSettingsUseCase(
             fixture.settingsPatch
         )
-        let datasets = try await useCases.datasetCatalog()
-        let syncResult = try await useCases.synchronizeDatasets(
+        let datasets = try await useCases.datasetCatalogUseCase()
+        let syncResult = try await useCases.synchronizeDatasetsUseCase(
             fixture.syncRequest
         )
-        let frequency = try await useCases.lookupFrequency(
+        let frequency = try await useCases.lookupFrequencyUseCase(
             fixture.frequencyQuery
         )
 
@@ -66,7 +66,7 @@ final class AppContainerTests: XCTestCase {
     func testProductionAssemblyUsesRemoteAuthAdapter() async throws {
         let container = ProductionAssembly.makeContainer()
 
-        let launchDestination = try await container.useCases.resolveLaunchDestination()
+        let launchDestination = try await container.useCases.resolveLaunchDestinationUseCase()
 
         XCTAssertEqual(launchDestination, .login)
     }

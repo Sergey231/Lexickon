@@ -4,13 +4,8 @@ import SwiftUI
 struct MainSearchView: View {
     @State private var viewModel: MainSearchViewModel
 
-    init(
-        logout: LogoutUseCase,
-        navigate: @escaping @MainActor (MainStep) -> Void
-    ) {
-        _viewModel = State(
-            initialValue: MainSearchViewModel(logout: logout, navigate: navigate)
-        )
+    init(viewModel: MainSearchViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

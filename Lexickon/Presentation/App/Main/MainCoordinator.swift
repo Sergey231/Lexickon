@@ -55,14 +55,14 @@ final class MainCoordinator: Coordinator {
         }
     }
 }
+
 @MainActor
 struct MainCoordinatorView: View {
-    @Bindable var coordinator: MainCoordinator
-    private let logout: LogoutUseCase
+    @State private var coordinator: MainCoordinator
+    @Environment(\.useCases) private var useCases
 
-    init(coordinator: MainCoordinator, logout: LogoutUseCase) {
-        self.coordinator = coordinator
-        self.logout = logout
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        _coordinator = State(initialValue: MainCoordinator(onStep: onStep))
     }
 
     var body: some View {
@@ -93,9 +93,11 @@ struct MainCoordinatorView: View {
         .sheet(item: $coordinator.sheet) { sheet in
             switch sheet {
             case .about:
-                MainAboutView { step in
-                    coordinator.navigate(to: step)
-                }
+                MainAboutView(
+                    viewModel: MainAboutViewModel { step in
+                        coordinator.navigate(to: step)
+                    }
+                )
             case .frequency, .profile, .settings, .onboarding,
                  .aboutDismissed, .onboardingDismissed, .selectTab, .logout,
                  .sessionExpired:
@@ -105,9 +107,11 @@ struct MainCoordinatorView: View {
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
             switch cover {
             case .onboarding:
-                MainOnboardingView { step in
-                    coordinator.navigate(to: step)
-                }
+                MainOnboardingView(
+                    viewModel: MainOnboardingViewModel { step in
+                        coordinator.navigate(to: step)
+                    }
+                )
             case .frequency, .profile, .settings, .about, .aboutDismissed,
                  .onboardingDismissed, .selectTab, .logout, .sessionExpired:
                 EmptyView()
@@ -116,21 +120,30 @@ struct MainCoordinatorView: View {
     }
 
     private var searchTab: some View {
-        MainSearchView(logout: logout) { step in
-            coordinator.navigate(to: step)
-        }
+        MainSearchView(
+            viewModel: MainSearchViewModel(
+                logoutUseCase: useCases.logoutUseCase,
+                navigate: { step in
+                    coordinator.navigate(to: step)
+                }
+            )
+        )
     }
 
     private var frequencyTab: some View {
-        MainFrequencyView { step in
-            coordinator.navigate(to: step)
-        }
+        MainFrequencyView(
+            viewModel: MainFrequencyViewModel { step in
+                coordinator.navigate(to: step)
+            }
+        )
     }
 
     private var profileTab: some View {
-        MainProfileView { step in
-            coordinator.navigate(to: step)
-        }
+        MainProfileView(
+            viewModel: MainProfileViewModel { step in
+                coordinator.navigate(to: step)
+            }
+        )
     }
 
     @ViewBuilder

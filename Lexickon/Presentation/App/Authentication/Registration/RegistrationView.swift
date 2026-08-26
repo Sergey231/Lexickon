@@ -5,16 +5,8 @@ struct RegistrationView: View {
     @State private var viewModel: RegistrationViewModel
     @FocusState private var focusedField: AuthField?
 
-    init(
-        register: RegisterUseCase,
-        navigate: @escaping @MainActor (AuthStep) -> Void
-    ) {
-        _viewModel = State(
-            initialValue: RegistrationViewModel(
-                register: register,
-                navigate: navigate
-            )
-        )
+    init(viewModel: RegistrationViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

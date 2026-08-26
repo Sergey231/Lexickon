@@ -6,14 +6,14 @@ final class MainSearchViewModel {
     private(set) var isLoggingOut = false
     private(set) var error: AppError?
 
-    private let logout: LogoutUseCase
+    private let logoutUseCase: LogoutUseCase
     @ObservationIgnored private let navigate: @MainActor (MainStep) -> Void
 
     init(
-        logout: LogoutUseCase,
+        logoutUseCase: LogoutUseCase,
         navigate: @escaping @MainActor (MainStep) -> Void
     ) {
-        self.logout = logout
+        self.logoutUseCase = logoutUseCase
         self.navigate = navigate
     }
 
@@ -27,7 +27,7 @@ final class MainSearchViewModel {
         isLoggingOut = true
         defer { isLoggingOut = false }
         do {
-            try await logout()
+            try await logoutUseCase()
             error = nil
             navigate(.logout)
         } catch let appError as AppError {

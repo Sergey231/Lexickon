@@ -5,13 +5,8 @@ struct LoginView: View {
     @State private var viewModel: LoginViewModel
     @FocusState private var focusedField: AuthField?
 
-    init(
-        login: LoginUseCase,
-        navigate: @escaping @MainActor (AuthStep) -> Void
-    ) {
-        _viewModel = State(
-            initialValue: LoginViewModel(login: login, navigate: navigate)
-        )
+    init(viewModel: LoginViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

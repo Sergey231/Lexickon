@@ -6,7 +6,7 @@ final class MainViewModelTests: XCTestCase {
     func testSearchRoutesFrequencyTap() {
         var routedStep: MainStep?
         let viewModel = MainSearchViewModel(
-            logout: LogoutUseCase(repository: StaticLogoutRepository()),
+            logoutUseCase: LogoutUseCase(repository: StaticLogoutRepository()),
             navigate: { routedStep = $0 }
         )
 
@@ -18,7 +18,7 @@ final class MainViewModelTests: XCTestCase {
     func testSearchRoutesLogoutAfterSuccessfulLogout() async {
         var routedStep: MainStep?
         let viewModel = MainSearchViewModel(
-            logout: LogoutUseCase(repository: StaticLogoutRepository()),
+            logoutUseCase: LogoutUseCase(repository: StaticLogoutRepository()),
             navigate: { routedStep = $0 }
         )
 
@@ -31,7 +31,7 @@ final class MainViewModelTests: XCTestCase {
     func testSearchDoesNotRouteLogoutAfterFailedLogout() async {
         var routedStep: MainStep?
         let viewModel = MainSearchViewModel(
-            logout: LogoutUseCase(
+            logoutUseCase: LogoutUseCase(
                 repository: StaticLogoutRepository(result: .failure(.transport(.offline)))
             ),
             navigate: { routedStep = $0 }
@@ -46,7 +46,7 @@ final class MainViewModelTests: XCTestCase {
     func testSearchRoutesSessionExpiredTap() {
         var routedStep: MainStep?
         let viewModel = MainSearchViewModel(
-            logout: LogoutUseCase(repository: StaticLogoutRepository()),
+            logoutUseCase: LogoutUseCase(repository: StaticLogoutRepository()),
             navigate: { routedStep = $0 }
         )
 

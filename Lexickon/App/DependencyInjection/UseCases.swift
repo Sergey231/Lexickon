@@ -1,36 +1,36 @@
 import SwiftUI
 
 struct UseCases: Sendable {
-    let resolveLaunchDestination: ResolveLaunchDestinationUseCase
-    let register: RegisterUseCase
-    let login: LoginUseCase
-    let logout: LogoutUseCase
-    let currentUser: GetCurrentUserUseCase
-    let updateUserSettings: UpdateUserSettingsUseCase
-    let datasetCatalog: GetDatasetCatalogUseCase
-    let synchronizeDatasets: SynchronizeDatasetsUseCase
-    let lookupFrequency: LookupFrequencyUseCase
+    let resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase
+    let registerUseCase: RegisterUseCase
+    let loginUseCase: LoginUseCase
+    let logoutUseCase: LogoutUseCase
+    let currentUserUseCase: GetCurrentUserUseCase
+    let updateUserSettingsUseCase: UpdateUserSettingsUseCase
+    let datasetCatalogUseCase: GetDatasetCatalogUseCase
+    let synchronizeDatasetsUseCase: SynchronizeDatasetsUseCase
+    let lookupFrequencyUseCase: LookupFrequencyUseCase
 
     init(repositories: RepositoriesAssembly) {
-        self.resolveLaunchDestination = ResolveLaunchDestinationUseCase(
+        self.resolveLaunchDestinationUseCase = ResolveLaunchDestinationUseCase(
             repository: repositories.authRepository
         )
-        self.register = RegisterUseCase(repository: repositories.authRepository)
-        self.login = LoginUseCase(repository: repositories.authRepository)
-        self.logout = LogoutUseCase(repository: repositories.authRepository)
-        self.currentUser = GetCurrentUserUseCase(
+        self.registerUseCase = RegisterUseCase(repository: repositories.authRepository)
+        self.loginUseCase = LoginUseCase(repository: repositories.authRepository)
+        self.logoutUseCase = LogoutUseCase(repository: repositories.authRepository)
+        self.currentUserUseCase = GetCurrentUserUseCase(
             repository: repositories.userRepository
         )
-        self.updateUserSettings = UpdateUserSettingsUseCase(
+        self.updateUserSettingsUseCase = UpdateUserSettingsUseCase(
             repository: repositories.userRepository
         )
-        self.datasetCatalog = GetDatasetCatalogUseCase(
+        self.datasetCatalogUseCase = GetDatasetCatalogUseCase(
             repository: repositories.datasetRepository
         )
-        self.synchronizeDatasets = SynchronizeDatasetsUseCase(
+        self.synchronizeDatasetsUseCase = SynchronizeDatasetsUseCase(
             repository: repositories.datasetRepository
         )
-        self.lookupFrequency = LookupFrequencyUseCase(
+        self.lookupFrequencyUseCase = LookupFrequencyUseCase(
             repository: repositories.frequencyRepository
         )
     }

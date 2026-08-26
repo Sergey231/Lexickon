@@ -8,14 +8,14 @@ final class RegistrationViewModel {
     var password = ""
     private(set) var state: AuthFormState = .idle
 
-    private let register: RegisterUseCase
+    private let registerUseCase: RegisterUseCase
     @ObservationIgnored private let navigate: @MainActor (AuthStep) -> Void
 
     init(
-        register: RegisterUseCase,
+        registerUseCase: RegisterUseCase,
         navigate: @escaping @MainActor (AuthStep) -> Void
     ) {
-        self.register = register
+        self.registerUseCase = registerUseCase
         self.navigate = navigate
     }
 
@@ -29,7 +29,7 @@ final class RegistrationViewModel {
 
         state = .loading
         do {
-            _ = try await register(request)
+            _ = try await registerUseCase(request)
             state = .success
             navigate(.registrationCompleted)
         } catch let error as AppError {

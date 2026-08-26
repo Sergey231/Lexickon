@@ -12,14 +12,14 @@ enum LaunchState: Equatable, Sendable {
 final class LaunchViewModel {
     private(set) var state: LaunchState = .idle
 
-    private let resolveLaunchDestination: ResolveLaunchDestinationUseCase
+    private let resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase
     @ObservationIgnored private let navigate: @MainActor (AppStep) -> Void
 
     init(
-        resolveDestination: ResolveLaunchDestinationUseCase,
+        resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase,
         navigate: @escaping @MainActor (AppStep) -> Void
     ) {
-        self.resolveLaunchDestination = resolveDestination
+        self.resolveLaunchDestinationUseCase = resolveLaunchDestinationUseCase
         self.navigate = navigate
     }
 
@@ -32,7 +32,7 @@ final class LaunchViewModel {
 
         state = .loading
         do {
-            let destination = try await resolveLaunchDestination()
+            let destination = try await resolveLaunchDestinationUseCase()
             state = .resolved(destination)
             navigate(.launchCompleted(destination))
         } catch let appError as AppError {

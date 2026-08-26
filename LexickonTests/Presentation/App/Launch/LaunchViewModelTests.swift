@@ -9,7 +9,7 @@ final class LaunchViewModelTests: XCTestCase {
         )
         var routedStep: AppStep?
         let viewModel = LaunchViewModel(
-            resolveDestination: ResolveLaunchDestinationUseCase(
+            resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase(
                 repository: repository
             ),
             navigate: { routedStep = $0 }
@@ -29,7 +29,7 @@ final class LaunchViewModelTests: XCTestCase {
         )
         var routedStep: AppStep?
         let viewModel = LaunchViewModel(
-            resolveDestination: ResolveLaunchDestinationUseCase(
+            resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase(
                 repository: repository
             ),
             navigate: { routedStep = $0 }
@@ -49,7 +49,7 @@ final class LaunchViewModelTests: XCTestCase {
         )
         var routedStep: AppStep?
         let viewModel = LaunchViewModel(
-            resolveDestination: ResolveLaunchDestinationUseCase(
+            resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase(
                 repository: repository
             ),
             navigate: { routedStep = $0 }
@@ -66,7 +66,7 @@ final class LaunchViewModelTests: XCTestCase {
     func testLoginTapRoutesToLogin() {
         var routedStep: AppStep?
         let viewModel = LaunchViewModel(
-            resolveDestination: ResolveLaunchDestinationUseCase(
+            resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase(
                 repository: LaunchAuthRepository(stateResult: .success(.signedOut))
             ),
             navigate: { routedStep = $0 }

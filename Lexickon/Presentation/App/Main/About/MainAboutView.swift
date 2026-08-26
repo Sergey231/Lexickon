@@ -4,8 +4,8 @@ import SwiftUI
 struct MainAboutView: View {
     @State private var viewModel: MainAboutViewModel
 
-    init(navigate: @escaping @MainActor (MainStep) -> Void) {
-        _viewModel = State(initialValue: MainAboutViewModel(navigate: navigate))
+    init(viewModel: MainAboutViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

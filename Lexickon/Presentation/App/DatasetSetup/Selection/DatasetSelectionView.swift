@@ -4,8 +4,8 @@ import SwiftUI
 struct DatasetSelectionView: View {
     @State private var viewModel: DatasetSelectionViewModel
 
-    init(navigate: @escaping @MainActor (DatasetSetupStep) -> Void) {
-        _viewModel = State(initialValue: DatasetSelectionViewModel(navigate: navigate))
+    init(viewModel: DatasetSelectionViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

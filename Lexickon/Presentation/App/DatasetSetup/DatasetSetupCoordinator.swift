@@ -44,7 +44,11 @@ final class DatasetSetupCoordinator: Coordinator {
 
 @MainActor
 struct DatasetSetupCoordinatorView: View {
-    @Bindable var coordinator: DatasetSetupCoordinator
+    @State private var coordinator: DatasetSetupCoordinator
+
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        _coordinator = State(initialValue: DatasetSetupCoordinator(onStep: onStep))
+    }
 
     var body: some View {
         NavigationStack(path: $coordinator.path) {
@@ -56,9 +60,11 @@ struct DatasetSetupCoordinatorView: View {
         .sheet(item: $coordinator.sheet) { sheet in
             switch sheet {
             case .storageInfo:
-                DatasetStorageInfoView { step in
-                    coordinator.navigate(to: step)
-                }
+                DatasetStorageInfoView(
+                    viewModel: DatasetStorageInfoViewModel { step in
+                        coordinator.navigate(to: step)
+                    }
+                )
             case .selection, .installation, .installationDetails,
                  .storageInfoDismissed, .installationDetailsDismissed,
                  .completed:
@@ -68,9 +74,11 @@ struct DatasetSetupCoordinatorView: View {
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
             switch cover {
             case .installationDetails:
-                DatasetInstallationDetailsView { step in
-                    coordinator.navigate(to: step)
-                }
+                DatasetInstallationDetailsView(
+                    viewModel: DatasetInstallationDetailsViewModel { step in
+                        coordinator.navigate(to: step)
+                    }
+                )
             case .selection, .installation, .storageInfo,
                  .storageInfoDismissed, .installationDetailsDismissed,
                  .completed:
@@ -80,22 +88,28 @@ struct DatasetSetupCoordinatorView: View {
     }
 
     private var setupRoot: some View {
-        DatasetSetupRootView { step in
-            coordinator.navigate(to: step)
-        }
+        DatasetSetupRootView(
+            viewModel: DatasetSetupRootViewModel { step in
+                coordinator.navigate(to: step)
+            }
+        )
     }
 
     @ViewBuilder
     private func destination(for step: DatasetSetupStep) -> some View {
         switch step {
         case .selection:
-            DatasetSelectionView { step in
-                coordinator.navigate(to: step)
-            }
+            DatasetSelectionView(
+                viewModel: DatasetSelectionViewModel { step in
+                    coordinator.navigate(to: step)
+                }
+            )
         case .installation:
-            DatasetInstallationView { step in
-                coordinator.navigate(to: step)
-            }
+            DatasetInstallationView(
+                viewModel: DatasetInstallationViewModel { step in
+                    coordinator.navigate(to: step)
+                }
+            )
         case .storageInfo, .installationDetails, .storageInfoDismissed,
              .installationDetailsDismissed, .completed:
             EmptyView()

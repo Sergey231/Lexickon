@@ -8,14 +8,14 @@ final class LoginViewModel {
     var password: String
     private(set) var state: AuthFormState = .idle
 
-    private let login: LoginUseCase
+    private let loginUseCase: LoginUseCase
     @ObservationIgnored private let navigate: @MainActor (AuthStep) -> Void
 
     init(
-        login: LoginUseCase,
+        loginUseCase: LoginUseCase,
         navigate: @escaping @MainActor (AuthStep) -> Void
     ) {
-        self.login = login
+        self.loginUseCase = loginUseCase
         self.navigate = navigate
         #if DEBUG
         if DebugLoginCredentials.shouldPrefill {
@@ -41,7 +41,7 @@ final class LoginViewModel {
 
         state = .loading
         do {
-            let result = try await login(request)
+            let result = try await loginUseCase(request)
 
             if result == .signedIn {
                 state = .success

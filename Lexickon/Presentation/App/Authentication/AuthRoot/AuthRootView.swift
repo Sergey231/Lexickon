@@ -4,8 +4,8 @@ import SwiftUI
 struct AuthRootView: View {
     @State private var viewModel: AuthRootViewModel
 
-    init(navigate: @escaping @MainActor (AuthStep) -> Void) {
-        _viewModel = State(initialValue: AuthRootViewModel(navigate: navigate))
+    init(viewModel: AuthRootViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

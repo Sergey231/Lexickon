@@ -4,8 +4,8 @@ import SwiftUI
 struct DatasetSetupRootView: View {
     @State private var viewModel: DatasetSetupRootViewModel
 
-    init(navigate: @escaping @MainActor (DatasetSetupStep) -> Void) {
-        _viewModel = State(initialValue: DatasetSetupRootViewModel(navigate: navigate))
+    init(viewModel: DatasetSetupRootViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

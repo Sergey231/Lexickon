@@ -4,8 +4,8 @@ import SwiftUI
 struct MainFrequencyView: View {
     @State private var viewModel: MainFrequencyViewModel
 
-    init(navigate: @escaping @MainActor (MainStep) -> Void) {
-        _viewModel = State(initialValue: MainFrequencyViewModel(navigate: navigate))
+    init(viewModel: MainFrequencyViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

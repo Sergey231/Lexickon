@@ -12,6 +12,9 @@ Presentation содержит всё, что относится к пользо�
 Presentation/
 ├── App/
 │   ├── AppCoordinator.swift
+│   ├── Launch/
+│   │   ├── LaunchView.swift
+│   │   └── LaunchViewModel.swift
 │   ├── Authentication/
 │   │   └── AuthCoordinator.swift
 │   ├── DatasetSetup/
@@ -89,6 +92,10 @@ ViewModel не зависит от конкретного способа present
 ViewModel может отправить Step через callback, но не владеет Coordinator и не
 изменяет navigation state самостоятельно.
 
+CoordinatorView создаёт экранный ViewModel, передавая ему необходимые use case’ы
+и Step callback, а затем передаёт готовый ViewModel во View. Экранный View не
+получает use case’ы через init и не создаёт ViewModel из domain-зависимостей.
+
 Навигация разделена на независимые сценарии. Каждый сценарий имеет собственный
 Step-тип, Coordinator и CoordinatorView. Дочерний сценарий завершается обычным
 Step, который его Coordinator преобразует в Step родительского уровня и передаёт
@@ -161,21 +168,27 @@ SwiftUI требует явного состояния для построени
 нормализованный presentation Step в `currentStep`. Дочерние Coordinators ему не
 принадлежат.
 
-`AppCoordinatorView` выбирает сценарий по `currentStep`. SwiftUI-контейнер
+`AppCoordinatorView` выбирает сценарий по `currentStep`. `CoordinatorView`
 выбранного сценария создаёт его Coordinator и удерживает через `@State`. При
 изменении `currentStep` старый View subtree удаляется, поэтому его Coordinator
 освобождается вместе со всем navigation state.
+
+Если сценарий не имеет собственного дочернего Coordinator, как `Launch`,
+`AppCoordinatorView` создаёт его корневой ViewModel напрямую и передаёт callback
+в `AppCoordinator`.
 
 ## Основные правила
 
 - все навигационные намерения и результаты выражаются Step;
 - экранный View не вызывает Coordinator напрямую;
 - пользовательское действие, приводящее к навигации, проходит через ViewModel;
+- CoordinatorView создаёт экранный ViewModel и передаёт его во View;
+- use case’ы передаются во ViewModel, но не протаскиваются через экранный View;
 - каждый Coordinator принимает только Step своего сценария;
 - Step не выбирает способ presentation;
 - дочерний Coordinator сообщает о завершении Step родительского уровня, но не
   выбирает следующий сценарий;
 - Coordinator изменяет состояние, а CoordinatorView отображает его;
-- временем жизни дочернего Coordinator владеет SwiftUI-контейнер его сценария;
+- временем жизни дочернего Coordinator владеет его CoordinatorView;
 - переход между корневыми сценариями заменяет предыдущий View subtree, а не
   добавляет его в общий push stack.

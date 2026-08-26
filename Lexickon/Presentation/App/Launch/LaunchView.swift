@@ -4,16 +4,8 @@ import SwiftUI
 struct LaunchView: View {
     @State private var viewModel: LaunchViewModel
 
-    init(
-        resolveDestination: ResolveLaunchDestinationUseCase,
-        navigate: @escaping @MainActor (AppStep) -> Void
-    ) {
-        _viewModel = State(
-            initialValue: LaunchViewModel(
-                resolveDestination: resolveDestination,
-                navigate: navigate
-            )
-        )
+    init(viewModel: LaunchViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {

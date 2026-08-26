@@ -61,7 +61,7 @@ final class AuthViewModelTests: XCTestCase {
     func testLoginValidationKeepsClientErrorsSeparateFromApplicationErrors() async {
         var routedStep: AuthStep?
         let viewModel = LoginViewModel(
-            login: LoginUseCase(repository: EmptyAuthRepository()),
+            loginUseCase: LoginUseCase(repository: EmptyAuthRepository()),
             navigate: { routedStep = $0 }
         )
         viewModel.email = "invalid"
@@ -79,7 +79,7 @@ final class AuthViewModelTests: XCTestCase {
         )
         var routedStep: AuthStep?
         let viewModel = LoginViewModel(
-            login: LoginUseCase(repository: repository),
+            loginUseCase: LoginUseCase(repository: repository),
             navigate: { routedStep = $0 }
         )
         viewModel.email = "reader@example.com"
@@ -98,7 +98,7 @@ final class AuthViewModelTests: XCTestCase {
         let repository = StaticAuthRepository(loginResult: .success(.signedIn))
         var routedStep: AuthStep?
         let viewModel = LoginViewModel(
-            login: LoginUseCase(repository: repository),
+            loginUseCase: LoginUseCase(repository: repository),
             navigate: { routedStep = $0 }
         )
         viewModel.email = "reader@example.com"
@@ -114,7 +114,7 @@ final class AuthViewModelTests: XCTestCase {
         let repository = SlowAuthRepository()
         var routedSteps: [AuthStep] = []
         let viewModel = LoginViewModel(
-            login: LoginUseCase(repository: repository),
+            loginUseCase: LoginUseCase(repository: repository),
             navigate: { routedSteps.append($0) }
         )
         viewModel.email = "reader@example.com"
@@ -135,7 +135,7 @@ final class AuthViewModelTests: XCTestCase {
         let repository = StaticAuthRepository(loginResult: .success(.signedIn))
         var routedStep: AuthStep?
         let viewModel = LoginViewModel(
-            login: LoginUseCase(repository: repository),
+            loginUseCase: LoginUseCase(repository: repository),
             navigate: { routedStep = $0 }
         )
 
@@ -148,7 +148,7 @@ final class AuthViewModelTests: XCTestCase {
         let repository = StaticAuthRepository(registrationResult: .success(Self.user))
         var routedStep: AuthStep?
         let viewModel = RegistrationViewModel(
-            register: RegisterUseCase(repository: repository),
+            registerUseCase: RegisterUseCase(repository: repository),
             navigate: { routedStep = $0 }
         )
         viewModel.email = "reader@example.com"

@@ -47,8 +47,12 @@ final class AuthCoordinator: Coordinator {
 
 @MainActor
 struct AuthCoordinatorView: View {
-    @Bindable var coordinator: AuthCoordinator
-    let useCases: UseCases
+    @State private var coordinator: AuthCoordinator
+    @Environment(\.useCases) private var useCases
+
+    init(onStep: @escaping @MainActor (AppStep) -> Void) {
+        _coordinator = State(initialValue: AuthCoordinator(onStep: onStep))
+    }
 
     var body: some View {
         NavigationStack(path: $coordinator.path) {
@@ -60,9 +64,11 @@ struct AuthCoordinatorView: View {
         .sheet(item: $coordinator.sheet) { sheet in
             switch sheet {
             case .help:
-                AuthHelpView { step in
-                    coordinator.navigate(to: step)
-                }
+                AuthHelpView(
+                    viewModel: AuthHelpViewModel { step in
+                        coordinator.navigate(to: step)
+                    }
+                )
             case .login, .registration, .registrationCompleted, .privacy,
                  .helpDismissed, .privacyDismissed, .authenticated:
                 EmptyView()
@@ -71,9 +77,11 @@ struct AuthCoordinatorView: View {
         .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
             switch cover {
             case .privacy:
-                AuthPrivacyView { step in
-                    coordinator.navigate(to: step)
-                }
+                AuthPrivacyView(
+                    viewModel: AuthPrivacyViewModel { step in
+                        coordinator.navigate(to: step)
+                    }
+                )
             case .login, .registration, .registrationCompleted, .help,
                  .helpDismissed, .privacyDismissed, .authenticated:
                 EmptyView()
@@ -82,9 +90,11 @@ struct AuthCoordinatorView: View {
     }
 
     private var authenticationRoot: some View {
-        AuthRootView { step in
-            coordinator.navigate(to: step)
-        }
+        AuthRootView(
+            viewModel: AuthRootViewModel { step in
+                coordinator.navigate(to: step)
+            }
+        )
     }
 
     @ViewBuilder
@@ -92,17 +102,21 @@ struct AuthCoordinatorView: View {
         switch step {
         case .login:
             LoginView(
-                login: useCases.login,
-                navigate: { step in
-                    coordinator.navigate(to: step)
-                }
+                viewModel: LoginViewModel(
+                    loginUseCase: useCases.loginUseCase,
+                    navigate: { step in
+                        coordinator.navigate(to: step)
+                    }
+                )
             )
         case .registration:
             RegistrationView(
-                register: useCases.register,
-                navigate: { step in
-                    coordinator.navigate(to: step)
-                }
+                viewModel: RegistrationViewModel(
+                    registerUseCase: useCases.registerUseCase,
+                    navigate: { step in
+                        coordinator.navigate(to: step)
+                    }
+                )
             )
         case .registrationCompleted, .help, .privacy, .helpDismissed,
              .privacyDismissed, .authenticated:
