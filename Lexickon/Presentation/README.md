@@ -51,7 +51,7 @@ Presentation/App/Authentication/
 ├── Registration/
 │   ├── RegistrationView.swift
 │   └── RegistrationViewModel.swift
-└── Shared/
+└── Components/
     ├── AuthFormContainer.swift
     └── AuthFormState.swift
 ```
