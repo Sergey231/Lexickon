@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The API is the Lexicon mobile backend and a control plane for local-first dataset delivery. It manages users, sessions, settings, dataset metadata, dataset versions, authorization, and signed download URLs. External data projects produce ready SQLite packs; this backend stores metadata and safely delivers those packs to mobile clients.
+The API is the Lexickon mobile backend and a control plane for local-first dataset delivery. It manages users, sessions, settings, dataset metadata, dataset versions, authorization, and signed download URLs. External data projects produce ready SQLite packs; this backend stores metadata and safely delivers those packs to mobile clients.
 
 ## Responsibilities
 
@@ -106,7 +106,7 @@ Rules:
 Recommended bucket layout:
 
 ```text
-lexicon-datasets/
+lexickon-datasets/
   core/en/1.0.0/core-en-v1.0.0.sqlite.gz
   programming/en/1.0.0/programming-en-v1.0.0.sqlite.gz
 ```

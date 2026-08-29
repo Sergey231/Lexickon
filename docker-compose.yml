@@ -1,24 +1,24 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: lexicon-api-postgres
+    container_name: lexickon-api-postgres
     environment:
-      POSTGRES_DB: lexicon
-      POSTGRES_USER: lexicon
-      POSTGRES_PASSWORD: lexicon
+      POSTGRES_DB: lexickon
+      POSTGRES_USER: lexickon
+      POSTGRES_PASSWORD: lexickon
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U lexicon -d lexicon"]
+      test: ["CMD-SHELL", "pg_isready -U lexickon -d lexickon"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   minio:
     image: minio/minio:latest
-    container_name: lexicon-api-minio
+    container_name: lexickon-api-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minio
@@ -39,7 +39,7 @@ services:
         echo 'Waiting for MinIO...';
         sleep 1;
       done;
-      mc mb --ignore-existing local/lexicon-datasets;
+      mc mb --ignore-existing local/lexickon-datasets;
       "
 
 volumes:

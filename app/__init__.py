@@ -1,1 +1,1 @@
-"""Lexicon API application package."""
+"""Lexickon API application package."""

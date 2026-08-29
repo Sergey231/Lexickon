@@ -46,13 +46,13 @@ APP_ENV=local
 APP_DEBUG=true
 APP_SECRET_KEY=change-me
 
-DATABASE_URL=postgresql+psycopg://lexicon:lexicon@localhost:5432/lexicon
+DATABASE_URL=postgresql+psycopg://lexickon:lexickon@localhost:5432/lexickon
 
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 STORAGE_ENDPOINT_URL=http://localhost:9000
-STORAGE_BUCKET=lexicon-datasets
+STORAGE_BUCKET=lexickon-datasets
 STORAGE_ACCESS_KEY_ID=minio
 STORAGE_SECRET_ACCESS_KEY=minio123
 STORAGE_REGION=us-east-1
@@ -268,7 +268,7 @@ The response includes a temporary signed URL:
 
 ```json
 {
-  "url": "http://localhost:9000/lexicon-datasets/...",
+  "url": "http://localhost:9000/lexickon-datasets/...",
   "expires_at": "2026-07-22T10:15:00Z",
   "checksum_sha256": "64-char-hex",
   "compressed_size_bytes": 123,

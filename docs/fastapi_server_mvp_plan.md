@@ -1,10 +1,10 @@
-# Lexicon API Server MVP: план FastAPI backend
+# Lexickon API Server MVP: план FastAPI backend
 
 ## Цель
 
-Сделать MVP backend для мобильного приложения Lexicon.
+Сделать MVP backend для мобильного приложения Lexickon.
 
-Этот репозиторий отвечает за обычные backend-задачи мобильного приложения: аккаунты, авторизацию, пользовательские настройки, каталог готовых датасетов и безопасную доставку SQLite-пакетов. Генерация данных живет вне этого проекта. Любой внешний data-проект может подготовить результат в виде SQLite-пакета и зарегистрировать его в Lexicon API.
+Этот репозиторий отвечает за обычные backend-задачи мобильного приложения: аккаунты, авторизацию, пользовательские настройки, каталог готовых датасетов и безопасную доставку SQLite-пакетов. Генерация данных живет вне этого проекта. Любой внешний data-проект может подготовить результат в виде SQLite-пакета и зарегистрировать его в Lexickon API.
 
 Сервер не должен строить датасеты сам и не должен быть runtime для чтения содержимого каждого SQLite-пакета. Его роль в MVP:
 
@@ -491,7 +491,7 @@ POST /datasets/versions/{version_id}/download-url
 Рекомендуемая структура object storage:
 
 ```text
-lexicon-datasets/
+lexickon-datasets/
   core/en/1.0.0/core-en-v1.0.0.sqlite.gz
   programming/en/1.0.0/programming-en-v1.0.0.sqlite.gz
 ```
@@ -733,12 +733,12 @@ APP_ENV=local
 APP_DEBUG=true
 APP_SECRET_KEY=change-me
 
-DATABASE_URL=postgresql+psycopg://lexicon:lexicon@localhost:5432/lexicon
+DATABASE_URL=postgresql+psycopg://lexickon:lexickon@localhost:5432/lexickon
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
 
 STORAGE_PROVIDER=s3
-STORAGE_BUCKET=lexicon-datasets
+STORAGE_BUCKET=lexickon-datasets
 STORAGE_ENDPOINT_URL=http://localhost:9000
 STORAGE_REGION=us-east-1
 STORAGE_ACCESS_KEY_ID=minio

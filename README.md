@@ -1,6 +1,6 @@
-# Lexicon API
+# Lexickon API
 
-This repository contains the Lexicon mobile backend. The backend stores account
+This repository contains the Lexickon mobile backend. The backend stores account
 data, authentication sessions, user settings, dataset metadata, and signed
 download access for ready-made SQLite database packs.
 
@@ -74,9 +74,9 @@ cp .env.example .env
 Important local values:
 
 ```text
-DATABASE_URL=postgresql+psycopg://lexicon:lexicon@localhost:5432/lexicon
+DATABASE_URL=postgresql+psycopg://lexickon:lexickon@localhost:5432/lexickon
 STORAGE_ENDPOINT_URL=http://localhost:9000
-STORAGE_BUCKET=lexicon-datasets
+STORAGE_BUCKET=lexickon-datasets
 STORAGE_ACCESS_KEY_ID=minio
 STORAGE_SECRET_ACCESS_KEY=minio123
 ```

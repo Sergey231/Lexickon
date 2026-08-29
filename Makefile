@@ -4,7 +4,8 @@ PYTHON := $(VENV)/bin/python
 ALEMBIC := $(VENV)/bin/alembic
 UVICORN := $(VENV)/bin/uvicorn
 DOCKER_COMPOSE := docker compose
-LAN_HOST ?= 192.168.0.100
+LAN_INTERFACE ?= en0
+LAN_HOST ?= $(shell ip=$$(ifconfig $(LAN_INTERFACE) 2>/dev/null | awk '/inet / {print $$2; exit}'); if [ -n "$$ip" ]; then printf "%s" "$$ip"; else name=$$(scutil --get LocalHostName 2>/dev/null); if [ -n "$$name" ]; then printf "%s.local" "$$name"; else hostname; fi; fi)
 
 .PHONY: install reinstall check-python dev dev-lan infra-up db-up storage-up db-ready storage-ready db-down migrate test
 
@@ -48,7 +49,7 @@ storage-up:
 	$(DOCKER_COMPOSE) up -d minio
 
 db-ready:
-	@until $(DOCKER_COMPOSE) exec -T postgres pg_isready -U lexicon -d lexicon >/dev/null 2>&1; do \
+	@until $(DOCKER_COMPOSE) exec -T postgres pg_isready -U lexickon -d lexickon >/dev/null 2>&1; do \
 		echo "Waiting for PostgreSQL..."; \
 		sleep 1; \
 	done

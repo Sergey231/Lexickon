@@ -1,7 +1,7 @@
 [project]
-name = "lexicon-api-server"
+name = "lexickon-api-server"
 version = "0.1.0"
-description = "FastAPI backend for the Lexicon mobile app."
+description = "FastAPI backend for the Lexickon mobile app."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
