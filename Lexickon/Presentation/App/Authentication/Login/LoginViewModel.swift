@@ -45,7 +45,7 @@ final class LoginViewModel {
 
             if result == .signedIn {
                 state = .success
-                navigate(.authenticated)
+                navigate(.datasetSetup)
             } else {
                 state = .error(.application(.authorization(.unauthenticated)))
             }

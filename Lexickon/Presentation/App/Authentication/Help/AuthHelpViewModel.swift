@@ -10,6 +10,6 @@ final class AuthHelpViewModel {
     }
 
     func closeTapped() {
-        navigate(.helpDismissed)
+        navigate(.root)
     }
 }

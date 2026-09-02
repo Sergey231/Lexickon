@@ -8,7 +8,6 @@ enum DatasetSetupStep: CoordinatorStep {
     case installationDetails
     case storageInfoDismissed
     case installationDetailsDismissed
-    case completed
 }
 
 @Observable
@@ -17,12 +16,6 @@ final class DatasetSetupCoordinator: Coordinator {
     var path: [DatasetSetupStep] = []
     var sheet: DatasetSetupStep?
     var fullScreenCover: DatasetSetupStep?
-
-    private let onStep: @MainActor (AppStep) -> Void
-
-    init(onStep: @escaping @MainActor (AppStep) -> Void) {
-        self.onStep = onStep
-    }
 
     func navigate(to step: DatasetSetupStep) {
         switch step {
@@ -36,8 +29,6 @@ final class DatasetSetupCoordinator: Coordinator {
             sheet = nil
         case .installationDetailsDismissed:
             fullScreenCover = nil
-        case .completed:
-            onStep(.datasetSetupCompleted)
         }
     }
 }
@@ -45,9 +36,11 @@ final class DatasetSetupCoordinator: Coordinator {
 @MainActor
 struct DatasetSetupCoordinatorView: View {
     @State private var coordinator: DatasetSetupCoordinator
+    private let navigateToAppStep: @MainActor (AppStep) -> Void
 
-    init(onStep: @escaping @MainActor (AppStep) -> Void) {
-        _coordinator = State(initialValue: DatasetSetupCoordinator(onStep: onStep))
+    init(navigateToAppStep: @escaping @MainActor (AppStep) -> Void) {
+        _coordinator = State(initialValue: DatasetSetupCoordinator())
+        self.navigateToAppStep = navigateToAppStep
     }
 
     var body: some View {
@@ -66,8 +59,7 @@ struct DatasetSetupCoordinatorView: View {
                     }
                 )
             case .selection, .installation, .installationDetails,
-                 .storageInfoDismissed, .installationDetailsDismissed,
-                 .completed:
+                 .storageInfoDismissed, .installationDetailsDismissed:
                 EmptyView()
             }
         }
@@ -80,8 +72,7 @@ struct DatasetSetupCoordinatorView: View {
                     }
                 )
             case .selection, .installation, .storageInfo,
-                 .storageInfoDismissed, .installationDetailsDismissed,
-                 .completed:
+                 .storageInfoDismissed, .installationDetailsDismissed:
                 EmptyView()
             }
         }
@@ -89,9 +80,12 @@ struct DatasetSetupCoordinatorView: View {
 
     private var setupRoot: some View {
         DatasetSetupRootView(
-            viewModel: DatasetSetupRootViewModel { step in
-                coordinator.navigate(to: step)
-            }
+            viewModel: DatasetSetupRootViewModel(
+                navigate: { step in
+                    coordinator.navigate(to: step)
+                },
+                navigateToAppStep: navigateToAppStep
+            )
         )
     }
 
@@ -106,12 +100,10 @@ struct DatasetSetupCoordinatorView: View {
             )
         case .installation:
             DatasetInstallationView(
-                viewModel: DatasetInstallationViewModel { step in
-                    coordinator.navigate(to: step)
-                }
+                viewModel: DatasetInstallationViewModel(navigate: navigateToAppStep)
             )
         case .storageInfo, .installationDetails, .storageInfoDismissed,
-             .installationDetailsDismissed, .completed:
+             .installationDetailsDismissed:
             EmptyView()
         }
     }

@@ -2,14 +2,12 @@ import Observation
 import SwiftUI
 
 enum AuthStep: CoordinatorStep {
+    case root
     case login
     case registration
-    case registrationCompleted
     case help
     case privacy
-    case helpDismissed
-    case privacyDismissed
-    case authenticated
+    case datasetSetup
 }
 
 @Observable
@@ -18,29 +16,28 @@ final class AuthCoordinator: Coordinator {
     var path: [AuthStep] = []
     var sheet: AuthStep?
     var fullScreenCover: AuthStep?
+    private let onDatasetSetupRequested: @MainActor () -> Void
 
-    private let onStep: @MainActor (AppStep) -> Void
-
-    init(onStep: @escaping @MainActor (AppStep) -> Void) {
-        self.onStep = onStep
+    init(onDatasetSetupRequested: @escaping @MainActor () -> Void) {
+        self.onDatasetSetupRequested = onDatasetSetupRequested
     }
 
     func navigate(to step: AuthStep) {
         switch step {
-        case .login, .registration:
-            path.pushUnique(step)
-        case .registrationCompleted:
+        case .root:
+            path = []
+            sheet = nil
+            fullScreenCover = nil
+        case .login:
             path = [.login]
+        case .registration:
+            path.pushUnique(step)
         case .help:
             sheet = .help
         case .privacy:
             fullScreenCover = .privacy
-        case .helpDismissed:
-            sheet = nil
-        case .privacyDismissed:
-            fullScreenCover = nil
-        case .authenticated:
-            onStep(.authenticated)
+        case .datasetSetup:
+            onDatasetSetupRequested()
         }
     }
 }
@@ -50,8 +47,12 @@ struct AuthCoordinatorView: View {
     @State private var coordinator: AuthCoordinator
     @Environment(\.useCases) private var useCases
 
-    init(onStep: @escaping @MainActor (AppStep) -> Void) {
-        _coordinator = State(initialValue: AuthCoordinator(onStep: onStep))
+    init(onDatasetSetupRequested: @escaping @MainActor () -> Void) {
+        _coordinator = State(
+            initialValue: AuthCoordinator(
+                onDatasetSetupRequested: onDatasetSetupRequested
+            )
+        )
     }
 
     var body: some View {
@@ -69,8 +70,7 @@ struct AuthCoordinatorView: View {
                         coordinator.navigate(to: step)
                     }
                 )
-            case .login, .registration, .registrationCompleted, .privacy,
-                 .helpDismissed, .privacyDismissed, .authenticated:
+            case .root, .login, .registration, .privacy, .datasetSetup:
                 EmptyView()
             }
         }
@@ -82,8 +82,7 @@ struct AuthCoordinatorView: View {
                         coordinator.navigate(to: step)
                     }
                 )
-            case .login, .registration, .registrationCompleted, .help,
-                 .helpDismissed, .privacyDismissed, .authenticated:
+            case .root, .login, .registration, .help, .datasetSetup:
                 EmptyView()
             }
         }
@@ -118,8 +117,7 @@ struct AuthCoordinatorView: View {
                     }
                 )
             )
-        case .registrationCompleted, .help, .privacy, .helpDismissed,
-             .privacyDismissed, .authenticated:
+        case .root, .help, .privacy, .datasetSetup:
             EmptyView()
         }
     }

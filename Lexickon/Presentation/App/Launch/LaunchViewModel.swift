@@ -34,7 +34,11 @@ final class LaunchViewModel {
         do {
             let destination = try await resolveLaunchDestinationUseCase()
             state = .resolved(destination)
-            navigate(.launchCompleted(destination))
+            let step: AppStep = switch destination {
+            case .login: .authentication
+            case .main: .main
+            }
+            navigate(step)
         } catch let appError as AppError {
             state = .error(appError)
         } catch {
@@ -43,6 +47,6 @@ final class LaunchViewModel {
     }
 
     func loginTapped() {
-        navigate(.launchCompleted(.login))
+        navigate(.authentication)
     }
 }

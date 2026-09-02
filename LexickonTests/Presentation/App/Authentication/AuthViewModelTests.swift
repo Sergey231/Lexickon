@@ -44,7 +44,7 @@ final class AuthViewModelTests: XCTestCase {
 
         viewModel.closeTapped()
 
-        XCTAssertEqual(routedStep, .helpDismissed)
+        XCTAssertEqual(routedStep, .root)
     }
 
     func testAuthPrivacyRoutesCloseTap() {
@@ -55,7 +55,7 @@ final class AuthViewModelTests: XCTestCase {
 
         viewModel.closeTapped()
 
-        XCTAssertEqual(routedStep, .privacyDismissed)
+        XCTAssertEqual(routedStep, .root)
     }
 
     func testLoginValidationKeepsClientErrorsSeparateFromApplicationErrors() async {
@@ -106,7 +106,7 @@ final class AuthViewModelTests: XCTestCase {
 
         await viewModel.submit()
 
-        XCTAssertEqual(routedStep, .authenticated)
+        XCTAssertEqual(routedStep, .datasetSetup)
         XCTAssertEqual(viewModel.state, .success)
     }
 
@@ -127,7 +127,7 @@ final class AuthViewModelTests: XCTestCase {
         await firstSubmit.value
 
         let loginCallCount = await repository.loginCallCount
-        XCTAssertEqual(routedSteps, [.authenticated])
+        XCTAssertEqual(routedSteps, [.datasetSetup])
         XCTAssertEqual(loginCallCount, 1)
     }
 
@@ -156,7 +156,7 @@ final class AuthViewModelTests: XCTestCase {
 
         await viewModel.submit()
 
-        XCTAssertEqual(routedStep, .registrationCompleted)
+        XCTAssertEqual(routedStep, .login)
         XCTAssertEqual(viewModel.state, .success)
     }
 

@@ -4,14 +4,15 @@ import XCTest
 @MainActor
 final class CoordinatorTransitionTests: XCTestCase {
     func testAuthCoordinatorTransitionTableAndPresentations() {
-        var emittedStep: AppStep?
-        let coordinator = AuthCoordinator { emittedStep = $0 }
+        var datasetSetupRequestCount = 0
+        let coordinator = AuthCoordinator {
+            datasetSetupRequestCount += 1
+        }
         let transitions: [(step: AuthStep, expectedPath: [AuthStep])] = [
             (.login, [.login]),
             (.login, [.login]),
             (.registration, [.login, .registration]),
-            (.login, [.login]),
-            (.registrationCompleted, [.login])
+            (.login, [.login])
         ]
 
         for transition in transitions {
@@ -25,19 +26,18 @@ final class CoordinatorTransitionTests: XCTestCase {
         XCTAssertEqual(coordinator.sheet, .help)
         XCTAssertEqual(coordinator.fullScreenCover, .privacy)
 
-        coordinator.navigate(to: .helpDismissed)
-        coordinator.navigate(to: .privacyDismissed)
+        coordinator.navigate(to: .root)
 
+        XCTAssertEqual(coordinator.path, [])
         XCTAssertNil(coordinator.sheet)
         XCTAssertNil(coordinator.fullScreenCover)
 
-        coordinator.navigate(to: .authenticated)
-        XCTAssertEqual(emittedStep, .authenticated)
+        coordinator.navigate(to: .datasetSetup)
+        XCTAssertEqual(datasetSetupRequestCount, 1)
     }
 
     func testDatasetSetupCoordinatorTransitionTableAndPresentations() {
-        var emittedStep: AppStep?
-        let coordinator = DatasetSetupCoordinator { emittedStep = $0 }
+        let coordinator = DatasetSetupCoordinator()
         let transitions: [(step: DatasetSetupStep, expectedPath: [DatasetSetupStep])] = [
             (.selection, [.selection]),
             (.selection, [.selection]),
@@ -61,14 +61,10 @@ final class CoordinatorTransitionTests: XCTestCase {
 
         XCTAssertNil(coordinator.sheet)
         XCTAssertNil(coordinator.fullScreenCover)
-
-        coordinator.navigate(to: .completed)
-        XCTAssertEqual(emittedStep, .datasetSetupCompleted)
     }
 
     func testMainCoordinatorTransitionTableAndSelectedTab() {
-        var emittedStep: AppStep?
-        let coordinator = MainCoordinator { emittedStep = $0 }
+        let coordinator = MainCoordinator()
         let transitions: [(step: MainStep, expectedPath: [MainStep])] = [
             (.frequency, [.frequency]),
             (.frequency, [.frequency]),
@@ -95,42 +91,16 @@ final class CoordinatorTransitionTests: XCTestCase {
 
         XCTAssertNil(coordinator.sheet)
         XCTAssertNil(coordinator.fullScreenCover)
-
-        coordinator.navigate(to: .logout)
-        XCTAssertEqual(emittedStep, .logout)
-
-        coordinator.navigate(to: .sessionExpired)
-        XCTAssertEqual(emittedStep, .sessionExpired)
     }
 
-    func testAppCoordinatorNormalizesStepsToPresentationSteps() {
+    func testAppCoordinatorNavigatesDirectlyToRequestedStep() {
         let coordinator = AppCoordinator()
 
-        XCTAssertEqual(coordinator.currentStep, .launchRequired)
+        XCTAssertEqual(coordinator.currentStep, .launch)
 
-        coordinator.navigate(to: .launchCompleted(.login))
-        XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
-
-        coordinator.navigate(to: .launchRequired)
-        XCTAssertEqual(coordinator.currentStep, .launchRequired)
-
-        coordinator.navigate(to: .launchCompleted(.main))
-        XCTAssertEqual(coordinator.currentStep, .mainRequired)
-
-        coordinator.navigate(to: .authenticationRequired)
-        XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
-
-        coordinator.navigate(to: .authenticated)
-        XCTAssertEqual(coordinator.currentStep, .datasetSetupRequired)
-
-        coordinator.navigate(to: .datasetSetupCompleted)
-        XCTAssertEqual(coordinator.currentStep, .mainRequired)
-
-        coordinator.navigate(to: .sessionExpired)
-        XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
-
-        coordinator.navigate(to: .mainRequired)
-        coordinator.navigate(to: .logout)
-        XCTAssertEqual(coordinator.currentStep, .authenticationRequired)
+        for step in [AppStep.authentication, .datasetSetup, .main, .launch] {
+            coordinator.navigate(to: step)
+            XCTAssertEqual(coordinator.currentStep, step)
+        }
     }
 }

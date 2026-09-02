@@ -389,7 +389,7 @@ Dataset Setup flow позволяет выбрать язык и домены, �
 - состояния preparing/downloading/verifying/installing/ready/error;
 - прогресс, cancellation в безопасных точках и retry;
 - сохранение согласованных настроек через существующий контракт;
-- проверка обязательного dataset перед `datasetSetupCompleted`;
+- проверка обязательного dataset перед прямым переходом в `AppStep.main`;
 - повторный вход в setup при отсутствующем/повреждённом обязательном pack.
 
 Не входит:

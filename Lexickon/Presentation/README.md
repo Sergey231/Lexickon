@@ -164,18 +164,20 @@ SwiftUI требует явного состояния для построени
 - `fullScreenCover: Step?` — активное полноэкранное представление;
 - `selectedTab` — выбранная вкладка.
 
-`AppCoordinator` интерпретирует события верхнего уровня и хранит только
-нормализованный presentation Step в `currentStep`. Дочерние Coordinators ему не
-принадлежат.
+`AppStep` содержит только конечные корневые состояния: launch, authentication,
+dataset setup и main. `AppCoordinator.navigate(to:)` напрямую сохраняет
+запрошенный Step в `currentStep`, не преобразуя события в другие Step. Дочерние
+Coordinators ему не принадлежат.
 
 `AppCoordinatorView` выбирает сценарий по `currentStep`. `CoordinatorView`
 выбранного сценария создаёт его Coordinator и удерживает через `@State`. При
 изменении `currentStep` старый View subtree удаляется, поэтому его Coordinator
 освобождается вместе со всем navigation state.
 
-Если сценарий не имеет собственного дочернего Coordinator, как `Launch`,
-`AppCoordinatorView` создаёт его корневой ViewModel напрямую и передаёт callback
-в `AppCoordinator`.
+Корневые ViewModel, например `LaunchViewModel`, могут напрямую выбирать
+`AppStep`. ViewModel дочернего сценария работает только с его Step. Терминальный
+Step дочерний Coordinator передаёт родителю через именованный callback, не
+раскрывая экранному модулю `AppStep` или `AppCoordinator`.
 
 ## Основные правила
 
@@ -186,8 +188,8 @@ SwiftUI требует явного состояния для построени
 - use case’ы передаются во ViewModel, но не протаскиваются через экранный View;
 - каждый Coordinator принимает только Step своего сценария;
 - Step не выбирает способ presentation;
-- дочерний Coordinator сообщает о завершении Step родительского уровня, но не
-  выбирает следующий сценарий;
+- корневая ViewModel запрашивает `AppStep` напрямую, а ViewModel дочернего
+  сценария использует только Step этого сценария;
 - Coordinator изменяет состояние, а CoordinatorView отображает его;
 - временем жизни дочернего Coordinator владеет его CoordinatorView;
 - переход между корневыми сценариями заменяет предыдущий View subtree, а не

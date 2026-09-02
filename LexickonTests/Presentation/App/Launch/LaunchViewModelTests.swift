@@ -17,7 +17,7 @@ final class LaunchViewModelTests: XCTestCase {
 
         await viewModel.resolveDestination()
 
-        XCTAssertEqual(routedStep, .launchCompleted(.main))
+        XCTAssertEqual(routedStep, .main)
         XCTAssertEqual(viewModel.state, .resolved(.main))
         let stateCallCount = await repository.authenticationStateCallCount()
         XCTAssertEqual(stateCallCount, 1)
@@ -37,7 +37,7 @@ final class LaunchViewModelTests: XCTestCase {
 
         await viewModel.resolveDestination()
 
-        XCTAssertEqual(routedStep, .launchCompleted(.login))
+        XCTAssertEqual(routedStep, .authentication)
         XCTAssertEqual(viewModel.state, .resolved(.login))
         let stateCallCount = await repository.authenticationStateCallCount()
         XCTAssertEqual(stateCallCount, 1)
@@ -74,7 +74,7 @@ final class LaunchViewModelTests: XCTestCase {
 
         viewModel.loginTapped()
 
-        XCTAssertEqual(routedStep, .launchCompleted(.login))
+        XCTAssertEqual(routedStep, .authentication)
     }
 }
 

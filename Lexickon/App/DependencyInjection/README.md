@@ -50,9 +50,12 @@ AppCoordinatorView(coordinator: coordinator)
 ```swift
 @Environment(\.useCases) private var useCases
 
-LoginViewModel(loginUseCase: useCases.loginUseCase) { step in
-    coordinator.navigate(to: step)
-}
+LoginViewModel(
+    loginUseCase: useCases.loginUseCase,
+    navigate: { step in
+        authCoordinator.navigate(to: step)
+    }
+)
 ```
 
 ## Правила

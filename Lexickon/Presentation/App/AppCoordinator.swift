@@ -2,15 +2,10 @@ import Observation
 import SwiftUI
 
 enum AppStep: CoordinatorStep {
-    case launchRequired
-    case launchCompleted(LaunchDestination)
-    case authenticationRequired
-    case authenticated
-    case datasetSetupRequired
-    case datasetSetupCompleted
-    case mainRequired
-    case logout
-    case sessionExpired
+    case launch
+    case authentication
+    case datasetSetup
+    case main
 }
 
 @Observable
@@ -18,26 +13,12 @@ enum AppStep: CoordinatorStep {
 final class AppCoordinator: Coordinator {
     private(set) var currentStep: AppStep
 
-    init(initialStep: AppStep = .launchRequired) {
-        currentStep = .launchRequired
-        navigate(to: initialStep)
+    init(initialStep: AppStep = .launch) {
+        currentStep = initialStep
     }
 
     func navigate(to step: AppStep) {
-        currentStep = switch step {
-        case .launchRequired:
-            .launchRequired
-        case .launchCompleted(.login):
-            .authenticationRequired
-        case .launchCompleted(.main):
-            .mainRequired
-        case .authenticationRequired, .logout, .sessionExpired:
-            .authenticationRequired
-        case .authenticated, .datasetSetupRequired:
-            .datasetSetupRequired
-        case .datasetSetupCompleted, .mainRequired:
-            .mainRequired
-        }
+        currentStep = step
     }
 }
 
@@ -49,7 +30,7 @@ struct AppCoordinatorView: View {
     var body: some View {
         Group {
             switch coordinator.currentStep {
-            case .launchRequired:
+            case .launch:
                 LaunchView(
                     viewModel: LaunchViewModel(
                         resolveLaunchDestinationUseCase: useCases.resolveLaunchDestinationUseCase,
@@ -58,21 +39,18 @@ struct AppCoordinatorView: View {
                         }
                     )
                 )
-            case .authenticationRequired:
-                AuthCoordinatorView(onStep: { [weak coordinator] step in
+            case .authentication:
+                AuthCoordinatorView(onDatasetSetupRequested: { [weak coordinator] in
+                    coordinator?.navigate(to: .datasetSetup)
+                })
+            case .datasetSetup:
+                DatasetSetupCoordinatorView(navigateToAppStep: { [weak coordinator] step in
                     coordinator?.navigate(to: step)
                 })
-            case .datasetSetupRequired:
-                DatasetSetupCoordinatorView(onStep: { [weak coordinator] step in
+            case .main:
+                MainCoordinatorView(navigateToAppStep: { [weak coordinator] step in
                     coordinator?.navigate(to: step)
                 })
-            case .mainRequired:
-                MainCoordinatorView(onStep: { [weak coordinator] step in
-                    coordinator?.navigate(to: step)
-                })
-            case .launchCompleted, .authenticated, .datasetSetupCompleted,
-                 .logout, .sessionExpired:
-                EmptyView()
             }
         }
         .id(coordinator.currentStep)

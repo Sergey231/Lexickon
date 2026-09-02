@@ -10,8 +10,6 @@ enum MainStep: CoordinatorStep {
     case aboutDismissed
     case onboardingDismissed
     case selectTab(MainTab)
-    case logout
-    case sessionExpired
 }
 
 enum MainTab: String, Hashable, Sendable {
@@ -28,12 +26,6 @@ final class MainCoordinator: Coordinator {
     var fullScreenCover: MainStep?
     var selectedTab: MainTab = .search
 
-    private let onStep: @MainActor (AppStep) -> Void
-
-    init(onStep: @escaping @MainActor (AppStep) -> Void) {
-        self.onStep = onStep
-    }
-
     func navigate(to step: MainStep) {
         switch step {
         case .frequency, .profile, .settings:
@@ -48,10 +40,6 @@ final class MainCoordinator: Coordinator {
             fullScreenCover = nil
         case let .selectTab(tab):
             selectedTab = tab
-        case .logout:
-            onStep(.logout)
-        case .sessionExpired:
-            onStep(.sessionExpired)
         }
     }
 }
@@ -60,9 +48,11 @@ final class MainCoordinator: Coordinator {
 struct MainCoordinatorView: View {
     @State private var coordinator: MainCoordinator
     @Environment(\.useCases) private var useCases
+    private let navigateToAppStep: @MainActor (AppStep) -> Void
 
-    init(onStep: @escaping @MainActor (AppStep) -> Void) {
-        _coordinator = State(initialValue: MainCoordinator(onStep: onStep))
+    init(navigateToAppStep: @escaping @MainActor (AppStep) -> Void) {
+        _coordinator = State(initialValue: MainCoordinator())
+        self.navigateToAppStep = navigateToAppStep
     }
 
     var body: some View {
@@ -99,8 +89,7 @@ struct MainCoordinatorView: View {
                     }
                 )
             case .frequency, .profile, .settings, .onboarding,
-                 .aboutDismissed, .onboardingDismissed, .selectTab, .logout,
-                 .sessionExpired:
+                 .aboutDismissed, .onboardingDismissed, .selectTab:
                 EmptyView()
             }
         }
@@ -113,7 +102,7 @@ struct MainCoordinatorView: View {
                     }
                 )
             case .frequency, .profile, .settings, .about, .aboutDismissed,
-                 .onboardingDismissed, .selectTab, .logout, .sessionExpired:
+                 .onboardingDismissed, .selectTab:
                 EmptyView()
             }
         }
@@ -125,7 +114,8 @@ struct MainCoordinatorView: View {
                 logoutUseCase: useCases.logoutUseCase,
                 navigate: { step in
                     coordinator.navigate(to: step)
-                }
+                },
+                navigateToAppStep: navigateToAppStep
             )
         )
     }
@@ -171,7 +161,7 @@ struct MainCoordinatorView: View {
                 accessibilityIdentifier: "main.settings.title"
             ) { EmptyView() }
         case .about, .onboarding, .aboutDismissed, .onboardingDismissed,
-             .selectTab, .logout, .sessionExpired:
+             .selectTab:
             EmptyView()
         }
     }

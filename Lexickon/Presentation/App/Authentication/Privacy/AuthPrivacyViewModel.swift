@@ -10,6 +10,6 @@ final class AuthPrivacyViewModel {
     }
 
     func closeTapped() {
-        navigate(.privacyDismissed)
+        navigate(.root)
     }
 }

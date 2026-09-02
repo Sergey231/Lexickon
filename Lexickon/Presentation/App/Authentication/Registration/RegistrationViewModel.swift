@@ -31,7 +31,7 @@ final class RegistrationViewModel {
         do {
             _ = try await registerUseCase(request)
             state = .success
-            navigate(.registrationCompleted)
+            navigate(.login)
         } catch let error as AppError {
             state = .error(.application(error))
         } catch {

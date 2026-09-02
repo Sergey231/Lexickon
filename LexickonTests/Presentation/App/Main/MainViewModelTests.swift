@@ -7,7 +7,8 @@ final class MainViewModelTests: XCTestCase {
         var routedStep: MainStep?
         let viewModel = MainSearchViewModel(
             logoutUseCase: LogoutUseCase(repository: StaticLogoutRepository()),
-            navigate: { routedStep = $0 }
+            navigate: { routedStep = $0 },
+            navigateToAppStep: { _ in XCTFail("Unexpected app navigation") }
         )
 
         viewModel.frequencyTapped()
@@ -16,15 +17,16 @@ final class MainViewModelTests: XCTestCase {
     }
 
     func testSearchRoutesLogoutAfterSuccessfulLogout() async {
-        var routedStep: MainStep?
+        var routedStep: AppStep?
         let viewModel = MainSearchViewModel(
             logoutUseCase: LogoutUseCase(repository: StaticLogoutRepository()),
-            navigate: { routedStep = $0 }
+            navigate: { _ in XCTFail("Unexpected main navigation") },
+            navigateToAppStep: { routedStep = $0 }
         )
 
         await viewModel.logoutTapped()
 
-        XCTAssertEqual(routedStep, .logout)
+        XCTAssertEqual(routedStep, .authentication)
         XCTAssertNil(viewModel.error)
     }
 
@@ -34,7 +36,8 @@ final class MainViewModelTests: XCTestCase {
             logoutUseCase: LogoutUseCase(
                 repository: StaticLogoutRepository(result: .failure(.transport(.offline)))
             ),
-            navigate: { routedStep = $0 }
+            navigate: { routedStep = $0 },
+            navigateToAppStep: { _ in XCTFail("Unexpected app navigation") }
         )
 
         await viewModel.logoutTapped()
@@ -44,15 +47,16 @@ final class MainViewModelTests: XCTestCase {
     }
 
     func testSearchRoutesSessionExpiredTap() {
-        var routedStep: MainStep?
+        var routedStep: AppStep?
         let viewModel = MainSearchViewModel(
             logoutUseCase: LogoutUseCase(repository: StaticLogoutRepository()),
-            navigate: { routedStep = $0 }
+            navigate: { _ in XCTFail("Unexpected main navigation") },
+            navigateToAppStep: { routedStep = $0 }
         )
 
         viewModel.sessionExpiredTapped()
 
-        XCTAssertEqual(routedStep, .sessionExpired)
+        XCTAssertEqual(routedStep, .authentication)
     }
 
     func testFrequencyRoutesOpenFrequencyTap() {

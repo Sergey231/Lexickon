@@ -3,18 +3,18 @@ import SwiftUI
 @main
 @MainActor
 struct LexickonApp: App {
-    private let container: AppContainer
-    private let coordinator: AppCoordinator
+    private let appContainer: AppContainer
+    private let appCoordinator: AppCoordinator
 
     init() {
-        container = ProductionAssembly.makeContainer()
-        coordinator = AppCoordinator()
+        appContainer = ProductionAssembly.makeContainer()
+        appCoordinator = AppCoordinator()
     }
 
     var body: some Scene {
         WindowGroup {
-            AppCoordinatorView(coordinator: coordinator)
-                .environment(\.useCases, container.useCases)
+            AppCoordinatorView(coordinator: appCoordinator)
+                .environment(\.useCases, appContainer.useCases)
         }
     }
 }
