@@ -5,18 +5,15 @@ import XCTest
 final class DatasetSetupViewModelTests: XCTestCase {
     func testRootRoutesPrimaryActions() {
         var routedSteps: [DatasetSetupStep] = []
-        var routedAppStep: AppStep?
-        let viewModel = DatasetSetupRootViewModel(
-            navigate: { step in routedSteps.append(step) },
-            navigateToAppStep: { routedAppStep = $0 }
-        )
+        let viewModel = DatasetSetupRootViewModel { step in
+            routedSteps.append(step)
+        }
 
         viewModel.completeTapped()
         viewModel.selectionTapped()
         viewModel.storageTapped()
 
-        XCTAssertEqual(routedAppStep, .main)
-        XCTAssertEqual(routedSteps, [.selection, .storageInfo])
+        XCTAssertEqual(routedSteps, [.main, .selection, .storageInfo])
     }
 
     func testSelectionRoutesInstallTap() {
@@ -31,7 +28,7 @@ final class DatasetSetupViewModelTests: XCTestCase {
     }
 
     func testInstallationRoutesCompleteTap() {
-        var routedStep: AppStep?
+        var routedStep: DatasetSetupStep?
         let viewModel = DatasetInstallationViewModel { step in
             routedStep = step
         }
@@ -49,7 +46,7 @@ final class DatasetSetupViewModelTests: XCTestCase {
 
         viewModel.closeTapped()
 
-        XCTAssertEqual(routedStep, .storageInfoDismissed)
+        XCTAssertEqual(routedStep, .root)
     }
 
     func testInstallationDetailsRoutesCloseTap() {
@@ -60,6 +57,6 @@ final class DatasetSetupViewModelTests: XCTestCase {
 
         viewModel.closeTapped()
 
-        XCTAssertEqual(routedStep, .installationDetailsDismissed)
+        XCTAssertEqual(routedStep, .root)
     }
 }

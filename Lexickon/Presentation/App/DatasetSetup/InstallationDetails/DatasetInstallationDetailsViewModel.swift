@@ -10,6 +10,6 @@ final class DatasetInstallationDetailsViewModel {
     }
 
     func closeTapped() {
-        navigate(.installationDetailsDismissed)
+        navigate(.root)
     }
 }

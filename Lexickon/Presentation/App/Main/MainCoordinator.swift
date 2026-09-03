@@ -2,14 +2,14 @@ import Observation
 import SwiftUI
 
 enum MainStep: CoordinatorStep {
+    case root
     case frequency
     case profile
     case settings
     case about
     case onboarding
-    case aboutDismissed
-    case onboardingDismissed
     case selectTab(MainTab)
+    case authentication
 }
 
 enum MainTab: String, Hashable, Sendable {
@@ -25,21 +25,28 @@ final class MainCoordinator: Coordinator {
     var sheet: MainStep?
     var fullScreenCover: MainStep?
     var selectedTab: MainTab = .search
+    private let onAuthenticationRequested: @MainActor () -> Void
+
+    init(onAuthenticationRequested: @escaping @MainActor () -> Void) {
+        self.onAuthenticationRequested = onAuthenticationRequested
+    }
 
     func navigate(to step: MainStep) {
         switch step {
+        case .root:
+            path = []
+            sheet = nil
+            fullScreenCover = nil
         case .frequency, .profile, .settings:
             path.pushUnique(step)
         case .about:
             sheet = .about
         case .onboarding:
             fullScreenCover = .onboarding
-        case .aboutDismissed:
-            sheet = nil
-        case .onboardingDismissed:
-            fullScreenCover = nil
         case let .selectTab(tab):
             selectedTab = tab
+        case .authentication:
+            onAuthenticationRequested()
         }
     }
 }
@@ -48,11 +55,13 @@ final class MainCoordinator: Coordinator {
 struct MainCoordinatorView: View {
     @State private var coordinator: MainCoordinator
     @Environment(\.useCases) private var useCases
-    private let navigateToAppStep: @MainActor (AppStep) -> Void
 
-    init(navigateToAppStep: @escaping @MainActor (AppStep) -> Void) {
-        _coordinator = State(initialValue: MainCoordinator())
-        self.navigateToAppStep = navigateToAppStep
+    init(onAuthenticationRequested: @escaping @MainActor () -> Void) {
+        _coordinator = State(
+            initialValue: MainCoordinator(
+                onAuthenticationRequested: onAuthenticationRequested
+            )
+        )
     }
 
     var body: some View {
@@ -88,8 +97,8 @@ struct MainCoordinatorView: View {
                         coordinator.navigate(to: step)
                     }
                 )
-            case .frequency, .profile, .settings, .onboarding,
-                 .aboutDismissed, .onboardingDismissed, .selectTab:
+            case .root, .frequency, .profile, .settings, .onboarding,
+                 .selectTab, .authentication:
                 EmptyView()
             }
         }
@@ -101,8 +110,8 @@ struct MainCoordinatorView: View {
                         coordinator.navigate(to: step)
                     }
                 )
-            case .frequency, .profile, .settings, .about, .aboutDismissed,
-                 .onboardingDismissed, .selectTab:
+            case .root, .frequency, .profile, .settings, .about,
+                 .selectTab, .authentication:
                 EmptyView()
             }
         }
@@ -114,8 +123,7 @@ struct MainCoordinatorView: View {
                 logoutUseCase: useCases.logoutUseCase,
                 navigate: { step in
                     coordinator.navigate(to: step)
-                },
-                navigateToAppStep: navigateToAppStep
+                }
             )
         )
     }
@@ -160,8 +168,7 @@ struct MainCoordinatorView: View {
                 systemImage: "gearshape",
                 accessibilityIdentifier: "main.settings.title"
             ) { EmptyView() }
-        case .about, .onboarding, .aboutDismissed, .onboardingDismissed,
-             .selectTab:
+        case .root, .about, .onboarding, .selectTab, .authentication:
             EmptyView()
         }
     }

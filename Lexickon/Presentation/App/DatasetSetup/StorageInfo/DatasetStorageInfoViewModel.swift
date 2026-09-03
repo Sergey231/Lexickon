@@ -10,6 +10,6 @@ final class DatasetStorageInfoViewModel {
     }
 
     func closeTapped() {
-        navigate(.storageInfoDismissed)
+        navigate(.root)
     }
 }

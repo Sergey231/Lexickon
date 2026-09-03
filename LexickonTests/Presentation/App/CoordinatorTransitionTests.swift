@@ -37,7 +37,10 @@ final class CoordinatorTransitionTests: XCTestCase {
     }
 
     func testDatasetSetupCoordinatorTransitionTableAndPresentations() {
-        let coordinator = DatasetSetupCoordinator()
+        var mainRequestCount = 0
+        let coordinator = DatasetSetupCoordinator {
+            mainRequestCount += 1
+        }
         let transitions: [(step: DatasetSetupStep, expectedPath: [DatasetSetupStep])] = [
             (.selection, [.selection]),
             (.selection, [.selection]),
@@ -56,15 +59,21 @@ final class CoordinatorTransitionTests: XCTestCase {
         XCTAssertEqual(coordinator.sheet, .storageInfo)
         XCTAssertEqual(coordinator.fullScreenCover, .installationDetails)
 
-        coordinator.navigate(to: .storageInfoDismissed)
-        coordinator.navigate(to: .installationDetailsDismissed)
+        coordinator.navigate(to: .root)
 
+        XCTAssertEqual(coordinator.path, [])
         XCTAssertNil(coordinator.sheet)
         XCTAssertNil(coordinator.fullScreenCover)
+
+        coordinator.navigate(to: .main)
+        XCTAssertEqual(mainRequestCount, 1)
     }
 
     func testMainCoordinatorTransitionTableAndSelectedTab() {
-        let coordinator = MainCoordinator()
+        var authenticationRequestCount = 0
+        let coordinator = MainCoordinator {
+            authenticationRequestCount += 1
+        }
         let transitions: [(step: MainStep, expectedPath: [MainStep])] = [
             (.frequency, [.frequency]),
             (.frequency, [.frequency]),
@@ -86,11 +95,15 @@ final class CoordinatorTransitionTests: XCTestCase {
         XCTAssertEqual(coordinator.sheet, .about)
         XCTAssertEqual(coordinator.fullScreenCover, .onboarding)
 
-        coordinator.navigate(to: .aboutDismissed)
-        coordinator.navigate(to: .onboardingDismissed)
+        coordinator.navigate(to: .root)
 
+        XCTAssertEqual(coordinator.path, [])
+        XCTAssertEqual(coordinator.selectedTab, .profile)
         XCTAssertNil(coordinator.sheet)
         XCTAssertNil(coordinator.fullScreenCover)
+
+        coordinator.navigate(to: .authentication)
+        XCTAssertEqual(authenticationRequestCount, 1)
     }
 
     func testAppCoordinatorNavigatesDirectlyToRequestedStep() {

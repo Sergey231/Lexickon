@@ -8,16 +8,13 @@ final class MainSearchViewModel {
 
     private let logoutUseCase: LogoutUseCase
     @ObservationIgnored private let navigate: @MainActor (MainStep) -> Void
-    @ObservationIgnored private let navigateToAppStep: @MainActor (AppStep) -> Void
 
     init(
         logoutUseCase: LogoutUseCase,
-        navigate: @escaping @MainActor (MainStep) -> Void,
-        navigateToAppStep: @escaping @MainActor (AppStep) -> Void
+        navigate: @escaping @MainActor (MainStep) -> Void
     ) {
         self.logoutUseCase = logoutUseCase
         self.navigate = navigate
-        self.navigateToAppStep = navigateToAppStep
     }
 
     func frequencyTapped() {
@@ -32,7 +29,7 @@ final class MainSearchViewModel {
         do {
             try await logoutUseCase()
             error = nil
-            navigateToAppStep(.authentication)
+            navigate(.authentication)
         } catch let appError as AppError {
             error = appError
         } catch {
@@ -41,6 +38,6 @@ final class MainSearchViewModel {
     }
 
     func sessionExpiredTapped() {
-        navigateToAppStep(.authentication)
+        navigate(.authentication)
     }
 }

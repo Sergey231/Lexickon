@@ -44,12 +44,12 @@ struct AppCoordinatorView: View {
                     coordinator?.navigate(to: .datasetSetup)
                 })
             case .datasetSetup:
-                DatasetSetupCoordinatorView(navigateToAppStep: { [weak coordinator] step in
-                    coordinator?.navigate(to: step)
+                DatasetSetupCoordinatorView(onMainRequested: { [weak coordinator] in
+                    coordinator?.navigate(to: .main)
                 })
             case .main:
-                MainCoordinatorView(navigateToAppStep: { [weak coordinator] step in
-                    coordinator?.navigate(to: step)
+                MainCoordinatorView(onAuthenticationRequested: { [weak coordinator] in
+                    coordinator?.navigate(to: .authentication)
                 })
             }
         }

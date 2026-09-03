@@ -10,6 +10,6 @@ final class MainAboutViewModel {
     }
 
     func closeTapped() {
-        navigate(.aboutDismissed)
+        navigate(.root)
     }
 }

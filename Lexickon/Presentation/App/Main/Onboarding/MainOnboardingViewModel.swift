@@ -10,6 +10,6 @@ final class MainOnboardingViewModel {
     }
 
     func closeTapped() {
-        navigate(.onboardingDismissed)
+        navigate(.root)
     }
 }
