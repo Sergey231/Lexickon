@@ -71,28 +71,46 @@ actor UserRepositoryStub: UserRepository {
 }
 
 actor DatasetRepositoryStub: DatasetRepository {
-    private let catalogResult: Result<[Dataset], AppError>
+    private let catalogResult: Result<DatasetManifest, AppError>
+    private let installedResult: Result<[InstalledDataset], AppError>
     private let syncResult: Result<DatasetSyncResult, AppError>
+    private let downloadURLResult: Result<DatasetDownloadURL, AppError>
 
     private(set) var catalogCallCount = 0
+    private(set) var installedCallCount = 0
     private(set) var syncRequests: [DatasetSyncRequest] = []
+    private(set) var downloadURLRequests: [DatasetVersionID] = []
 
     init(
-        catalogResult: Result<[Dataset], AppError>,
-        syncResult: Result<DatasetSyncResult, AppError>
+        catalogResult: Result<DatasetManifest, AppError>,
+        installedResult: Result<[InstalledDataset], AppError> = .success([]),
+        syncResult: Result<DatasetSyncResult, AppError>,
+        downloadURLResult: Result<DatasetDownloadURL, AppError> = .failure(.dataset(.unavailable))
     ) {
         self.catalogResult = catalogResult
+        self.installedResult = installedResult
         self.syncResult = syncResult
+        self.downloadURLResult = downloadURLResult
     }
 
-    func catalog() async throws -> [Dataset] {
+    func catalog() async throws -> DatasetManifest {
         catalogCallCount += 1
         return try catalogResult.get()
+    }
+
+    func installedDatasets() async throws -> [InstalledDataset] {
+        installedCallCount += 1
+        return try installedResult.get()
     }
 
     func synchronize(_ request: DatasetSyncRequest) async throws -> DatasetSyncResult {
         syncRequests.append(request)
         return try syncResult.get()
+    }
+
+    func downloadURL(for versionID: DatasetVersionID) async throws -> DatasetDownloadURL {
+        downloadURLRequests.append(versionID)
+        return try downloadURLResult.get()
     }
 }
 

@@ -4,6 +4,7 @@ struct DataSourcesAssembly: Sendable {
     let apiClient: APIClient
     let session: SessionController
     let sessionRefresher: any SessionRefreshing
+    let datasetRegistry: any InstalledDatasetRegistry
 
     init(
         baseURL: URL = AppConfiguration.apiBaseURL,
@@ -11,7 +12,10 @@ struct DataSourcesAssembly: Sendable {
         tokenStore: any TokenStore = KeychainTokenStore(
             service: Bundle.main.bundleIdentifier ?? "com.lexickon.ios"
         ),
-        sessionRefresher: any SessionRefreshing = RefreshNotConfigured()
+        sessionRefresher: any SessionRefreshing = RefreshNotConfigured(),
+        datasetRegistry: any InstalledDatasetRegistry = FileInstalledDatasetRegistry(
+            fileURL: AppConfiguration.datasetRegistryURL
+        )
     ) {
         let session = SessionController(tokenStore: tokenStore)
         self.session = session
@@ -21,6 +25,7 @@ struct DataSourcesAssembly: Sendable {
             session: session
         )
         self.sessionRefresher = sessionRefresher
+        self.datasetRegistry = datasetRegistry
     }
 
     var infrastructure: AppInfrastructure {

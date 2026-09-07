@@ -13,6 +13,7 @@ enum NetworkError: Error, Equatable, Sendable {
     case unauthorized
     case forbidden
     case notFound
+    case conflict(code: String?)
     case server(statusCode: Int, code: String?)
     case unexpectedStatus(statusCode: Int, code: String?)
 }

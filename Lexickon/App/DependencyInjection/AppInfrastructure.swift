@@ -7,6 +7,16 @@ struct AppInfrastructure: Sendable {
 }
 
 enum AppConfiguration {
+    static var datasetRegistryURL: URL {
+        let applicationSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first ?? FileManager.default.temporaryDirectory
+        return applicationSupport
+            .appending(path: Bundle.main.bundleIdentifier ?? "com.lexickon.ios", directoryHint: .isDirectory)
+            .appending(path: "installed-datasets.json")
+    }
+
     static var apiBaseURL: URL {
         #if DEBUG
         #if targetEnvironment(simulator)

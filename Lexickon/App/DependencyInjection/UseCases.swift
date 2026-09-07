@@ -8,7 +8,9 @@ struct UseCases: Sendable {
     let currentUserUseCase: GetCurrentUserUseCase
     let updateUserSettingsUseCase: UpdateUserSettingsUseCase
     let datasetCatalogUseCase: GetDatasetCatalogUseCase
+    let installedDatasetsUseCase: GetInstalledDatasetsUseCase
     let synchronizeDatasetsUseCase: SynchronizeDatasetsUseCase
+    let datasetDownloadURLUseCase: GetDatasetDownloadURLUseCase
     let lookupFrequencyUseCase: LookupFrequencyUseCase
 
     init(repositories: RepositoriesAssembly) {
@@ -27,7 +29,13 @@ struct UseCases: Sendable {
         self.datasetCatalogUseCase = GetDatasetCatalogUseCase(
             repository: repositories.datasetRepository
         )
+        self.installedDatasetsUseCase = GetInstalledDatasetsUseCase(
+            repository: repositories.datasetRepository
+        )
         self.synchronizeDatasetsUseCase = SynchronizeDatasetsUseCase(
+            repository: repositories.datasetRepository
+        )
+        self.datasetDownloadURLUseCase = GetDatasetDownloadURLUseCase(
             repository: repositories.datasetRepository
         )
         self.lookupFrequencyUseCase = LookupFrequencyUseCase(

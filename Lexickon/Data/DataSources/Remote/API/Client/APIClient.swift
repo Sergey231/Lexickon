@@ -98,8 +98,7 @@ struct APIClient: Sendable {
         response: HTTPURLResponse,
         authorization: RequestAuthorization
     ) async throws -> Response {
-        switch response.statusCode {
-        case 200..<300:
+        if (200..<300).contains(response.statusCode) {
             if Response.self == EmptyResponse.self, data.isEmpty,
                let empty = EmptyResponse() as? Response {
                 return empty
@@ -109,25 +108,41 @@ struct APIClient: Sendable {
             } catch {
                 throw NetworkError.decoding
             }
+        }
+        throw await responseError(
+            statusCode: response.statusCode,
+            data: data,
+            authorization: authorization
+        )
+    }
+
+    private func responseError(
+        statusCode: Int,
+        data: Data,
+        authorization: RequestAuthorization
+    ) async -> NetworkError {
+        switch statusCode {
         case 400:
-            throw NetworkError.badRequest(code: errorCode(from: data))
+            return NetworkError.badRequest(code: errorCode(from: data))
         case 401:
             if case .bearer = authorization {
                 await session.didReceiveUnauthorized()
             }
-            throw NetworkError.unauthorized
+            return NetworkError.unauthorized
         case 403:
-            throw NetworkError.forbidden
+            return NetworkError.forbidden
         case 404:
-            throw NetworkError.notFound
+            return NetworkError.notFound
+        case 409:
+            return NetworkError.conflict(code: errorCode(from: data))
         case 500..<600:
-            throw NetworkError.server(
-                statusCode: response.statusCode,
+            return NetworkError.server(
+                statusCode: statusCode,
                 code: errorCode(from: data)
             )
         default:
-            throw NetworkError.unexpectedStatus(
-                statusCode: response.statusCode,
+            return NetworkError.unexpectedStatus(
+                statusCode: statusCode,
                 code: errorCode(from: data)
             )
         }

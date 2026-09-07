@@ -2,10 +2,8 @@ import Foundation
 
 /// The only place where the production dependency graph is assembled.
 ///
-/// Product repositories remain unavailable until their endpoints are
-/// implemented. Network and session infrastructure are already production
-/// implementations and can be injected into those repositories later without
-/// changing presentation assemblies.
+/// Network, session and dataset-catalog dependencies are production adapters.
+/// Repositories for later product stages remain explicit unavailable adapters.
 @MainActor
 enum ProductionAssembly {
     static func makeContainer(

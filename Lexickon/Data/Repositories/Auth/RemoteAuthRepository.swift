@@ -111,7 +111,7 @@ struct RemoteAuthRepository: AuthRepository {
             return .transport(.timedOut)
         case .transport:
             return .transport(.unreachable)
-        case .invalidRequest, .invalidResponse, .decoding:
+        case .invalidRequest, .invalidResponse, .decoding, .conflict, .notFound, .badRequest:
             return .transport(.invalidResponse)
         case .unauthenticated:
             return .authorization(.unauthenticated)
@@ -119,14 +119,10 @@ struct RemoteAuthRepository: AuthRepository {
             return .authorization(.sessionExpired)
         case .forbidden:
             return .authorization(.forbidden)
-        case .notFound:
-            return .transport(.invalidResponse)
         case let .server(statusCode, _):
             return .transport(.server(statusCode: statusCode))
         case let .unexpectedStatus(statusCode, _):
             return .transport(.server(statusCode: statusCode))
-        case .badRequest:
-            return .transport(.invalidResponse)
         }
     }
 

@@ -31,11 +31,19 @@ struct UnavailableUserRepository: UserRepository {
 }
 
 struct UnavailableDatasetRepository: DatasetRepository {
-    func catalog() async throws -> [Dataset] {
+    func catalog() async throws -> DatasetManifest {
+        throw dependencyUnavailable(.datasetRepository)
+    }
+
+    func installedDatasets() async throws -> [InstalledDataset] {
         throw dependencyUnavailable(.datasetRepository)
     }
 
     func synchronize(_ request: DatasetSyncRequest) async throws -> DatasetSyncResult {
+        throw dependencyUnavailable(.datasetRepository)
+    }
+
+    func downloadURL(for versionID: DatasetVersionID) async throws -> DatasetDownloadURL {
         throw dependencyUnavailable(.datasetRepository)
     }
 }

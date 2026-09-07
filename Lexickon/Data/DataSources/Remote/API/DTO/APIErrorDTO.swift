@@ -4,7 +4,7 @@ struct APIErrorDTO: Decodable, Sendable {
     let detail: Detail?
 
     var normalizedCode: String? {
-        code ?? detail?.code
+        code ?? detail?.code ?? detail?.text
     }
 
     enum Detail: Decodable, Sendable {
@@ -17,6 +17,15 @@ struct APIErrorDTO: Decodable, Sendable {
                 nil
             case let .object(code, _):
                 code
+            }
+        }
+
+        var text: String? {
+            switch self {
+            case let .text(value):
+                value
+            case let .object(_, message):
+                message
             }
         }
 

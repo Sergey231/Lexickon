@@ -38,7 +38,7 @@ final class AppContainerTests: XCTestCase {
         XCTAssertEqual(launchDestination, .main)
         XCTAssertEqual(currentUser, fixture.user)
         XCTAssertEqual(updatedSettings, fixture.updatedSettings)
-        XCTAssertEqual(datasets, [fixture.dataset])
+        XCTAssertEqual(datasets, fixture.manifest)
         XCTAssertEqual(syncResult, fixture.syncResult)
         XCTAssertEqual(frequency, fixture.frequencyResult)
 
@@ -122,6 +122,12 @@ private struct Fixture {
         status: .active
     )
 
+    lazy var manifest = DatasetManifest(
+        schemaVersion: 1,
+        generatedAt: Date(timeIntervalSince1970: 1),
+        datasets: [dataset]
+    )
+
     let syncRequest = DatasetSyncRequest(
         clientSchemaVersion: 1,
         installed: [],
@@ -172,7 +178,7 @@ private struct Fixture {
     )
 
     lazy var datasetRepository = DatasetRepositoryStub(
-        catalogResult: .success([dataset]),
+        catalogResult: .success(manifest),
         syncResult: .success(syncResult)
     )
 
