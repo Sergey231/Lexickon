@@ -1,6 +1,6 @@
 import Foundation
 
-struct RemoteDatasetRepository: DatasetRepository {
+struct DatasetRepositoryImpl: DatasetRepository {
     private let apiClient: APIClient
     private let registry: any InstalledDatasetRegistry
     private let supportedSchemaVersion: Int

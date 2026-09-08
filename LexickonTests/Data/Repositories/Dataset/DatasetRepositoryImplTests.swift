@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import Lexickon
 
-final class RemoteDatasetRepositoryTests: XCTestCase, @unchecked Sendable {
+final class DatasetRepositoryImplTests: XCTestCase, @unchecked Sendable {
     // The complete flow is intentionally kept in one test so the request order is explicit.
     // swiftlint:disable:next function_body_length
     func testManifestToSyncPlanToSignedURLFlowUsesRegistryAsSourceOfTruth() async throws {
@@ -21,7 +21,7 @@ final class RemoteDatasetRepositoryTests: XCTestCase, @unchecked Sendable {
         )
         let session = SessionController(tokenStore: InMemoryTokenStore())
         try await session.establishSession(with: try XCTUnwrap(AccessToken(rawValue: "token")))
-        let repository = RemoteDatasetRepository(
+        let repository = DatasetRepositoryImpl(
             apiClient: makeClient(session: session),
             registry: registry
         )
@@ -80,7 +80,7 @@ final class RemoteDatasetRepositoryTests: XCTestCase, @unchecked Sendable {
     func testRevokedDownloadResponseMapsToDatasetError() async throws {
         let session = SessionController(tokenStore: InMemoryTokenStore())
         try await session.establishSession(with: try XCTUnwrap(AccessToken(rawValue: "token")))
-        let repository = RemoteDatasetRepository(
+        let repository = DatasetRepositoryImpl(
             apiClient: makeClient(session: session),
             registry: FileInstalledDatasetRegistry(
                 fileURL: FileManager.default.temporaryDirectory

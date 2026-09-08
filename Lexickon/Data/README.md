@@ -19,4 +19,5 @@
 записью или отправкой запроса.
 
 Подробности API описаны в `Data/DataSources/Remote/API/README.md`, а сессии —
-в `Data/Session/README.md`.
+в `Data/Session/README.md`. Правила реализаций репозиториев находятся в
+`Data/Repositories/README.md`.

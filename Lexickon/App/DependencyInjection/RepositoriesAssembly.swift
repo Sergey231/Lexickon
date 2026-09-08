@@ -23,7 +23,7 @@ struct RepositoriesAssembly: Sendable {
         )
         #endif
         self.userRepository = UnavailableUserRepository()
-        self.datasetRepository = RemoteDatasetRepository(
+        self.datasetRepository = DatasetRepositoryImpl(
             apiClient: dataSources.apiClient,
             registry: dataSources.datasetRegistry
         )

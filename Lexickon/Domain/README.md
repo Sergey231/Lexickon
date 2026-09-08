@@ -17,8 +17,8 @@ Presentation или инфраструктуры.
   сценариев.
 
 Domain-типы не являются API DTO и не должны повторять JSON только ради удобного
-декодирования. Transport DTO находятся в `Data/API/DTO`; Data явно преобразует
-их:
+декодирования. Transport DTO находятся в Data рядом с использующим их
+репозиторием либо общей API-инфраструктурой. Data явно преобразует их:
 
 `API DTO -> Data mapper -> Domain entity/value/use-case model`
 
@@ -37,3 +37,6 @@ Domain-типы не являются API DTO и не должны повтор�
 
 Идентификатор frequency metric остаётся opaque, пока не финализированы контракты
 SQLite query и metric.
+
+Подробные правила контрактов репозиториев описаны в
+`Domain/Repositories/README.md`.

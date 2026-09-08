@@ -27,8 +27,9 @@ App/DependencyInjection/ProductionAssembly собирает весь граф
   `APIClient`, DTO, `URLSession` и токены.
 - `Domain` объявляет протоколы репозиториев и бизнес-модели, но не зависит от
   сети.
-- `Data/Repositories` вызывает API и преобразует DTO в Domain-модели. На
-  текущем этапе продуктовые реализации ещё заменены на `Unavailable...`.
+- `Data/Repositories` вызывает API и преобразует DTO в Domain-модели. Для ещё
+  не подключённых зависимостей используются fail-fast реализации
+  `Unavailable...`.
 - `Data/DataSources/Remote/API` содержит HTTP-клиент и wire-модели backend.
 - `Data/DataSources/Local` содержит локальные источники, включая Keychain и
   будущую базу данных.
@@ -130,8 +131,10 @@ headers. `LogRedactor` скрывает:
 
 ## DTO
 
-Все transport-модели находятся в `DataSources/Remote/API/DTO` и имеют суффикс
-`DTO`.
+Общие transport-модели находятся в `DataSources/Remote/API/DTO`, а модели
+конкретного feature — рядом с использующим их репозиторием. Все они имеют
+суффикс `DTO`.
+
 `APIErrorDTO` поддерживает несколько форматов backend error body и извлекает
 машинный `code`. DTO не должны выходить из Data: репозиторий преобразует
 response DTO в Domain-модель, а Domain input — в request DTO.
