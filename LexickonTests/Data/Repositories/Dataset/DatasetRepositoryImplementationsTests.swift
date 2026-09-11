@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import Lexickon
 
-final class DatasetRepositoryImplTests: XCTestCase, @unchecked Sendable {
+final class DatasetRepositoryImplementationsTests: XCTestCase, @unchecked Sendable {
     // The complete flow is intentionally kept in one test so the request order is explicit.
     // swiftlint:disable:next function_body_length
     func testManifestToSyncPlanToSignedURLFlowUsesRegistryAsSourceOfTruth() async throws {
@@ -21,9 +21,15 @@ final class DatasetRepositoryImplTests: XCTestCase, @unchecked Sendable {
         )
         let session = SessionController(tokenStore: InMemoryTokenStore())
         try await session.establishSession(with: try XCTUnwrap(AccessToken(rawValue: "token")))
-        let repository = DatasetRepositoryImpl(
-            apiClient: makeClient(session: session),
+        let catalogRepository = DatasetCatalogRepositoryImpl(
+            apiClient: makeClient(session: session)
+        )
+        let installedRepository = InstalledDatasetRepositoryImpl(
             registry: registry
+        )
+        let synchronizeDatasets = SynchronizeDatasetsUseCase(
+            catalogRepository: catalogRepository,
+            installedRepository: installedRepository
         )
 
         URLProtocolStub.registry.setHandler { request in
@@ -43,18 +49,9 @@ final class DatasetRepositoryImplTests: XCTestCase, @unchecked Sendable {
             }
         }
 
-        let manifest = try await repository.catalog()
-        let result = try await repository.synchronize(
-            DatasetSyncRequest(
-                clientSchemaVersion: 1,
-                installed: [
-                    InstalledDataset(
-                        key: DatasetKey(rawValue: "core-en"),
-                        version: DatasetVersion(rawValue: "9.0.0"),
-                        sqliteSchemaVersion: 1,
-                        checksumSHA256: String(repeating: "f", count: 64)
-                    )
-                ],
+        let manifest = try await catalogRepository.catalog()
+        let plan = try await synchronizeDatasets(
+            SynchronizeDatasetsInput(
                 wanted: [
                     WantedDataset(
                         language: LanguageCode(rawValue: "en"),
@@ -63,30 +60,64 @@ final class DatasetRepositoryImplTests: XCTestCase, @unchecked Sendable {
                 ]
             )
         )
-        let download = try await repository.downloadURL(
-            for: try XCTUnwrap(result.actions.first?.latestVersionID)
+        let download = try await catalogRepository.downloadURL(
+            for: try XCTUnwrap(plan.actions.first?.latestVersionID)
         )
         let persisted = try await registry.installedDatasets()
         let registryText = try String(contentsOf: fileURL, encoding: .utf8)
 
         XCTAssertEqual(manifest.state, .available)
-        XCTAssertEqual(result.actions.map(\.status), [.updateAvailable])
+        XCTAssertEqual(plan.actions.map(\.status), [.updateAvailable])
         XCTAssertEqual(persisted.map(\.updateState), [.updateAvailable])
         XCTAssertEqual(download.url.absoluteString, "https://storage.test/core.sqlite.gz?signature=secret")
         XCTAssertFalse(registryText.contains("storage.test"))
         XCTAssertFalse(registryText.contains("signature"))
     }
 
+    func testApplyingPlanPreservesDatasetsOutsideThePlan() async throws {
+        let registry = FileInstalledDatasetRegistry(
+            fileURL: FileManager.default.temporaryDirectory
+                .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+                .appending(path: "installed-datasets.json")
+        )
+        let core = InstalledDataset(
+            key: DatasetKey(rawValue: "core-en"),
+            version: DatasetVersion(rawValue: "1.0.0"),
+            sqliteSchemaVersion: 1,
+            checksumSHA256: String(repeating: "a", count: 64)
+        )
+        let medicine = InstalledDataset(
+            key: DatasetKey(rawValue: "medicine-en"),
+            version: DatasetVersion(rawValue: "1.0.0"),
+            sqliteSchemaVersion: 1,
+            checksumSHA256: String(repeating: "b", count: 64),
+            updateState: .deprecated
+        )
+        try await registry.replace(with: [core, medicine])
+        let repository = InstalledDatasetRepositoryImpl(registry: registry)
+        let plan = DatasetSyncPlan(
+            schemaVersion: 1,
+            actions: [
+                DatasetSyncAction(
+                    key: core.key,
+                    status: .updateAvailable,
+                    installedVersion: core.version,
+                    latestVersion: DatasetVersion(rawValue: "1.1.0")
+                )
+            ]
+        )
+
+        try await repository.apply(plan)
+
+        let persisted = try await repository.datasets()
+        XCTAssertEqual(persisted.map(\.updateState), [.updateAvailable, .deprecated])
+    }
+
     func testRevokedDownloadResponseMapsToDatasetError() async throws {
         let session = SessionController(tokenStore: InMemoryTokenStore())
         try await session.establishSession(with: try XCTUnwrap(AccessToken(rawValue: "token")))
-        let repository = DatasetRepositoryImpl(
-            apiClient: makeClient(session: session),
-            registry: FileInstalledDatasetRegistry(
-                fileURL: FileManager.default.temporaryDirectory
-                    .appending(path: UUID().uuidString)
-                    .appending(path: "registry.json")
-            )
+        let repository = DatasetCatalogRepositoryImpl(
+            apiClient: makeClient(session: session)
         )
         URLProtocolStub.registry.setHandler { request in
             .response(

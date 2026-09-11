@@ -27,16 +27,17 @@ struct UseCases: Sendable {
             repository: repositories.userRepository
         )
         self.datasetCatalogUseCase = GetDatasetCatalogUseCase(
-            repository: repositories.datasetRepository
+            repository: repositories.datasetCatalogRepository
         )
         self.installedDatasetsUseCase = GetInstalledDatasetsUseCase(
-            repository: repositories.datasetRepository
+            repository: repositories.installedDatasetRepository
         )
         self.synchronizeDatasetsUseCase = SynchronizeDatasetsUseCase(
-            repository: repositories.datasetRepository
+            catalogRepository: repositories.datasetCatalogRepository,
+            installedRepository: repositories.installedDatasetRepository
         )
         self.datasetDownloadURLUseCase = GetDatasetDownloadURLUseCase(
-            repository: repositories.datasetRepository
+            repository: repositories.datasetCatalogRepository
         )
         self.lookupFrequencyUseCase = LookupFrequencyUseCase(
             repository: repositories.frequencyRepository
@@ -47,7 +48,8 @@ struct UseCases: Sendable {
         repositories: RepositoriesAssembly(
             authRepository: UnavailableAuthRepository(),
             userRepository: UnavailableUserRepository(),
-            datasetRepository: UnavailableDatasetRepository(),
+            datasetCatalogRepository: UnavailableDatasetCatalogRepository(),
+            installedDatasetRepository: UnavailableInstalledDatasetRepository(),
             frequencyRepository: UnavailableFrequencyRepository()
         )
     )

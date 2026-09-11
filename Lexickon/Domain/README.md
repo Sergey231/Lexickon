@@ -10,7 +10,7 @@ Presentation или инфраструктуры.
 - `ValueObjects` содержит небольшие неизменяемые значения, идентификаторы и
   классификации, например `UserID`, `DatasetKey` и `UserSettings`.
 - `UseCases/<Feature>` содержит операции сценариев и их input/output модели.
-  Запросы вроде `LoginRequest`, `DatasetSyncRequest` и `FrequencyQuery`
+  Запросы вроде `LoginRequest`, `SynchronizeDatasetsInput` и `FrequencyQuery`
   описывают контракт use case, а не transport payload.
 - `Repositories` содержит протоколы, которые нужны use case.
 - `Errors` содержит типизированные ошибки приложения, общие для разных
@@ -31,8 +31,11 @@ Domain-типы не являются API DTO и не должны повтор�
 - Domain не должен ссылаться на `URLSession`, Keychain, SQLite records, API DTO
   или feature ViewModel.
 - Значения, которые пересекают concurrency boundaries, соответствуют `Sendable`.
-- Реализации репозиториев сами отвечают за синхронизацию; Domain-протоколы не
-  принуждают выполнять работу на `MainActor`.
+- Use case координирует бизнес-сценарий; репозитории предоставляют минимальные
+  возможности чтения и сохранения данных.
+- Чистые бизнес-правила, такие как построение sync-плана, находятся в Domain
+  services и не зависят от transport DTO.
+- Domain-протоколы не принуждают выполнять работу на `MainActor`.
 - Инфраструктурные ошибки нормализуются в `AppError` до выхода из Data.
 
 Идентификатор frequency metric остаётся opaque, пока не финализированы контракты

@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import Lexickon
 
-final class RemoteAuthRepositoryTests: XCTestCase, @unchecked Sendable {
+final class AuthRepositoryImplTests: XCTestCase, @unchecked Sendable {
     func testRegistrationDoesNotPersistToken() async throws {
         let store = InMemoryTokenStore()
         let session = SessionController(tokenStore: store)
@@ -108,8 +108,8 @@ final class RemoteAuthRepositoryTests: XCTestCase, @unchecked Sendable {
         XCTAssertNil(bearerToken)
     }
 
-    private func makeRepository(session: SessionController) -> RemoteAuthRepository {
-        RemoteAuthRepository(
+    private func makeRepository(session: SessionController) -> AuthRepositoryImpl {
+        AuthRepositoryImpl(
             apiClient: makeClient(session: session),
             session: session
         )

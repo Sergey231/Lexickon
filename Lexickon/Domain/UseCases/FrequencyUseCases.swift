@@ -1,3 +1,8 @@
+struct FrequencyQuery: Equatable, Sendable {
+    let text: String
+    let datasetKey: DatasetKey
+}
+
 struct LookupFrequencyUseCase: Sendable {
     private let repository: any FrequencyRepository
 

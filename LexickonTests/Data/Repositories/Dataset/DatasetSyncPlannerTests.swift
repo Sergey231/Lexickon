@@ -23,7 +23,7 @@ final class DatasetSyncPlannerTests: XCTestCase {
                 name: "revoke",
                 localVersion: "1.0.0",
                 targetVersion: "1.1.0",
-                serverStatus: "revoked",
+                serverStatus: .revoked,
                 expected: .revoked
             ),
             DecisionCase(
@@ -72,31 +72,27 @@ final class DatasetSyncPlannerTests: XCTestCase {
             generatedAt: Date(timeIntervalSince1970: 1),
             datasets: [dataset(domain: "medicine"), dataset(domain: "core")]
         )
-        let request = DatasetSyncRequest(
-            clientSchemaVersion: 1,
-            installed: [],
-            wanted: [
-                WantedDataset(language: LanguageCode(rawValue: "en"), domain: DatasetDomain(rawValue: "medicine")),
-                WantedDataset(language: LanguageCode(rawValue: "en"), domain: DatasetDomain(rawValue: "core")),
-                WantedDataset(language: LanguageCode(rawValue: "en"), domain: DatasetDomain(rawValue: "core"))
-            ]
-        )
-        let response = DatasetSyncResponseDTO(
+        let wanted = [
+            WantedDataset(language: LanguageCode(rawValue: "en"), domain: DatasetDomain(rawValue: "medicine")),
+            WantedDataset(language: LanguageCode(rawValue: "en"), domain: DatasetDomain(rawValue: "core")),
+            WantedDataset(language: LanguageCode(rawValue: "en"), domain: DatasetDomain(rawValue: "core"))
+        ]
+        let availability = DatasetSyncAvailability(
             schemaVersion: 1,
-            actions: [actionDTO(key: "medicine-en"), actionDTO(key: "core-en")]
+            entries: [availabilityEntry(key: "medicine-en"), availabilityEntry(key: "core-en")]
         )
 
         let first = planner.makePlan(
-            manifest: manifest,
+            catalog: manifest,
             installed: [],
-            request: request,
-            serverResponse: response
+            wanted: wanted,
+            availability: availability
         )
         let second = planner.makePlan(
-            manifest: manifest,
+            catalog: manifest,
             installed: [],
-            request: request,
-            serverResponse: response
+            wanted: wanted,
+            availability: availability
         )
 
         XCTAssertEqual(first, second)
@@ -118,7 +114,7 @@ final class DatasetSyncPlannerTests: XCTestCase {
         XCTAssertNil(result.actions[0].latestVersionID)
     }
 
-    private func makeResult(_ testCase: DecisionCase) -> DatasetSyncResult {
+    private func makeResult(_ testCase: DecisionCase) -> DatasetSyncPlan {
         let planner = DatasetSyncPlanner()
         let target = dataset(
             version: testCase.targetVersion,
@@ -132,24 +128,25 @@ final class DatasetSyncPlannerTests: XCTestCase {
                 checksumSHA256: testCase.localChecksum
             )
         }
-        let request = DatasetSyncRequest(
-            clientSchemaVersion: 1,
-            installed: local.map { [$0] } ?? [],
-            wanted: [WantedDataset(language: target.language, domain: target.domain)]
-        )
-        let response = DatasetSyncResponseDTO(
+        let wanted = [WantedDataset(language: target.language, domain: target.domain)]
+        let availability = DatasetSyncAvailability(
             schemaVersion: 1,
-            actions: [actionDTO(key: target.key.rawValue, status: testCase.serverStatus)]
+            entries: [
+                availabilityEntry(
+                    key: target.key.rawValue,
+                    status: testCase.serverStatus
+                )
+            ]
         )
         return planner.makePlan(
-            manifest: DatasetManifest(
+            catalog: DatasetManifest(
                 schemaVersion: 1,
                 generatedAt: Date(timeIntervalSince1970: 1),
                 datasets: [target]
             ),
             installed: local.map { [$0] } ?? [],
-            request: request,
-            serverResponse: response
+            wanted: wanted,
+            availability: availability
         )
     }
 
@@ -176,17 +173,13 @@ final class DatasetSyncPlannerTests: XCTestCase {
         )
     }
 
-    private func actionDTO(key: String, status: String = "missing") -> DatasetSyncActionDTO {
-        DatasetSyncActionDTO(
-            datasetKey: key,
-            status: status,
-            installedVersion: nil,
-            latestVersion: "1.0.0",
-            versionId: "version-1",
-            sqliteSchemaVersion: 1,
-            compressedSizeBytes: 100,
-            checksumSha256: String(repeating: "a", count: 64),
-            requiredPlan: "free"
+    private func availabilityEntry(
+        key: String,
+        status: DatasetSyncStatus = .missing
+    ) -> DatasetSyncAvailabilityEntry {
+        DatasetSyncAvailabilityEntry(
+            key: DatasetKey(rawValue: key),
+            status: status
         )
     }
 }
@@ -195,7 +188,7 @@ private struct DecisionCase {
     let name: String
     let localVersion: String?
     let targetVersion: String
-    let serverStatus: String
+    let serverStatus: DatasetSyncStatus
     let availability: DatasetAvailability
     let expected: DatasetSyncStatus
     let localChecksum: String
@@ -204,7 +197,7 @@ private struct DecisionCase {
         name: String,
         localVersion: String?,
         targetVersion: String,
-        serverStatus: String = "update_available",
+        serverStatus: DatasetSyncStatus = .updateAvailable,
         availability: DatasetAvailability = .available,
         expected: DatasetSyncStatus,
         localChecksum: String = String(repeating: "a", count: 64)

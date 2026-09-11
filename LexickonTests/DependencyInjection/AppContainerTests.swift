@@ -3,12 +3,15 @@ import XCTest
 
 @MainActor
 final class AppContainerTests: XCTestCase {
+    // The complete graph is exercised together so every injected boundary is verified.
+    // swiftlint:disable:next function_body_length
     func testTestAssemblyRoutesUseCasesToEveryInjectedRepository() async throws {
         var fixture = Fixture()
         let graph = TestAssembly.makeGraph(
             authRepository: fixture.authRepository,
             userRepository: fixture.userRepository,
-            datasetRepository: fixture.datasetRepository,
+            datasetCatalogRepository: fixture.datasetCatalogRepository,
+            installedDatasetRepository: fixture.installedDatasetRepository,
             frequencyRepository: fixture.frequencyRepository
         )
         let useCases = graph.container.useCases
@@ -26,8 +29,12 @@ final class AppContainerTests: XCTestCase {
             fixture.settingsPatch
         )
         let datasets = try await useCases.datasetCatalogUseCase()
-        let syncResult = try await useCases.synchronizeDatasetsUseCase(
-            fixture.syncRequest
+        let installedDatasets = try await useCases.installedDatasetsUseCase()
+        let syncPlan = try await useCases.synchronizeDatasetsUseCase(
+            fixture.syncInput
+        )
+        let downloadURL = try await useCases.datasetDownloadURLUseCase(
+            for: fixture.dataset.latestVersionID
         )
         let frequency = try await useCases.lookupFrequencyUseCase(
             fixture.frequencyQuery
@@ -39,7 +46,9 @@ final class AppContainerTests: XCTestCase {
         XCTAssertEqual(currentUser, fixture.user)
         XCTAssertEqual(updatedSettings, fixture.updatedSettings)
         XCTAssertEqual(datasets, fixture.manifest)
-        XCTAssertEqual(syncResult, fixture.syncResult)
+        XCTAssertEqual(installedDatasets, [])
+        XCTAssertEqual(syncPlan, fixture.syncPlan)
+        XCTAssertEqual(downloadURL, fixture.downloadURL)
         XCTAssertEqual(frequency, fixture.frequencyResult)
 
         let registrationRequests = await graph.authRepository.registrationRequests
@@ -48,8 +57,11 @@ final class AppContainerTests: XCTestCase {
         let stateCallCount = await graph.authRepository.stateCallCount
         let currentUserCallCount = await graph.userRepository.currentUserCallCount
         let settingsPatches = await graph.userRepository.settingsPatches
-        let catalogCallCount = await graph.datasetRepository.catalogCallCount
-        let syncRequests = await graph.datasetRepository.syncRequests
+        let catalogCallCount = await graph.datasetCatalogRepository.catalogCallCount
+        let availabilityRequests = await graph.datasetCatalogRepository.availabilityRequests
+        let downloadURLRequests = await graph.datasetCatalogRepository.downloadURLRequests
+        let datasetsCallCount = await graph.installedDatasetRepository.datasetsCallCount
+        let appliedPlans = await graph.installedDatasetRepository.appliedPlans
         let frequencyQueries = await graph.frequencyRepository.queries
 
         XCTAssertEqual(registrationRequests, [fixture.registrationRequest])
@@ -58,8 +70,14 @@ final class AppContainerTests: XCTestCase {
         XCTAssertEqual(stateCallCount, 1)
         XCTAssertEqual(currentUserCallCount, 1)
         XCTAssertEqual(settingsPatches, [fixture.settingsPatch])
-        XCTAssertEqual(catalogCallCount, 1)
-        XCTAssertEqual(syncRequests, [fixture.syncRequest])
+        XCTAssertEqual(catalogCallCount, 2)
+        XCTAssertEqual(
+            availabilityRequests,
+            [DatasetAvailabilityRequest(installed: [], wanted: fixture.syncInput.wanted)]
+        )
+        XCTAssertEqual(downloadURLRequests, [fixture.dataset.latestVersionID])
+        XCTAssertEqual(datasetsCallCount, 2)
+        XCTAssertEqual(appliedPlans, [fixture.syncPlan])
         XCTAssertEqual(frequencyQueries, [fixture.frequencyQuery])
     }
 
@@ -128,9 +146,7 @@ private struct Fixture {
         datasets: [dataset]
     )
 
-    let syncRequest = DatasetSyncRequest(
-        clientSchemaVersion: 1,
-        installed: [],
+    let syncInput = SynchronizeDatasetsInput(
         wanted: [
             WantedDataset(
                 language: LanguageCode(rawValue: "en"),
@@ -139,16 +155,39 @@ private struct Fixture {
         ]
     )
 
-    lazy var syncResult = DatasetSyncResult(
+    lazy var syncAvailability = DatasetSyncAvailability(
+        schemaVersion: 1,
+        entries: [
+            DatasetSyncAvailabilityEntry(
+                key: dataset.key,
+                status: .missing
+            )
+        ]
+    )
+
+    lazy var syncPlan = DatasetSyncPlan(
         schemaVersion: 1,
         actions: [
             DatasetSyncAction(
                 key: dataset.key,
                 status: .missing,
                 installedVersion: nil,
-                latestVersion: dataset.latestVersion
+                latestVersion: dataset.latestVersion,
+                latestVersionID: dataset.latestVersionID,
+                sqliteSchemaVersion: dataset.sqliteSchemaVersion,
+                compressedSizeBytes: dataset.compressedSizeBytes,
+                checksumSHA256: dataset.checksumSHA256,
+                requiredPlan: dataset.requiredPlan
             )
         ]
+    )
+
+    lazy var downloadURL = DatasetDownloadURL(
+        url: URL(string: "https://storage.test/core.sqlite.gz")!,
+        expiresAt: Date(timeIntervalSince1970: 100),
+        checksumSHA256: dataset.checksumSHA256,
+        compressedSizeBytes: dataset.compressedSizeBytes,
+        compression: dataset.compression
     )
 
     let frequencyQuery = FrequencyQuery(
@@ -177,9 +216,14 @@ private struct Fixture {
         settingsResult: .success(updatedSettings)
     )
 
-    lazy var datasetRepository = DatasetRepositoryStub(
+    lazy var datasetCatalogRepository = DatasetCatalogRepositoryStub(
         catalogResult: .success(manifest),
-        syncResult: .success(syncResult)
+        availabilityResult: .success(syncAvailability),
+        downloadURLResult: .success(downloadURL)
+    )
+
+    lazy var installedDatasetRepository = InstalledDatasetRepositoryStub(
+        datasetsResult: .success([])
     )
 
     lazy var frequencyRepository = FrequencyRepositoryStub(

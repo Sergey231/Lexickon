@@ -70,26 +70,27 @@ actor UserRepositoryStub: UserRepository {
     }
 }
 
-actor DatasetRepositoryStub: DatasetRepository {
+struct DatasetAvailabilityRequest: Equatable, Sendable {
+    let installed: [InstalledDataset]
+    let wanted: [WantedDataset]
+}
+
+actor DatasetCatalogRepositoryStub: DatasetCatalogRepository {
     private let catalogResult: Result<DatasetManifest, AppError>
-    private let installedResult: Result<[InstalledDataset], AppError>
-    private let syncResult: Result<DatasetSyncResult, AppError>
+    private let availabilityResult: Result<DatasetSyncAvailability, AppError>
     private let downloadURLResult: Result<DatasetDownloadURL, AppError>
 
     private(set) var catalogCallCount = 0
-    private(set) var installedCallCount = 0
-    private(set) var syncRequests: [DatasetSyncRequest] = []
+    private(set) var availabilityRequests: [DatasetAvailabilityRequest] = []
     private(set) var downloadURLRequests: [DatasetVersionID] = []
 
     init(
         catalogResult: Result<DatasetManifest, AppError>,
-        installedResult: Result<[InstalledDataset], AppError> = .success([]),
-        syncResult: Result<DatasetSyncResult, AppError>,
+        availabilityResult: Result<DatasetSyncAvailability, AppError>,
         downloadURLResult: Result<DatasetDownloadURL, AppError> = .failure(.dataset(.unavailable))
     ) {
         self.catalogResult = catalogResult
-        self.installedResult = installedResult
-        self.syncResult = syncResult
+        self.availabilityResult = availabilityResult
         self.downloadURLResult = downloadURLResult
     }
 
@@ -98,19 +99,45 @@ actor DatasetRepositoryStub: DatasetRepository {
         return try catalogResult.get()
     }
 
-    func installedDatasets() async throws -> [InstalledDataset] {
-        installedCallCount += 1
-        return try installedResult.get()
-    }
-
-    func synchronize(_ request: DatasetSyncRequest) async throws -> DatasetSyncResult {
-        syncRequests.append(request)
-        return try syncResult.get()
+    func availability(
+        installed: [InstalledDataset],
+        wanted: [WantedDataset]
+    ) async throws -> DatasetSyncAvailability {
+        availabilityRequests.append(
+            DatasetAvailabilityRequest(installed: installed, wanted: wanted)
+        )
+        return try availabilityResult.get()
     }
 
     func downloadURL(for versionID: DatasetVersionID) async throws -> DatasetDownloadURL {
         downloadURLRequests.append(versionID)
         return try downloadURLResult.get()
+    }
+}
+
+actor InstalledDatasetRepositoryStub: InstalledDatasetRepository {
+    private let datasetsResult: Result<[InstalledDataset], AppError>
+    private let applyResult: Result<Void, AppError>
+
+    private(set) var datasetsCallCount = 0
+    private(set) var appliedPlans: [DatasetSyncPlan] = []
+
+    init(
+        datasetsResult: Result<[InstalledDataset], AppError> = .success([]),
+        applyResult: Result<Void, AppError> = .success(())
+    ) {
+        self.datasetsResult = datasetsResult
+        self.applyResult = applyResult
+    }
+
+    func datasets() async throws -> [InstalledDataset] {
+        datasetsCallCount += 1
+        return try datasetsResult.get()
+    }
+
+    func apply(_ plan: DatasetSyncPlan) async throws {
+        appliedPlans.append(plan)
+        try applyResult.get()
     }
 }
 

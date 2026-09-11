@@ -18,21 +18,21 @@ Data repository
 
 ## Структура
 
-- `Auth` содержит запросы авторизации и `RemoteAuthRepository`;
-- `Dataset` содержит `DatasetRepositoryImpl`, API-запросы, transport DTO и
-  планирование синхронизации;
+- `Auth` содержит запросы авторизации и `AuthRepositoryImpl`;
+- `Dataset` содержит `DatasetCatalogRepositoryImpl`,
+  `InstalledDatasetRepositoryImpl`, API-запросы и transport DTO;
 - `UnavailableRepositories.swift` содержит fail-fast реализации для ещё не
   подключённых зависимостей.
 
-`DatasetRepositoryImpl` координирует
-удалённый API, локальный `InstalledDatasetRegistry` и построение sync-плана.
+`SynchronizeDatasetsUseCase` в Domain координирует удалённый каталог и локальное
+хранилище. Чистый `DatasetSyncPlanner` также находится в Domain.
 
 ## Ответственность реализации
 
 - вызывать типизированные data source;
 - преобразовывать Domain input в request DTO;
 - преобразовывать response DTO и database record в Domain-модели;
-- координировать несколько источников и сохранять согласованное состояние;
+- выполнять одну определённую возможность доступа к данным;
 - нормализовать `NetworkError`, ошибки хранилища и неизвестные ошибки в
   `AppError`;
 - не пропускать transport DTO и инфраструктурные ошибки за границу Data.
@@ -43,11 +43,11 @@ Presentation. Низкоуровневые детали HTTP, Keychain и фай
 
 ## Именование
 
-- Протокол сохраняет чистое доменное имя, например `DatasetRepository`.
-- Реализация получает семантический квалификатор, когда он точно описывает её
-  границу, например `RemoteAuthRepository`.
-- Суффикс `Impl` используется, когда реализация объединяет источники и более
-  точного устойчивого квалификатора нет: `DatasetRepositoryImpl`.
+- Протокол сохраняет чистое доменное имя, например
+  `DatasetCatalogRepository`.
+- Единственная production-реализация без дополнительной доменной специализации
+  получает суффикс `Impl`, например `AuthRepositoryImpl`,
+  `DatasetCatalogRepositoryImpl` или `InstalledDatasetRepositoryImpl`.
 - Заглушка, которая сообщает о неподключённой зависимости, называется
   `Unavailable<Name>Repository`.
 - DTO имеют суффикс `DTO` и располагаются рядом с feature, которому принадлежат.
@@ -63,3 +63,5 @@ Presentation. Низкоуровневые детали HTTP, Keychain и фай
 - отсутствие чувствительных transport-данных в локальном состоянии и логах.
 
 Для HTTP-тестов используется `URLProtocolStub`; запущенный backend не требуется.
+
+Подробности authentication flow описаны в `Auth/README.md`.

@@ -3,7 +3,8 @@ import Foundation
 struct RepositoriesAssembly: Sendable {
     let authRepository: any AuthRepository
     let userRepository: any UserRepository
-    let datasetRepository: any DatasetRepository
+    let datasetCatalogRepository: any DatasetCatalogRepository
+    let installedDatasetRepository: any InstalledDatasetRepository
     let frequencyRepository: any FrequencyRepository
 
     init(dataSources: DataSourcesAssembly) {
@@ -11,20 +12,22 @@ struct RepositoriesAssembly: Sendable {
         if ProcessInfo.processInfo.arguments.contains("--uitest-auth-repository") {
             self.authRepository = UITestAuthRepository()
         } else {
-            self.authRepository = RemoteAuthRepository(
+            self.authRepository = AuthRepositoryImpl(
                 apiClient: dataSources.apiClient,
                 session: dataSources.session
             )
         }
         #else
-        self.authRepository = RemoteAuthRepository(
+        self.authRepository = AuthRepositoryImpl(
             apiClient: dataSources.apiClient,
             session: dataSources.session
         )
         #endif
         self.userRepository = UnavailableUserRepository()
-        self.datasetRepository = DatasetRepositoryImpl(
-            apiClient: dataSources.apiClient,
+        self.datasetCatalogRepository = DatasetCatalogRepositoryImpl(
+            apiClient: dataSources.apiClient
+        )
+        self.installedDatasetRepository = InstalledDatasetRepositoryImpl(
             registry: dataSources.datasetRegistry
         )
         self.frequencyRepository = UnavailableFrequencyRepository()
@@ -33,12 +36,14 @@ struct RepositoriesAssembly: Sendable {
     init(
         authRepository: any AuthRepository,
         userRepository: any UserRepository,
-        datasetRepository: any DatasetRepository,
+        datasetCatalogRepository: any DatasetCatalogRepository,
+        installedDatasetRepository: any InstalledDatasetRepository,
         frequencyRepository: any FrequencyRepository
     ) {
         self.authRepository = authRepository
         self.userRepository = userRepository
-        self.datasetRepository = datasetRepository
+        self.datasetCatalogRepository = datasetCatalogRepository
+        self.installedDatasetRepository = installedDatasetRepository
         self.frequencyRepository = frequencyRepository
     }
 }

@@ -30,21 +30,30 @@ struct UnavailableUserRepository: UserRepository {
     }
 }
 
-struct UnavailableDatasetRepository: DatasetRepository {
+struct UnavailableDatasetCatalogRepository: DatasetCatalogRepository {
     func catalog() async throws -> DatasetManifest {
-        throw dependencyUnavailable(.datasetRepository)
+        throw dependencyUnavailable(.datasetCatalogRepository)
     }
 
-    func installedDatasets() async throws -> [InstalledDataset] {
-        throw dependencyUnavailable(.datasetRepository)
-    }
-
-    func synchronize(_ request: DatasetSyncRequest) async throws -> DatasetSyncResult {
-        throw dependencyUnavailable(.datasetRepository)
+    func availability(
+        installed: [InstalledDataset],
+        wanted: [WantedDataset]
+    ) async throws -> DatasetSyncAvailability {
+        throw dependencyUnavailable(.datasetCatalogRepository)
     }
 
     func downloadURL(for versionID: DatasetVersionID) async throws -> DatasetDownloadURL {
-        throw dependencyUnavailable(.datasetRepository)
+        throw dependencyUnavailable(.datasetCatalogRepository)
+    }
+}
+
+struct UnavailableInstalledDatasetRepository: InstalledDatasetRepository {
+    func datasets() async throws -> [InstalledDataset] {
+        throw dependencyUnavailable(.installedDatasetRepository)
+    }
+
+    func apply(_ plan: DatasetSyncPlan) async throws {
+        throw dependencyUnavailable(.installedDatasetRepository)
     }
 }
 

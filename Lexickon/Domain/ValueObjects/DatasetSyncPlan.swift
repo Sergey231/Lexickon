@@ -1,49 +1,11 @@
-import Foundation
+struct DatasetSyncAvailability: Equatable, Sendable {
+    let schemaVersion: Int
+    let entries: [DatasetSyncAvailabilityEntry]
+}
 
-struct InstalledDataset: Equatable, Sendable {
+struct DatasetSyncAvailabilityEntry: Equatable, Sendable {
     let key: DatasetKey
-    let version: DatasetVersion
-    let sqliteSchemaVersion: Int
-    let checksumSHA256: String
-    let installedAt: Date
-    let updateState: InstalledDatasetUpdateState
-
-    init(
-        key: DatasetKey,
-        version: DatasetVersion,
-        sqliteSchemaVersion: Int,
-        checksumSHA256: String,
-        installedAt: Date = Date(timeIntervalSince1970: 0),
-        updateState: InstalledDatasetUpdateState = .current
-    ) {
-        self.key = key
-        self.version = version
-        self.sqliteSchemaVersion = sqliteSchemaVersion
-        self.checksumSHA256 = checksumSHA256
-        self.installedAt = installedAt
-        self.updateState = updateState
-    }
-}
-
-enum InstalledDatasetUpdateState: String, Codable, Equatable, Sendable {
-    case current
-    case updateAvailable
-    case deprecated
-    case revoked
-    case forbidden
-    case incompatible
-    case unavailable
-}
-
-struct WantedDataset: Equatable, Sendable {
-    let language: LanguageCode
-    let domain: DatasetDomain
-}
-
-struct DatasetSyncRequest: Equatable, Sendable {
-    let clientSchemaVersion: Int
-    let installed: [InstalledDataset]
-    let wanted: [WantedDataset]
+    let status: DatasetSyncStatus
 }
 
 enum DatasetSyncStatus: String, Equatable, Sendable {
@@ -124,15 +86,7 @@ struct DatasetSyncAction: Equatable, Sendable {
     }
 }
 
-struct DatasetSyncResult: Equatable, Sendable {
+struct DatasetSyncPlan: Equatable, Sendable {
     let schemaVersion: Int
     let actions: [DatasetSyncAction]
-}
-
-struct DatasetDownloadURL: Equatable, Sendable {
-    let url: URL
-    let expiresAt: Date
-    let checksumSHA256: String
-    let compressedSizeBytes: Int64
-    let compression: DatasetCompression
 }

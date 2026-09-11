@@ -77,6 +77,38 @@ final class DatasetDTOTests: XCTestCase {
         )
     }
 
+    func testSyncResponseMapsToDomainAvailability() {
+        let response = DatasetSyncResponseDTO(
+            schemaVersion: 1,
+            actions: [
+                DatasetSyncActionDTO(
+                    datasetKey: "core-en",
+                    status: "update_available",
+                    installedVersion: "1.0.0",
+                    latestVersion: "1.1.0",
+                    versionId: "version-2",
+                    sqliteSchemaVersion: 1,
+                    compressedSizeBytes: 100,
+                    checksumSha256: String(repeating: "a", count: 64),
+                    requiredPlan: "free"
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            response.domainModel,
+            DatasetSyncAvailability(
+                schemaVersion: 1,
+                entries: [
+                    DatasetSyncAvailabilityEntry(
+                        key: DatasetKey(rawValue: "core-en"),
+                        status: .updateAvailable
+                    )
+                ]
+            )
+        )
+    }
+
     private func decodeManifest(items: [String]) throws -> DatasetManifestDTO {
         let data = Data(
             """

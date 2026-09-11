@@ -37,6 +37,13 @@ struct WantedDatasetDTO: Encodable, Sendable {
 struct DatasetSyncResponseDTO: Decodable, Sendable {
     let schemaVersion: Int
     let actions: [DatasetSyncActionDTO]
+
+    var domainModel: DatasetSyncAvailability {
+        DatasetSyncAvailability(
+            schemaVersion: schemaVersion,
+            entries: actions.map(\.domainModel)
+        )
+    }
 }
 
 struct DatasetSyncActionDTO: Decodable, Sendable {
@@ -62,5 +69,12 @@ struct DatasetSyncActionDTO: Decodable, Sendable {
         case "unknown_dataset": .unknownDataset
         default: .unavailable
         }
+    }
+
+    var domainModel: DatasetSyncAvailabilityEntry {
+        DatasetSyncAvailabilityEntry(
+            key: DatasetKey(rawValue: datasetKey),
+            status: domainStatus
+        )
     }
 }

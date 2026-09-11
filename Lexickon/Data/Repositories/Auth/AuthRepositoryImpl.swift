@@ -1,4 +1,4 @@
-struct RemoteAuthRepository: AuthRepository {
+struct AuthRepositoryImpl: AuthRepository {
     private let apiClient: APIClient
     private let session: SessionController
 

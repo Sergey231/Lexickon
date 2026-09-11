@@ -2,45 +2,37 @@ import Foundation
 
 struct DatasetSyncPlanner: Sendable {
     func makePlan(
-        manifest: DatasetManifest,
+        catalog: DatasetManifest,
         installed: [InstalledDataset],
-        request: DatasetSyncRequest,
-        serverResponse: DatasetSyncResponseDTO
-    ) -> DatasetSyncResult {
+        wanted: [WantedDataset],
+        availability: DatasetSyncAvailability
+    ) -> DatasetSyncPlan {
         let installedByKey = Dictionary(grouping: installed, by: \.key)
             .compactMapValues { $0.count == 1 ? $0.first : nil }
         let datasetsByPair = Dictionary(
-            grouping: manifest.datasets,
+            grouping: catalog.datasets,
             by: { Pair(language: $0.language, domain: $0.domain) }
         )
-        let serverActions = Dictionary(
-            grouping: serverResponse.actions,
-            by: { DatasetKey(rawValue: $0.datasetKey) }
+        let availabilityByKey = Dictionary(
+            grouping: availability.entries,
+            by: \.key
         )
 
-        let wanted = Set(request.wanted.map {
-            Pair(language: $0.language, domain: $0.domain)
-        })
-        .sorted { lhs, rhs in
-            if lhs.language.rawValue != rhs.language.rawValue {
-                return lhs.language.rawValue < rhs.language.rawValue
-            }
-            return lhs.domain.rawValue < rhs.domain.rawValue
-        }
+        let wantedPairs = normalizedPairs(from: wanted)
 
-        let actions = wanted.map { pair -> DatasetSyncAction in
+        let actions = wantedPairs.map { pair -> DatasetSyncAction in
             let candidates = datasetsByPair[pair]
             let dataset = candidates?.count == 1 ? candidates?.first : nil
             let key = dataset?.key ?? DatasetKey(
                 rawValue: "\(pair.domain.rawValue.lowercased())-\(pair.language.rawValue.lowercased())"
             )
             let local = installedByKey[key]
-            guard let serverAction = serverActions[key]?.first,
-                  serverActions[key]?.count == 1 else {
+            guard let availabilityEntry = availabilityByKey[key]?.first,
+                  availabilityByKey[key]?.count == 1 else {
                 return action(key: key, status: .unavailable, local: local, target: dataset)
             }
 
-            switch serverAction.domainStatus {
+            switch availabilityEntry.status {
             case .revoked:
                 return action(key: key, status: .revoked, local: local, target: nil)
             case .deprecated:
@@ -58,7 +50,22 @@ struct DatasetSyncPlanner: Sendable {
             }
         }
 
-        return DatasetSyncResult(schemaVersion: serverResponse.schemaVersion, actions: actions)
+        return DatasetSyncPlan(
+            schemaVersion: availability.schemaVersion,
+            actions: actions
+        )
+    }
+
+    private func normalizedPairs(from wanted: [WantedDataset]) -> [Pair] {
+        Set(wanted.map {
+            Pair(language: $0.language, domain: $0.domain)
+        })
+        .sorted { lhs, rhs in
+            if lhs.language.rawValue != rhs.language.rawValue {
+                return lhs.language.rawValue < rhs.language.rawValue
+            }
+            return lhs.domain.rawValue < rhs.domain.rawValue
+        }
     }
 
     private func decideAvailableTarget(
@@ -93,7 +100,7 @@ struct DatasetSyncPlanner: Sendable {
             return action(key: key, status: .unavailable, local: local, target: target)
         }
 
-        // A manifest target must never downgrade a newer local immutable pack.
+        // A catalog target must never downgrade a newer local immutable pack.
         let status: DatasetSyncStatus = target.latestVersion > local.version
             ? .updateAvailable
             : .upToDate

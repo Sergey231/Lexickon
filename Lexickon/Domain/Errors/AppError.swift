@@ -50,6 +50,7 @@ enum UnexpectedError: Error, Equatable, Sendable {
 enum Dependency: String, Equatable, Sendable {
     case authRepository
     case userRepository
-    case datasetRepository
+    case datasetCatalogRepository
+    case installedDatasetRepository
     case frequencyRepository
 }

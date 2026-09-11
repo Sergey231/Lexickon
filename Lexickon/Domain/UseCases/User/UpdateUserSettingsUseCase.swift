@@ -16,3 +16,15 @@ struct UserSettingsPatch: Equatable, Sendable {
         self.syncOverCellular = syncOverCellular
     }
 }
+
+struct UpdateUserSettingsUseCase: Sendable {
+    private let repository: any UserRepository
+
+    init(repository: any UserRepository) {
+        self.repository = repository
+    }
+
+    func callAsFunction(_ patch: UserSettingsPatch) async throws -> UserSettings {
+        try await repository.updateSettings(patch)
+    }
+}

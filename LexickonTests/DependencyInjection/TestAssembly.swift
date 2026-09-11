@@ -5,7 +5,8 @@ struct TestAppGraph {
     let container: AppContainer
     let authRepository: AuthRepositoryStub
     let userRepository: UserRepositoryStub
-    let datasetRepository: DatasetRepositoryStub
+    let datasetCatalogRepository: DatasetCatalogRepositoryStub
+    let installedDatasetRepository: InstalledDatasetRepositoryStub
     let frequencyRepository: FrequencyRepositoryStub
 }
 
@@ -14,7 +15,8 @@ enum TestAssembly {
     static func makeGraph(
         authRepository: AuthRepositoryStub,
         userRepository: UserRepositoryStub,
-        datasetRepository: DatasetRepositoryStub,
+        datasetCatalogRepository: DatasetCatalogRepositoryStub,
+        installedDatasetRepository: InstalledDatasetRepositoryStub,
         frequencyRepository: FrequencyRepositoryStub
     ) -> TestAppGraph {
         let dataSources = DataSourcesAssembly(
@@ -25,7 +27,8 @@ enum TestAssembly {
         let repositories = RepositoriesAssembly(
             authRepository: authRepository,
             userRepository: userRepository,
-            datasetRepository: datasetRepository,
+            datasetCatalogRepository: datasetCatalogRepository,
+            installedDatasetRepository: installedDatasetRepository,
             frequencyRepository: frequencyRepository
         )
         let container = AppContainer(
@@ -37,7 +40,8 @@ enum TestAssembly {
             container: container,
             authRepository: authRepository,
             userRepository: userRepository,
-            datasetRepository: datasetRepository,
+            datasetCatalogRepository: datasetCatalogRepository,
+            installedDatasetRepository: installedDatasetRepository,
             frequencyRepository: frequencyRepository
         )
     }
