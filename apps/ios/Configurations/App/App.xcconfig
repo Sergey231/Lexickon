@@ -1,0 +1,23 @@
+// Settings shared by Debug and Release variants of the application target.
+
+CODE_SIGN_STYLE = Automatic
+CURRENT_PROJECT_VERSION = 1
+MARKETING_VERSION = 1.0
+
+PRODUCT_BUNDLE_IDENTIFIER = com.lexickon.ios
+PRODUCT_NAME = $(TARGET_NAME)
+
+SDKROOT = iphoneos
+SUPPORTED_PLATFORMS = iphoneos iphonesimulator
+TARGETED_DEVICE_FAMILY = 1,2
+
+// Generates type-safe Swift identifiers for named assets and convenience
+// Image/Color extensions that accept those generated symbols.
+ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = YES
+ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES
+
+GENERATE_INFOPLIST_FILE = NO
+INFOPLIST_FILE = Lexickon/Resources/Info.plist
+
+// Extracts localizable literals emitted by Swift into the localization workflow.
+SWIFT_EMIT_LOC_STRINGS = YES

@@ -1,0 +1,3 @@
+#include "UITests.xcconfig"
+
+// Release-only UI-test overrides belong in this file.
