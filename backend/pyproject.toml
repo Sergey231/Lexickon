@@ -1,0 +1,46 @@
+[project]
+name = "lexickon-api-server"
+version = "0.1.0"
+description = "FastAPI backend for the Lexickon mobile app."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.14.0",
+    "boto3>=1.35.0",
+    "email-validator>=2.2.0",
+    "fastapi>=0.115.0",
+    "pwdlib[argon2]>=0.2.1",
+    "PyJWT>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "psycopg[binary]>=3.2.0",
+    "sqlalchemy>=2.0.36",
+    "uvicorn[standard]>=0.32.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx2>=0.28.0",
+    "pytest>=8.3.0",
+    "ruff>=0.7.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/versions/*.py" = ["F401"]
