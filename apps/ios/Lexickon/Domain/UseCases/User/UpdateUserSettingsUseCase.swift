@@ -17,6 +17,11 @@ struct UserSettingsPatch: Equatable, Sendable {
     }
 }
 
+/// Частично обновляет настройки пользователя.
+/// - Parameter patch: Поля для обновления (nil — не менять).
+/// - Returns: Актуальные `UserSettings` после применения.
+/// - Throws: `AppError` — `.authorization(.unauthenticated)` если нет сессии,
+///   `.transport`, `.validation` ошибки валидации полей.
 struct UpdateUserSettingsUseCase: Sendable {
     private let repository: any UserRepository
 

@@ -1,3 +1,5 @@
+import FactoryKit
+import FactoryTesting
 import Foundation
 @testable import Lexickon
 
@@ -19,30 +21,29 @@ enum TestAssembly {
         installedDatasetRepository: InstalledDatasetRepositoryStub,
         frequencyRepository: FrequencyRepositoryStub
     ) -> TestAppGraph {
-        let dataSources = DataSourcesAssembly(
-            baseURL: URL(string: "https://unit.test")!,
-            transport: URLSessionTransport(),
-            tokenStore: InMemoryTokenStore()
-        )
-        let repositories = RepositoriesAssembly(
-            authRepository: authRepository,
-            userRepository: userRepository,
-            datasetCatalogRepository: datasetCatalogRepository,
-            installedDatasetRepository: installedDatasetRepository,
-            frequencyRepository: frequencyRepository
-        )
-        let container = AppContainer(
-            dataSources: dataSources,
-            repositories: repositories
-        )
+        let container = Container.shared
+        container.authRepository.register { authRepository }
+        container.userRepository.register { userRepository }
+        container.datasetCatalogRepository.register { datasetCatalogRepository }
+        container.installedDatasetRepository.register { installedDatasetRepository }
+        container.frequencyRepository.register { frequencyRepository }
+        container.apiBaseURL.register { URL(string: "https://unit.test")! }
+        container.httpTransport.register { URLSessionTransport() }
+        container.tokenStore.register { InMemoryTokenStore() }
+
+        let appContainer = AppContainer(useCases: container.useCases())
 
         return TestAppGraph(
-            container: container,
+            container: appContainer,
             authRepository: authRepository,
             userRepository: userRepository,
             datasetCatalogRepository: datasetCatalogRepository,
             installedDatasetRepository: installedDatasetRepository,
             frequencyRepository: frequencyRepository
         )
+    }
+
+    static func reset() {
+        Container.shared.reset()
     }
 }

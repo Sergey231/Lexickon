@@ -1,3 +1,4 @@
+import FactoryKit
 import Foundation
 
 /// The only place where the production dependency graph is assembled.
@@ -10,11 +11,9 @@ enum ProductionAssembly {
         baseURL: URL = AppConfiguration.apiBaseURL,
         transport: any HTTPTransport = URLSessionTransport()
     ) -> AppContainer {
-        let dataSources = DataSourcesAssembly(
-            baseURL: baseURL,
-            transport: transport
-        )
-
-        return AppContainer(dataSources: dataSources)
+        let container = Container.shared
+        container.apiBaseURL.register { baseURL }
+        container.httpTransport.register { transport }
+        return AppContainer()
     }
 }

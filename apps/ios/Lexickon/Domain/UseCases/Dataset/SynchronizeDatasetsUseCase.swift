@@ -7,6 +7,18 @@ struct SynchronizeDatasetsInput: Equatable, Sendable {
     let wanted: [WantedDataset]
 }
 
+/// Главный use case синхронизации: рассчитывает план и применяет его.
+/// 1. Получает установленные датасеты (`InstalledDatasetRepository`)
+/// 2. Загружает каталог (`DatasetCatalogRepository.catalog()`)
+/// 3. Запрашивает доступность у сервера (`availability(installed:wanted:)`)
+/// 4. Строит план через `DatasetSyncPlanner` (что качать/удалить/обновить)
+/// 5. Атомарно применяет план (`InstalledDatasetRepository.apply(plan)`)
+/// - Parameter input: Желаемые пары язык+домен.
+/// - Returns: `DatasetSyncPlan` с действиями (download, delete, update).
+/// - Throws: `AppError` — `.dataset(.packMissing)`, `.dataset(.checksumMismatch)`,
+///   `.storage(.insufficientSpace)`, `.authorization`, `.transport`, `.cancelled`.
+/// 
+/// План применяется в транзакции: либо всё успешно, либо откат.
 struct SynchronizeDatasetsUseCase: Sendable {
     private let catalogRepository: any DatasetCatalogRepository
     private let installedRepository: any InstalledDatasetRepository

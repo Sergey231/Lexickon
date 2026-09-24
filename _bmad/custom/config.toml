@@ -1,0 +1,19 @@
+# Team / enterprise overrides for _bmad/config.toml.
+# Committed to the repo — applies to every developer on the project.
+# Tables deep-merge over base config; keyed entries merge by key.
+# Example: override an agent descriptor, or add a new agent.
+#
+# [agents.bmad-agent-pm]
+# description = "Prefers short, bulleted PRDs over narrative drafts."
+
+[tools.github_projects]
+enabled = true
+sync_mode = "bidirectional"
+auth_method = "gh_cli"
+repo_owner = "Sergey231"
+repo_name = "Lexickon"
+project_number = 3
+project_owner_type = "user"  # "user" or "org"
+# Create project first: gh project create --owner Sergey231 --title "Lexickon" --format json
+auto_sync_on_commit = true
+sync_labels = ["bmad"]

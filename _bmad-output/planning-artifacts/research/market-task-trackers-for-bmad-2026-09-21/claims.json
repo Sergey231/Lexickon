@@ -1,0 +1,13 @@
+[
+  {"claim":"BMAD artifact and sprint-state model","class":"feature","pub_date":"2026-09"},
+  {"claim":"GitHub Projects hierarchy and automation","class":"feature","pub_date":"2026-09"},
+  {"claim":"GitHub Projects TSV export","class":"feature","pub_date":"2026-09"},
+  {"claim":"GitHub plan pricing","class":"pricing","pub_date":"2026-09"},
+  {"claim":"Linear hierarchy, integration, and export","class":"feature","pub_date":"2026-09"},
+  {"claim":"Linear plan pricing","class":"pricing","pub_date":"2026-09"},
+  {"claim":"YouTrack hierarchy, Markdown, workflow, and VCS integration","class":"feature","pub_date":"2026-09"},
+  {"claim":"YouTrack Cloud pricing","class":"pricing","pub_date":"2026-09"},
+  {"claim":"Jira hierarchy and plan gating","class":"feature","pub_date":"2026-09"},
+  {"claim":"ClickUp hierarchy and portability","class":"feature","pub_date":"2026-09"},
+  {"claim":"Plane typed hierarchy availability","class":"feature","pub_date":"2026-06"}
+]

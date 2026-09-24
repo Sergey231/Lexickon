@@ -3,6 +3,9 @@ enum LaunchDestination: Hashable, Sendable {
     case main
 }
 
+/// Определяет экран при запуске приложения на основе состояния аутентификации.
+/// - Returns: `.main` если пользователь авторизован, `.login` — иначе.
+/// - Throws: `AppError` из `AuthRepository.authenticationState()`.
 struct ResolveLaunchDestinationUseCase: Sendable {
     private let repository: any AuthRepository
 

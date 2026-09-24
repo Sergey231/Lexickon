@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Таск-трекеры для BMAD — исследование</title>
+<style>
+:root{color-scheme:light dark;--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#667085;--line:#d9deea;--accent:#3157d5;--accent2:#7c3aed;--good:#087a55;--warn:#a54d00;--bad:#b42318}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.58 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--accent)}header,main{max-width:1120px;margin:auto;padding:28px}header{padding-top:48px}.eyebrow{color:var(--accent);font-weight:700;letter-spacing:.08em;text-transform:uppercase}.meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted)}.pill,.badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:12px}.badge.verified{background:#dff8ee;color:#05603f;border-color:#a8e4cc}.badge.unverified{background:#fff1df;color:#7a3a00;border-color:#f5c990;font-weight:700}.card,section{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin:18px 0;box-shadow:0 4px 16px rgba(16,24,40,.04)}.hero{border-left:5px solid var(--accent)}h1{font-size:clamp(32px,5vw,54px);line-height:1.05;margin:.2em 0}h2{margin-top:0;font-size:24px}h3{font-size:17px}.toc{position:sticky;top:0;z-index:3;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(10px);border-block:1px solid var(--line);padding:10px 28px;overflow:auto;white-space:nowrap}.toc a{margin-right:18px;text-decoration:none}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.mini{border:1px solid var(--line);border-radius:12px;padding:16px}.winner{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 12%,var(--panel)),var(--panel))}.matrix-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:760px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{font-size:12px;text-transform:uppercase;color:var(--muted)}td.num{text-align:right;font-variant-numeric:tabular-nums}.bar{height:9px;background:#e5e9f2;border-radius:99px;overflow:hidden;margin-top:7px}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}.flow{font:600 14px ui-monospace,SFMono-Regular,Menlo,monospace;background:color-mix(in srgb,var(--accent) 7%,var(--panel));padding:14px;border-radius:10px;overflow:auto}.callout{border-left:4px solid var(--warn);padding:10px 14px;background:color-mix(in srgb,var(--warn) 8%,var(--panel));border-radius:8px}.sources{font-size:13px}.sources td:first-child{font-weight:700;white-space:nowrap}details summary{cursor:pointer;font-weight:700;font-size:18px}.stale{border-left:4px solid var(--bad)}footer{color:var(--muted);text-align:center;padding:30px}@media(max-width:760px){header,main{padding:18px}.grid{grid-template-columns:1fr}.card,section{padding:18px}.toc{padding:10px 18px}}@media(prefers-color-scheme:dark){:root{--bg:#0d111a;--panel:#151b27;--text:#edf2f7;--muted:#9aa6b2;--line:#2b3444;--accent:#8aa4ff;--accent2:#b995ff;--good:#6ee7b7;--warn:#ffb86b;--bad:#ff8b86}.badge.verified{background:#103e31;color:#9ff0d2;border-color:#27644f}.badge.unverified{background:#482d0e;color:#ffd6a3;border-color:#875b25}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Market research · 21 сентября 2026</div>
+  <h1>Таск-трекеры для BMAD</h1>
+  <p>Какой трекер лучше дополняет artifact-first процесс BMAD и не становится вторым источником истины.</p>
+  <div class="meta"><span class="pill">Standard depth</span><span class="pill">Normal validation</span><span class="badge verified">1 verified</span><span class="badge unverified">10 vendor-primary / unverified independently</span></div>
+</header>
+<nav class="toc"><a href="#verdict">Вывод</a><a href="#pilot">Пилот</a><a href="#requirements">BMAD</a><a href="#matrix">Матрица</a><a href="#winner">Победитель</a><a href="#alternatives">Альтернативы</a><a href="#sources">Источники</a><a href="#staleness">Устаревание</a></nav>
+<main>
+<section id="verdict" class="hero">
+  <h2>Решение: начать с GitHub Projects</h2>
+  <p><span class="badge verified">verified synthesis</span> BMAD хранит PRD, архитектуру, эпики, истории и состояние спринта в Markdown/YAML рядом с кодом. GitHub Issues и Projects добавляют представление для людей без отдельного контура интеграции: задачи, pull-реквесты, Actions, CLI и API находятся в одной системе <a href="#src-1">[1]</a> <a href="#src-2">[2]</a> <a href="#src-3">[3]</a> <a href="#src-4">[4]</a> <a href="#src-5">[5]</a>.</p>
+  <div class="grid">
+    <div class="mini winner"><strong>GitHub Projects · 4,49</strong><p>Лучший баланс нативности, автоматизации и цены.</p></div>
+    <div class="mini"><strong>Linear · 4,42</strong><p>Лучше для product/UX-команды и явной продуктовой иерархии.</p></div>
+    <div class="mini"><strong>YouTrack · 4,33</strong><p>Лучшее соотношение цены и возможностей; сильный Markdown/self-hosted сценарий.</p></div>
+  </div>
+  <p class="callout"><strong>Оговорка:</strong> источником истины остаются BMAD-файлы в Git. Трекер хранит идентификатор, краткое описание, статус, связи и ссылку на файл.</p>
+</section>
+
+<section id="pilot">
+  <h2>Двухнедельный пилот</h2>
+  <ol><li>Сначала подтвердить, что внешний трекер вообще нужен участникам проекта.</li><li>Сохранить `sprint-status.yaml` и story files источником истины.</li><li>Представить Epic/Story/Task типами issues либо метками и шаблонами; связи — sub-issues.</li><li>В истории хранить ссылку на `.md`, не полную копию.</li><li>Связать PR с историей; после merge менять статус через Actions/Projects workflow.</li><li>Начать с односторонней синхронизации Git/BMAD → Project.</li><li>Экспортировать TSV и проверить восстановление иерархии через GraphQL.</li></ol>
+  <p><strong>Успех:</strong> ≤1 ручного обновления на историю; нет конфликтов с YAML; доска понятна без чтения репозитория; участники вне разработки ей пользуются; связи восстанавливаются из экспорта/API.</p>
+  <p><strong>Перейти на Linear,</strong> если product/UX участники избегают GitHub Projects или регулярно нарушают принятую модель. Это условие важнее разницы 0,07 балла.</p>
+</section>
+
+<section id="requirements">
+  <h2>Что нужно BMAD</h2>
+  <p><span class="badge verified">verified</span> Официальный поток идёт от анализа и PRD через UX/архитектуру к эпикам и историям, затем создаёт `sprint-status.yaml`; реализация выполняется по одной истории <a href="#src-1">[1]</a>. Устойчивое ядро иерархии — эпик → история; отдельная сущность Task полезна, но не обязательна <a href="#src-2">[2]</a>.</p>
+  <ul><li>Markdown/YAML в Git — источник истины.</li><li>Эпики, истории и необязательные задачи отображаются в трекере.</li><li>Статусы автоматизируются через API, CLI, вебхуки или Actions.</li><li>PR и коммиты связываются с историями.</li><li>Данные выгружаются в открытом формате или полностью через API.</li></ul>
+</section>
+
+<section id="matrix">
+  <h2>Итоговая матрица</h2>
+  <p>Веса: BMAD-fit 30%, автоматизация 20%, простота 15%, Git-интеграция 15%, цена 10%, переносимость 10%. Баллы оценивают конкретный сценарий, а не абсолютное качество продукта.</p>
+  <div class="matrix-wrap"><table><thead><tr><th>Кандидат</th><th>BMAD</th><th>Авто</th><th>Простота</th><th>Git</th><th>Цена</th><th>Перенос</th><th>Итог</th></tr></thead><tbody>
+  <tr><td><strong>GitHub Projects</strong><div class="bar"><i style="width:89.8%"></i></div></td><td class="num">4,2</td><td class="num">5,0</td><td class="num">3,5</td><td class="num">5,0</td><td class="num">5,0</td><td class="num">4,5</td><td class="num"><strong>4,49</strong></td></tr>
+  <tr><td><strong>Linear</strong><div class="bar"><i style="width:88.4%"></i></div></td><td class="num">4,8</td><td class="num">4,4</td><td class="num">4,5</td><td class="num">4,5</td><td class="num">3,2</td><td class="num">4,3</td><td class="num"><strong>4,42</strong></td></tr>
+  <tr><td><strong>YouTrack</strong><div class="bar"><i style="width:86.6%"></i></div></td><td class="num">4,5</td><td class="num">4,25</td><td class="num">4,0</td><td class="num">4,0</td><td class="num">4,75</td><td class="num">4,5</td><td class="num"><strong>4,33</strong></td></tr>
+  <tr><td>ClickUp<div class="bar"><i style="width:82.2%"></i></div></td><td class="num">4,3</td><td class="num">4,5</td><td class="num">2,8</td><td class="num">4,6</td><td class="num">4,0</td><td class="num">4,1</td><td class="num">4,11</td></tr>
+  <tr><td>Jira<div class="bar"><i style="width:74.8%"></i></div></td><td class="num">3,75</td><td class="num">4,5</td><td class="num">2,75</td><td class="num">4,5</td><td class="num">3,25</td><td class="num">3,0</td><td class="num">3,74</td></tr>
+  </tbody></table></div>
+  <p><span class="badge unverified">judgment</span> Разница GitHub Projects/Linear меньше возможной погрешности оценки простоты. Jira проходит иерархию условно: Story и Task по умолчанию находятся на одном уровне под Epic <a href="#src-16">[16]</a>. Plane отсечён: строгая Epic → Story → Task иерархия доступна только в Enterprise Grid <a href="#src-23">[23]</a>.</p>
+</section>
+
+<section id="winner">
+  <h2>Почему GitHub Projects победил</h2>
+  <p><span class="badge unverified">primary vendor evidence</span> Issues поддерживает многоуровневые sub-issues; Projects добавляет board/table/roadmap, поля и автоматизации <a href="#src-3">[3]</a> <a href="#src-4">[4]</a>. GraphQL, `gh api` и Actions программно меняют данные Projects <a href="#src-5">[5]</a>. TSV-экспорт подтверждён <a href="#src-6">[6]</a>. Страница цен перечисляет Issues & Projects в Free, GitHub Team — $4/пользователь/месяц <a href="#src-7">[7]</a>.</p>
+  <div class="flow">BMAD story file → GitHub Issue → Pull Request → Project status</div>
+  <p>Синхронизация со статусами PR/checks — вывод из доступных API и Actions, который следует подтвердить пилотом. Главный риск — отсутствие готовой BMAD-семантики: типы, шаблоны, статусы и правила иерархии придётся поддерживать дисциплиной команды.</p>
+</section>
+
+<section id="alternatives">
+  <h2>Когда выбрать другой трекер</h2>
+  <div class="grid">
+    <div class="mini"><h3>Linear</h3><p><span class="badge unverified">primary evidence</span> Для активной product/UX-команды: явная иерархия <a href="#src-8">[8]</a>, GitHub-интеграция <a href="#src-9">[9]</a>, Markdown/CSV/API export <a href="#src-10">[10]</a>. Basic $10, Business $16 при годовой оплате <a href="#src-11">[11]</a>.</p></div>
+    <div class="mini"><h3>YouTrack</h3><p><span class="badge unverified">primary evidence</span> Для CommonMark, JS-workflows и Cloud → Server <a href="#src-12">[12]</a> <a href="#src-13">[13]</a> <a href="#src-15">[15]</a>. GitHub/VCS интеграция <a href="#src-14">[14]</a>. Бесплатно до 10 пользователей; далее от $5,40 ежемесячно или $4,50 при годовой оплате <a href="#src-15">[15]</a>.</p></div>
+    <div class="mini"><h3>ClickUp</h3><p><span class="badge unverified">primary evidence</span> Для широкого набора бизнес-процессов: nested subtasks <a href="#src-19">[19]</a>, custom task types <a href="#src-24">[24]</a>, Markdown API <a href="#src-20">[20]</a>, GitHub <a href="#src-21">[21]</a>, export <a href="#src-22">[22]</a>. Компромисс — объём настроек.</p></div>
+  </div>
+  <p><strong>Jira:</strong> выбирать, если это уже корпоративный стандарт. Для нового BMAD-процесса иерархия менее удобна, API использует ADF вместо Markdown, а расширенные возможности зависят от тарифа <a href="#src-16">[16]</a> <a href="#src-17">[17]</a> <a href="#src-18">[18]</a>.</p>
+</section>
+
+<section id="sources"><details><summary>Источники — 24 первичных страницы</summary>
+<div class="matrix-wrap"><table class="sources"><tbody>
+<tr id="src-1"><td>[1]</td><td>Фазы и артефакты BMAD, `sprint-status.yaml`</td><td><a href="https://docs.bmad-method.org/reference/workflow-map/" target="_blank" rel="noopener">BMAD Method — Workflow Map</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-2"><td>[2]</td><td>Epic как набор stories, `stories.yaml` и story files</td><td><a href="https://docs.bmad-method.org/build/finish-an-epic/" target="_blank" rel="noopener">BMAD Method — Finish an Epic</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-3"><td>[3]</td><td>Projects: views, fields, issues/PR</td><td><a href="https://docs.github.com/en/issues/planning-and-tracking-with-projects/learning-about-projects/about-projects" target="_blank" rel="noopener">GitHub — About Projects</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-4"><td>[4]</td><td>Многоуровневые sub-issues и CLI</td><td><a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/adding-sub-issues" target="_blank" rel="noopener">GitHub — Adding sub-issues</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-5"><td>[5]</td><td>GraphQL/CLI-автоматизация</td><td><a href="https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects" target="_blank" rel="noopener">GitHub — Projects API</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-6"><td>[6]</td><td>TSV-экспорт Project view</td><td><a href="https://docs.github.com/en/issues/planning-and-tracking-with-projects/managing-your-project/exporting-your-projects-data" target="_blank" rel="noopener">GitHub — Exporting project data</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-7"><td>[7]</td><td>GitHub pricing</td><td><a href="https://github.com/pricing" target="_blank" rel="noopener">GitHub Pricing</a></td><td>live pricing</td><td>2026-09-21</td></tr>
+<tr id="src-8"><td>[8]</td><td>Linear model</td><td><a href="https://linear.app/docs" target="_blank" rel="noopener">Linear Docs</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-9"><td>[9]</td><td>Linear GitHub integration</td><td><a href="https://linear.app/docs/github-integration" target="_blank" rel="noopener">Linear — GitHub</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-10"><td>[10]</td><td>Linear export</td><td><a href="https://linear.app/docs/exporting-data" target="_blank" rel="noopener">Linear — Exporting Data</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-11"><td>[11]</td><td>Linear pricing</td><td><a href="https://linear.app/pricing" target="_blank" rel="noopener">Linear Pricing</a></td><td>live pricing</td><td>2026-09-21</td></tr>
+<tr id="src-12"><td>[12]</td><td>YouTrack subtasks/workflows</td><td><a href="https://www.jetbrains.com/help/youtrack/cloud/workflow-subtasks.html" target="_blank" rel="noopener">JetBrains — Subtasks</a></td><td>2026.2</td><td>2026-09-21</td></tr>
+<tr id="src-13"><td>[13]</td><td>YouTrack CommonMark</td><td><a href="https://www.jetbrains.com/help/youtrack/cloud/youtrack-markdown-syntax-issues.html" target="_blank" rel="noopener">JetBrains — Markdown</a></td><td>2026-09-17</td><td>2026-09-21</td></tr>
+<tr id="src-14"><td>[14]</td><td>YouTrack VCS</td><td><a href="https://www.jetbrains.com/help/youtrack/cloud/integration-with-version-control-systems.html" target="_blank" rel="noopener">JetBrains — VCS Integration</a></td><td>2026-09-17</td><td>2026-09-21</td></tr>
+<tr id="src-15"><td>[15]</td><td>YouTrack pricing/migration</td><td><a href="https://www.jetbrains.com/youtrack/buy/" target="_blank" rel="noopener">JetBrains — Buy YouTrack</a></td><td>live pricing</td><td>2026-09-21</td></tr>
+<tr id="src-16"><td>[16]</td><td>Jira hierarchy</td><td><a href="https://support.atlassian.com/jira-cloud-administration/docs/configure-the-issue-type-hierarchy/" target="_blank" rel="noopener">Atlassian — Work type hierarchy</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-17"><td>[17]</td><td>Jira REST/ADF</td><td><a href="https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/" target="_blank" rel="noopener">Atlassian — REST API</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-18"><td>[18]</td><td>Jira pricing</td><td><a href="https://www.atlassian.com/software/jira/pricing" target="_blank" rel="noopener">Atlassian — Jira Pricing</a></td><td>live pricing</td><td>2026-09-21</td></tr>
+<tr id="src-19"><td>[19]</td><td>ClickUp nested subtasks</td><td><a href="https://help.clickup.com/hc/en-us/articles/6304431740055-Create-nested-subtasks" target="_blank" rel="noopener">ClickUp — Nested subtasks</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-20"><td>[20]</td><td>ClickUp Markdown API</td><td><a href="https://developer.clickup.com/docs/tasks" target="_blank" rel="noopener">ClickUp — Tasks API</a></td><td>≈2025</td><td>2026-09-21</td></tr>
+<tr id="src-21"><td>[21]</td><td>ClickUp GitHub</td><td><a href="https://help.clickup.com/hc/en-us/articles/6305771568791-GitHub-integration" target="_blank" rel="noopener">ClickUp — GitHub</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-22"><td>[22]</td><td>ClickUp export</td><td><a href="https://help.clickup.com/hc/en-us/articles/6310786693015-How-do-I-export-my-Workspace-s-data" target="_blank" rel="noopener">ClickUp — Export</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+<tr id="src-23"><td>[23]</td><td>Plane typed hierarchy</td><td><a href="https://plane.so/blog/introducing-workspace-work-item-types-hierarchy" target="_blank" rel="noopener">Plane — Work Item Hierarchy</a></td><td>2026-06-09</td><td>2026-09-21</td></tr>
+<tr id="src-24"><td>[24]</td><td>ClickUp custom task types</td><td><a href="https://help.clickup.com/hc/en-us/articles/30661182619671-Custom-task-types-feature-availability-and-limits" target="_blank" rel="noopener">ClickUp — Custom task types</a></td><td>актуальная документация</td><td>2026-09-21</td></tr>
+</tbody></table></div></details></section>
+
+<section id="staleness" class="stale"><h2>Карта устаревания</h2><p><strong>Уже перепроверить при возврате в shortlist:</strong> Plane Enterprise Grid claim (источник 2026-06-09; вычисленная дата 2026-09-01).</p><p><strong>Перепроверить до 2026-12-01:</strong> цены, тарифные ограничения, иерархии, экспорт и интеграции финалистов, а также актуальную модель BMAD.</p></section>
+</main>
+<footer>Сгенерировано из research.md · полный журнал решений и digests находятся рядом с отчётом.</footer>
+</body></html>

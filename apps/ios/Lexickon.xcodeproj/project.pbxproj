@@ -3,8 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 110;
 	objects = {
+
+/* Begin PBXBuildFile section */
+		956D9BD130641C3000215A2B /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2F7E52C4113343A895A318F9 /* FactoryKit */; };
+		956D9BD230641C3000215A2B /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = 246B08E0015C4E878061135B /* FactoryKit */; };
+		956D9BD330641C3000215A2B /* FactoryTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 2E86CCC584D4430DB668DACD /* FactoryTesting */; };
+/* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		000000000000000000000092 /* PBXContainerItemProxy */ = {
@@ -38,7 +44,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		0000000000000000000000B0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		0000000000000000000000B0 /* Exceptions for "Lexickon" folder in "Lexickon" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				App/DependencyInjection/README.md,
@@ -59,33 +65,49 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		000000000000000000000010 /* Lexickon */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (0000000000000000000000B0 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Lexickon; sourceTree = "<group>"; };
-		000000000000000000000020 /* LexickonTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = LexickonTests; sourceTree = "<group>"; };
-		000000000000000000000021 /* LexickonUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = LexickonUITests; sourceTree = "<group>"; };
-		000000000000000000000022 /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Configurations; sourceTree = "<group>"; };
+		000000000000000000000010 /* Lexickon */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0000000000000000000000B0 /* Exceptions for "Lexickon" folder in "Lexickon" target */,
+			);
+			path = Lexickon;
+			sourceTree = "<group>";
+		};
+		000000000000000000000020 /* LexickonTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LexickonTests;
+			sourceTree = "<group>";
+		};
+		000000000000000000000021 /* LexickonUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LexickonUITests;
+			sourceTree = "<group>";
+		};
+		000000000000000000000022 /* Configurations */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Configurations;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		000000000000000000000072 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
+				956D9BD130641C3000215A2B /* FactoryKit in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		000000000000000000000074 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
+				956D9BD330641C3000215A2B /* FactoryTesting in Frameworks */,
+				956D9BD230641C3000215A2B /* FactoryKit in Frameworks */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		000000000000000000000077 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -140,12 +162,13 @@
 			);
 			buildRules = (
 			);
-			dependencies = (
-			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* Lexickon */,
 			);
 			name = Lexickon;
+			packageProductDependencies = (
+				2F7E52C4113343A895A318F9 /* FactoryKit */,
+			);
 			productName = Lexickon;
 			productReference = 000000000000000000000030 /* Lexickon.app */;
 			productType = "com.apple.product-type.application";
@@ -167,6 +190,10 @@
 				000000000000000000000020 /* LexickonTests */,
 			);
 			name = LexickonTests;
+			packageProductDependencies = (
+				246B08E0015C4E878061135B /* FactoryKit */,
+				2E86CCC584D4430DB668DACD /* FactoryTesting */,
+			);
 			productName = LexickonTests;
 			productReference = 000000000000000000000031 /* LexickonTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -216,7 +243,6 @@
 				};
 			};
 			buildConfigurationList = 0000000000000000000000A2 /* Build configuration list for PBXProject "Lexickon" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -225,6 +251,10 @@
 				ru,
 			);
 			mainGroup = 000000000000000000000002;
+			packageReferences = (
+				956D9D4F30641CE100215A2B /* XCRemoteSwiftPackageReference "Factory" */,
+			);
+			preferredProjectObjectVersion = 110;
 			productRefGroup = 000000000000000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -239,48 +269,36 @@
 /* Begin PBXResourcesBuildPhase section */
 		000000000000000000000071 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		000000000000000000000075 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		000000000000000000000078 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		000000000000000000000070 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		000000000000000000000073 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		000000000000000000000076 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -298,21 +316,21 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		0000000000000000000000A0 /* Debug */ = {
+		0000000000000000000000A0 /* Debug configuration for PBXProject "Lexickon" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 000000000000000000000053 /* Configurations/Shared/Debug.xcconfig */;
 			buildSettings = {
 			};
 			name = Debug;
 		};
-		0000000000000000000000A1 /* Release */ = {
+		0000000000000000000000A1 /* Release configuration for PBXProject "Lexickon" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 000000000000000000000054 /* Configurations/Shared/Release.xcconfig */;
 			buildSettings = {
 			};
 			name = Release;
 		};
-		0000000000000000000000A3 /* Debug */ = {
+		0000000000000000000000A3 /* Debug configuration for PBXNativeTarget "Lexickon" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 000000000000000000000056 /* Configurations/App/App-Debug.xcconfig */;
 			buildSettings = {
@@ -320,7 +338,7 @@
 			};
 			name = Debug;
 		};
-		0000000000000000000000A4 /* Release */ = {
+		0000000000000000000000A4 /* Release configuration for PBXNativeTarget "Lexickon" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 000000000000000000000057 /* Configurations/App/App-Release.xcconfig */;
 			buildSettings = {
@@ -328,28 +346,28 @@
 			};
 			name = Release;
 		};
-		0000000000000000000000A6 /* Debug */ = {
+		0000000000000000000000A6 /* Debug configuration for PBXNativeTarget "LexickonTests" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 000000000000000000000059 /* Configurations/UnitTests/UnitTests-Debug.xcconfig */;
 			buildSettings = {
 			};
 			name = Debug;
 		};
-		0000000000000000000000A7 /* Release */ = {
+		0000000000000000000000A7 /* Release configuration for PBXNativeTarget "LexickonTests" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 00000000000000000000005A /* Configurations/UnitTests/UnitTests-Release.xcconfig */;
 			buildSettings = {
 			};
 			name = Release;
 		};
-		0000000000000000000000A9 /* Debug */ = {
+		0000000000000000000000A9 /* Debug configuration for PBXNativeTarget "LexickonUITests" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 00000000000000000000005C /* Configurations/UITests/UITests-Debug.xcconfig */;
 			buildSettings = {
 			};
 			name = Debug;
 		};
-		0000000000000000000000AA /* Release */ = {
+		0000000000000000000000AA /* Release configuration for PBXNativeTarget "LexickonUITests" */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 00000000000000000000005D /* Configurations/UITests/UITests-Release.xcconfig */;
 			buildSettings = {
@@ -362,40 +380,62 @@
 		0000000000000000000000A2 /* Build configuration list for PBXProject "Lexickon" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0000000000000000000000A0 /* Debug */,
-				0000000000000000000000A1 /* Release */,
+				0000000000000000000000A0 /* Debug configuration for PBXProject "Lexickon" */,
+				0000000000000000000000A1 /* Release configuration for PBXProject "Lexickon" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		0000000000000000000000A5 /* Build configuration list for PBXNativeTarget "Lexickon" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0000000000000000000000A3 /* Debug */,
-				0000000000000000000000A4 /* Release */,
+				0000000000000000000000A3 /* Debug configuration for PBXNativeTarget "Lexickon" */,
+				0000000000000000000000A4 /* Release configuration for PBXNativeTarget "Lexickon" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		0000000000000000000000A8 /* Build configuration list for PBXNativeTarget "LexickonTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0000000000000000000000A6 /* Debug */,
-				0000000000000000000000A7 /* Release */,
+				0000000000000000000000A6 /* Debug configuration for PBXNativeTarget "LexickonTests" */,
+				0000000000000000000000A7 /* Release configuration for PBXNativeTarget "LexickonTests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 		0000000000000000000000AB /* Build configuration list for PBXNativeTarget "LexickonUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0000000000000000000000A9 /* Debug */,
-				0000000000000000000000AA /* Release */,
+				0000000000000000000000A9 /* Debug configuration for PBXNativeTarget "LexickonUITests" */,
+				0000000000000000000000AA /* Release configuration for PBXNativeTarget "LexickonUITests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		956D9D4F30641CE100215A2B /* XCRemoteSwiftPackageReference "Factory" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hmlongco/Factory.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		246B08E0015C4E878061135B /* FactoryKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FactoryKit;
+		};
+		2E86CCC584D4430DB668DACD /* FactoryTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FactoryTesting;
+		};
+		2F7E52C4113343A895A318F9 /* FactoryKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FactoryKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000001 /* Project object */;
 }
