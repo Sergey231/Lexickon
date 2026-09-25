@@ -1,5 +1,6 @@
 ---
-stepsCompleted: []
+stepsCompleted:
+  - step-01-validate-prerequisites
 inputDocuments:
   - _bmad-output/stage-7-stories.md
   - _bmad-output/planning-artifacts/briefs/brief-Lexickon-2026-09-20/brief.md
@@ -183,4 +184,3 @@ NFR12: Заявленная в исходной декомпозиции цел�
 ## Epic List
 
 {{epics_list}}
-

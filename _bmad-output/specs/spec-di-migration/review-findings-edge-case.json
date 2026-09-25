@@ -1,0 +1,114 @@
+[
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:43 (I/O Matrix - DEBUG build auth)",
+    "trigger_condition": "Matrix assumes --uitest-auth-repository arg present triggers UITestAuthRepository, but doesn't specify behavior when arg is present in RELEASE build (where DEBUG is false)",
+    "guard_snippet": "Add scenario: RELEASE build with --uitest-auth-repository arg -> AuthRepositoryImpl injected (DEBUG flag false)",
+    "potential_consequence": "UITestAuthRepository accidentally injects in Release if conditional logic is wrong"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:44 (I/O Matrix - RELEASE build auth)",
+    "trigger_condition": "Matrix says 'No DEBUG flag -> AuthRepositoryImpl injected' but doesn't handle case where DEBUG=1 but not simulator (device build)",
+    "guard_snippet": "Add scenario: DEBUG=1, targetEnvironment(simulator)=false -> AuthRepositoryImpl with device API URL",
+    "potential_consequence": "Device debug builds may use wrong API base URL or auth repository"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:45 (I/O Matrix - Test setup)",
+    "trigger_condition": "Matrix says TestAssembly.makeGraph() called with stubs -> all repositories resolve to provided stubs, but doesn't specify behavior when makeGraph() called multiple times without reset()",
+    "guard_snippet": "Add scenario: makeGraph() called twice without reset() -> second call overwrites registrations or fails",
+    "potential_consequence": "Test pollution between test cases; flaky tests due to shared Container state"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:46 (I/O Matrix - Test teardown)",
+    "trigger_condition": "Matrix says reset() called -> container fully reset, but doesn't specify behavior when reset() called during active resolution (reentrancy)",
+    "guard_snippet": "Add scenario: reset() called while Factory closure executing -> undefined behavior or crash",
+    "potential_consequence": "Crash during test teardown if async resolution in progress"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:47 (I/O Matrix - Circular dependency)",
+    "trigger_condition": "Matrix says Factory detects cycle at runtime -> crash with clear error, but doesn't specify behavior for transitive cycles (A->B->C->A) vs direct cycles",
+    "guard_snippet": "Add scenario: transitive cycle detected -> crash with full cycle path in error message",
+    "potential_consequence": "Hard-to-debug runtime crashes if cycle detection message is insufficient"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:51 (Decisions - Repository scopes)",
+    "trigger_condition": "Decision promotes all repositories to .singleton() but doesn't address FrequencyRepository and UserRepository which currently return UnavailableXRepository placeholders (stateless)",
+    "guard_snippet": "Clarify: should UnavailableXRepository placeholders also be singleton? Or removed entirely per line 53?",
+    "potential_consequence": "Inconsistent scope for placeholder vs real repositories; wasted singleton allocation for stateless unavailable stubs"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:52 (Decisions - Config scopes)",
+    "trigger_condition": "Config is truly global; tests use Container.shared.reset() - but doesn't address what happens when test runs in parallel and both call reset()",
+    "guard_snippet": "Add: tests must run serially or use per-test container instances; document parallel test constraints",
+    "potential_consequence": "Parallel test execution causes race conditions on Container.shared singleton"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:75 (Task - Container+Registrations scopes)",
+    "trigger_condition": "Task says ensure all DataSource/Repository/UseCase registrations use explicit scopes but doesn't specify scope for SessionRefreshing, InstalledDatasetRegistry, datasetRegistryURL",
+    "guard_snippet": "Add explicit scope for each infrastructure registration: .singleton() for config, .cached() for data sources, .singleton() for sessionController and repos",
+    "potential_consequence": "Infrastructure dependencies default to cached scope causing unexpected instance multiplication"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:79 (Task - ProductionAssembly simplification)",
+    "trigger_condition": "Task says simplify to only config overrides but doesn't specify what happens to tokenStore registration which currently defaults in Container+Registrations",
+    "guard_snippet": "Clarify: should ProductionAssembly override tokenStore for custom keychain service in tests? Or rely on Container default?",
+    "potential_consequence": "Tests may use production KeychainTokenStore instead of InMemoryTokenStore if not overridden"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:81 (Task - TestAssembly refactor)",
+    "trigger_condition": "Task says leverage Container.shared.reset() in setUp/tearDown but doesn't specify where setUp/tearDown are defined (XCTestCase? custom base class?)",
+    "guard_snippet": "Add: create BaseTestCase with setUp() { TestAssembly.reset() } and tearDown() { TestAssembly.reset() }",
+    "potential_consequence": "Inconsistent test setup; some tests forget reset() causing state leakage"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:82 (Task - UITestAuthRepository)",
+    "trigger_condition": "Task says verify DEBUG/UITest conditional works in Factory registration but doesn't specify how to verify - compile-time only? runtime test?",
+    "guard_snippet": "Add: unit test that resolves authRepository in DEBUG with arg -> UITestAuthRepository; in RELEASE -> AuthRepositoryImpl",
+    "potential_consequence": "Conditional compilation works but runtime behavior untested; regression risk"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:90 (AC - Debug build singleton verification)",
+    "trigger_condition": "AC says verify SessionController and all repositories are singleton (same instance across resolutions) but doesn't specify how to verify programmatically",
+    "guard_snippet": "Add: unit test that resolves sessionController twice and asserts === (identity equality)",
+    "potential_consequence": "Manual verification only; no automated regression protection for singleton scope"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:91 (AC - Test stub resolution)",
+    "trigger_condition": "AC says when TestAssembly.makeGraph() called, all repositories resolve to provided stubs via FactoryTesting scopes - but FactoryTesting is not used in current TestAssembly",
+    "guard_snippet": "Clarify: migrate to FactoryTesting.register { stub } syntax or keep current register { stub } with reset()?",
+    "potential_consequence": "Inconsistent test double registration; some tests use FactoryTesting scopes, others manual register"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:112 (Design Notes - Circular dependency review)",
+    "trigger_condition": "Claims no cycles in 167-line file but doesn't verify transitive dependencies through UseCases -> Repositories -> DataSources -> Config",
+    "guard_snippet": "Add automated cycle detection script run in CI; verify full graph including UseCases layer",
+    "potential_consequence": "Hidden cycle introduced during migration crashes app at launch"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:113 (Design Notes - Repository singleton rationale)",
+    "trigger_condition": "States stateless repos (DatasetCatalog, InstalledDataset, Frequency) also singleton for consistency - but doesn't address memory pressure or test isolation for stateless singletons",
+    "guard_snippet": "Add: document that stateless singleton repos are safe because they hold no mutable state; verify with memory profiler",
+    "potential_consequence": "Unnecessary singleton allocations; test isolation issues if stateless repo accidentally gains state"
+  },
+  {
+    "lens": "edge-case",
+    "location": "SPEC.md:30 (Boundaries - FactoryKit scopes)",
+    "trigger_condition": "Constraint says 'must use Factory scopes intentionally' but doesn't address what happens when a Factory registration is resolved before its dependencies are registered (initialization order)",
+    "guard_snippet": "Add: all config registrations must be registered before any DataSource/Repository/UseCase that depends on them",
+    "potential_consequence": "Runtime crash if APIClient resolves before apiBaseURL/httpTransport registered"
+  }
+]

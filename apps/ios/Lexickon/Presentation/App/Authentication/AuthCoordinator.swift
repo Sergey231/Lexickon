@@ -1,5 +1,6 @@
 import Observation
 import SwiftUI
+import FactoryKit
 
 enum AuthStep: CoordinatorStep {
     case root
@@ -45,7 +46,8 @@ final class AuthCoordinator: Coordinator {
 @MainActor
 struct AuthCoordinatorView: View {
     @State private var coordinator: AuthCoordinator
-    @Environment(\.useCases) private var useCases
+    @Injected(\.loginUseCase) private var loginUseCase
+    @Injected(\.registerUseCase) private var registerUseCase
 
     init(onDatasetSetupRequested: @escaping @MainActor () -> Void) {
         _coordinator = State(
@@ -102,7 +104,7 @@ struct AuthCoordinatorView: View {
         case .login:
             LoginView(
                 viewModel: LoginViewModel(
-                    loginUseCase: useCases.loginUseCase,
+                    loginUseCase: loginUseCase,
                     navigate: { step in
                         coordinator.navigate(to: step)
                     }
@@ -111,7 +113,7 @@ struct AuthCoordinatorView: View {
         case .registration:
             RegistrationView(
                 viewModel: RegistrationViewModel(
-                    registerUseCase: useCases.registerUseCase,
+                    registerUseCase: registerUseCase,
                     navigate: { step in
                         coordinator.navigate(to: step)
                     }

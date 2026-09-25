@@ -1,0 +1,102 @@
+[
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:89 (AC1 - make check passes)",
+    "trigger_condition": "AC says 'when running make -C apps/ios check, then all lint, unit tests, and UI tests pass' but no test specifically verifies the DI migration behavior (singleton scopes, assembly removal)",
+    "guard_snippet": "Add integration test in AppContainerTests.swift that: resolves sessionController twice -> asserts same instance; resolves authRepository twice -> asserts same instance; verifies DataSourcesAssembly/RepositoriesAssembly types no longer exist",
+    "potential_consequence": "make check passes but migration incomplete; manual assemblies still referenced or scopes wrong",
+    "gap_shape": "regression-gap",
+    "consumer": "AppContainerTests.swift (needs new assertions)",
+    "evidence": "Current AppContainerTests.swift not examined but spec line 68 says it 'verifies full graph' - need to verify it checks singleton identity and assembly removal"
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:90 (AC2 - Debug build singleton verification)",
+    "trigger_condition": "AC requires verifying SessionController and all repositories are singleton but no automated test exists for this",
+    "guard_snippet": "Add test: 'testSingletonScope()' that resolves each repository twice and asserts identity (===) for all 5 repositories + SessionController",
+    "potential_consequence": "Singleton scope regression undetected; cached scope would create new instances breaking auth state",
+    "gap_shape": "regression-gap",
+    "consumer": "New or existing unit test file for DI verification",
+    "evidence": "No test found in spec that asserts singleton identity; manual check only"
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:90 (AC2 - APIClient cached verification)",
+    "trigger_condition": "AC says 'APIClient is cached (new per resolution unless scoped)' but no test verifies cached behavior",
+    "guard_snippet": "Add test: resolve apiClient twice -> assert different instances (=== false); then register with .cached() and verify same instance",
+    "potential_consequence": "APIClient scope wrong (singleton or new) affecting HTTP connection pooling or auth header freshness",
+    "gap_shape": "regression-gap",
+    "consumer": "DI verification test",
+    "evidence": "No test verifies Factory default scope behavior for apiClient"
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:91 (AC3 - Test stub resolution)",
+    "trigger_condition": "AC says test stubs resolve via FactoryTesting scopes but current TestAssembly uses manual register { stub } not FactoryTesting",
+    "guard_snippet": "Add test: verify FactoryTesting registration works; verify reset() clears FactoryTesting scopes",
+    "potential_consequence": "Test doubles not properly isolated; FactoryTesting features (auto-reset, scope) unused",
+    "gap_shape": "missing-adoption-gap",
+    "consumer": "TestAssembly.swift:17-44 (makeGraph implementation)",
+    "evidence": "TestAssembly.swift lines 25-29 use container.authRepository.register { stub } not FactoryTesting.register"
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:91 (AC4 - Release build API URL)",
+    "trigger_condition": "AC checks AppConfiguration.apiBaseURL equals https://api.lexickon.invalid but this is compile-time #else branch, not runtime verified",
+    "guard_snippet": "Add test: build Release configuration; launch app; verify network request goes to api.lexickon.invalid (or mock transport captures URL)",
+    "potential_consequence": "Release build accidentally uses debug URL if DEBUG flag leaks into Release",
+    "gap_shape": "regression-gap",
+    "consumer": "Release build verification (manual or CI)",
+    "evidence": "AppConfiguration.swift:20-30 shows compile-time URL selection; no runtime test"
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:75 (Task - Container+Registrations scopes)",
+    "trigger_condition": "Task requires explicit scopes for all registrations but no verification that .singleton()/.cached() actually applied",
+    "guard_snippet": "Add compile-time check: swift script that parses Container+Registrations.swift and verifies every registration has explicit scope call",
+    "potential_consequence": "Missing .singleton() on sessionController or repos defaults to cached, breaking AC2",
+    "gap_shape": "regression-gap",
+    "consumer": "Container+Registrations.swift (all registrations)",
+    "evidence": "Current Container+Registrations.swift:31-33 (sessionController), :58-70 (authRepository), :72-74 (userRepository), etc. have NO explicit scope"
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:78 (Task - AppInfrastructure deletion)",
+    "trigger_condition": "Task says DELETE AppInfrastructure struct but KEEP AppConfiguration enum; no verification that AppInfrastructure has zero external references",
+    "guard_snippet": "Add grep verification: 'grep -r \"AppInfrastructure\" --include=\"*.swift\" apps/ios/ | grep -v \"^.*\\.swift:.*//\"' must return zero results",
+    "potential_consequence": "Compilation error after deletion if any file still references AppInfrastructure",
+    "gap_shape": "regression-gap",
+    "consumer": "Codebase-wide reference check",
+    "evidence": "Spec line 78 says 'grep confirms zero external references' but no evidence provided"
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:80 (Task - UseCases.unavailable update)",
+    "trigger_condition": "Task says update UseCases.unavailable to remove UnavailableXRepository references but no test verifies UseCases.unavailable still compiles and works",
+    "guard_snippet": "Add test: instantiate UseCases.unavailable; verify all use cases resolve without crash (even if they use unavailable repositories)",
+    "potential_consequence": "UseCases.unavailable fails to compile or crashes after UnavailableX types removed",
+    "gap_shape": "regression-gap",
+    "consumer": "UseCases.swift:16-31 (unavailable static property)",
+    "evidence": "UseCases.unavailable directly constructs UnavailableAuthRepository, UnavailableUserRepository, etc."
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:81 (Task - TestAssembly refactor)",
+    "trigger_condition": "Task says refactor TestAssembly to use FactoryTesting scopes but no test verifies the new test setup works correctly",
+    "guard_snippet": "Add test: TestAssembly.makeGraph() with stubs -> verify stubs injected; TestAssembly.reset() -> verify next makeGraph() gets clean container",
+    "potential_consequence": "TestAssembly refactor breaks all tests; no verification of new FactoryTesting approach",
+    "gap_shape": "broken-verification-gap",
+    "consumer": "LexickonTests/DependencyInjection/TestAssembly.swift",
+    "evidence": "Current TestAssembly works with manual register; migration to FactoryTesting untested"
+  },
+  {
+    "lens": "verification-gap",
+    "location": "SPEC.md:118-124 (Verification Commands)",
+    "trigger_condition": "Lists verification commands but no command specifically verifies the migration success criteria (assembly removal, scope correctness)",
+    "guard_snippet": "Add custom verification script: verify-migration.sh that checks: 1) deleted files gone, 2) no imports of deleted files, 3) all registrations have explicit scope, 4) singleton identity tests pass",
+    "potential_consequence": "make check passes but migration incomplete; deleted files still referenced or scopes wrong",
+    "gap_shape": "missing-adoption-gap",
+    "consumer": "CI/CD pipeline or local verification",
+    "evidence": "Only generic make check commands listed; no migration-specific verification"
+  }
+]

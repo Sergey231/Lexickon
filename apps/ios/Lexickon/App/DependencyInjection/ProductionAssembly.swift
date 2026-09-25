@@ -10,10 +10,9 @@ enum ProductionAssembly {
     static func makeContainer(
         baseURL: URL = AppConfiguration.apiBaseURL,
         transport: any HTTPTransport = URLSessionTransport()
-    ) -> AppContainer {
+    ) {
         let container = Container.shared
         container.apiBaseURL.register { baseURL }
         container.httpTransport.register { transport }
-        return AppContainer()
     }
 }

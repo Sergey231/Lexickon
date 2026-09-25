@@ -1,0 +1,93 @@
+[
+  {
+    "lens": "prose",
+    "location": "SPEC.md:17-18 (Intent - Problem)",
+    "trigger_condition": "Sentence 'This creates maintenance burden, obscures the dependency graph, prevents FactoryKit scope optimization, and complicates test assembly configuration' uses 4 different verbs for 4 effects - inconsistent parallelism",
+    "guard_snippet": "Use parallel structure: 'This creates maintenance burden, obscures the dependency graph, prevents FactoryKit scope optimization, and complicates test assembly configuration' -> 'This burdens maintenance, obscures the dependency graph, prevents FactoryKit scope optimization, and complicates test assembly'",
+    "potential_consequence": "Minor readability issue; inconsistent phrasing reduces professional polish"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:19 (Intent - Approach)",
+    "trigger_condition": "Sentence 'Remove DataSourcesAssembly.swift, RepositoriesAssembly.swift, and AppInfrastructure.swift' uses .swift extension for some files but not others inconsistently",
+    "guard_snippet": "Either all with .swift or all without: 'Remove DataSourcesAssembly, RepositoriesAssembly, and AppInfrastructure'",
+    "potential_consequence": "Inconsistent file naming convention in spec"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:23-32 (Boundaries - Always)",
+    "trigger_condition": "Bullet points mix present tense ('Dependencies assembled manually') with imperative ('Preserve Step-Driven Coordinator flow') and descriptive ('FactoryKit already integrated')",
+    "guard_snippet": "Standardize to imperative mood for all constraints: 'Assemble dependencies manually...', 'Preserve Step-Driven Coordinator flow...', 'Use Factory scopes intentionally...'",
+    "potential_consequence": "Mixed voice makes constraints harder to parse as requirements"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:33-38 (Boundaries - Never)",
+    "trigger_condition": "First bullet 'Migrate to a different DI framework (FactoryKit stays)' uses parenthetical for rationale; others don't",
+    "guard_snippet": "Either add rationale to all or remove from first: 'Do not migrate to a different DI framework; FactoryKit remains the standard'",
+    "potential_consequence": "Inconsistent constraint formatting"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:51 (Decisions - Repository scopes)",
+    "trigger_condition": "Sentence 'Only SessionController and all repositories promoted to .singleton() per decision' is ambiguous - does 'per decision' refer to this decision or a prior one?",
+    "guard_snippet": "Clarify: 'Only SessionController and all repositories are promoted to .singleton() by this decision' or 'per the planning decision recorded above'",
+    "potential_consequence": "Ambiguous reference; unclear if this is the decision or referencing another"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:53 (Decisions - UnavailableXRepository)",
+    "trigger_condition": "Phrase 'Update UseCases.unavailable and test stubs accordingly' is vague - 'accordingly' doesn't specify how",
+    "guard_snippet": "Be specific: 'Update UseCases.unavailable to use concrete unavailable implementations or remove unavailable variants entirely'",
+    "potential_consequence": "Implementer guesses at correct approach; inconsistent updates"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:75 (Task - Container+Registrations)",
+    "trigger_condition": "Task description is 67 words with multiple clauses; hard to parse as single actionable item",
+    "guard_snippet": "Split into sub-tasks: 1) Add .singleton() to sessionController and all 5 repositories. 2) Add .cached() to APIClient and other DataSources. 3) Remove dataSourcesAssembly and repositoriesAssembly registrations. 4) Verify all registrations have explicit scope.",
+    "potential_consequence": "Task too large; hard to track completion; easy to miss sub-items"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:79 (Task - ProductionAssembly)",
+    "trigger_condition": "Parenthetical '(and tokenStore if not singleton)' creates uncertainty - is tokenStore singleton or not?",
+    "guard_snippet": "Decide and state clearly: 'and tokenStore (singleton, no override needed)' or 'and tokenStore (override for test keychain service)'",
+    "potential_consequence": "Implementer must guess; may omit needed override or add unnecessary one"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:90 (AC2 - Debug build)",
+    "trigger_condition": "Long sentence with multiple conditions: 'Given Debug build, when launching app, then SessionController and all repositories... are singleton..., APIClient is cached..., and no manual assembly structs exist' - three different verification targets in one AC",
+    "guard_snippet": "Split into three ACs: AC2a (singleton verification), AC2b (APIClient cached), AC2c (assembly structs removed)",
+    "potential_consequence": "Single AC passes if any one condition met; partial failure masked"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:110-111 (Design Notes - Key insight)",
+    "trigger_condition": "Sentence 'Current Container+Registrations already has most registrations but wraps them in manual assemblies' uses 'wraps' metaphorically - technically it references assemblies, doesn't wrap them",
+    "guard_snippet": "Use precise language: 'Current Container+Registrations already has most registrations but delegates to manual assemblies for construction'",
+    "potential_consequence": "Slightly misleading technical description"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:112 (Design Notes - Circular dependency)",
+    "trigger_condition": "Statement 'Container+Registrations.swift (167 lines) shows no cycles' presents line count as evidence of no cycles - non sequitur",
+    "guard_snippet": "Remove line count or make it relevant: 'Manual review of Container+Registrations.swift confirms no cycles' or add tool verification reference",
+    "potential_consequence": "False confidence; line count doesn't prove acyclic graph"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:114 (Design Notes - Repository singleton rationale)",
+    "trigger_condition": "Phrase 'for consistency and to avoid redundant allocations' - singleton actually increases allocations (one per process) vs cached (one per scope), so rationale is technically inverted",
+    "guard_snippet": "Correct rationale: 'for consistency and to ensure single shared instance across the app' or 'to avoid redundant allocations within a scope'",
+    "potential_consequence": "Technically incorrect justification may mislead future maintainers"
+  },
+  {
+    "lens": "prose",
+    "location": "SPEC.md:126-128 (Manual checks)",
+    "trigger_condition": "Bullet 'Verify no imports of deleted files remain anywhere in codebase' uses 'anywhere in codebase' but project is monorepo with backend/ and apps/ios/ - ambiguous scope",
+    "guard_snippet": "Specify scope: 'Verify no imports of deleted files remain in apps/ios/ (iOS target)'",
+    "potential_consequence": "Wasted effort searching backend/ or false confidence if backend references exist"
+  }
+]

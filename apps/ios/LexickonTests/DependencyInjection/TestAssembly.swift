@@ -1,10 +1,10 @@
 import FactoryKit
 import FactoryTesting
 import Foundation
+import XCTest
 @testable import Lexickon
 
 struct TestAppGraph {
-    let container: AppContainer
     let authRepository: AuthRepositoryStub
     let userRepository: UserRepositoryStub
     let datasetCatalogRepository: DatasetCatalogRepositoryStub
@@ -12,8 +12,8 @@ struct TestAppGraph {
     let frequencyRepository: FrequencyRepositoryStub
 }
 
-@MainActor
 enum TestAssembly {
+    @MainActor
     static func makeGraph(
         authRepository: AuthRepositoryStub,
         userRepository: UserRepositoryStub,
@@ -31,10 +31,7 @@ enum TestAssembly {
         container.httpTransport.register { URLSessionTransport() }
         container.tokenStore.register { InMemoryTokenStore() }
 
-        let appContainer = AppContainer(useCases: container.useCases())
-
         return TestAppGraph(
-            container: appContainer,
             authRepository: authRepository,
             userRepository: userRepository,
             datasetCatalogRepository: datasetCatalogRepository,
@@ -45,5 +42,17 @@ enum TestAssembly {
 
     static func reset() {
         Container.shared.reset()
+    }
+}
+
+open class BaseTestCase: XCTestCase {
+    override open func setUp() async throws {
+        try await super.setUp()
+        await TestAssembly.reset()
+    }
+
+    override open func tearDown() async throws {
+        await TestAssembly.reset()
+        try await super.tearDown()
     }
 }

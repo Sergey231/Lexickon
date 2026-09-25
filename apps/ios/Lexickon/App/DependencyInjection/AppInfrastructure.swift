@@ -1,11 +1,5 @@
 import Foundation
 
-struct AppInfrastructure: Sendable {
-    let apiClient: APIClient
-    let session: SessionController
-    let sessionRefresher: any SessionRefreshing
-}
-
 enum AppConfiguration {
     static var datasetRegistryURL: URL {
         let applicationSupport = FileManager.default.urls(

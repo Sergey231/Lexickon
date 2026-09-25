@@ -1,0 +1,51 @@
+[
+  {
+    "lens": "structure",
+    "location": "SPEC.md:13-55 (frozen-after-approval block)",
+    "trigger_condition": "Frontmatter and frozen block contain duplicate information (title, type, created, status, route in frontmatter; Intent/Problem/Approach in frozen block)",
+    "guard_snippet": "Move Intent/Problem/Approach to frontmatter as structured fields; keep frozen block only for human-owned content that shouldn't be modified",
+    "potential_consequence": "Redundant metadata; frontmatter and frozen block drift out of sync"
+  },
+  {
+    "lens": "structure",
+    "location": "SPEC.md:57-70 (Code Map)",
+    "trigger_condition": "Code Map lists 11 files but misses AppContainerTests.swift (mentioned in line 68) and migration-plan.md (referenced in line 101)",
+    "guard_snippet": "Add missing entries to Code Map: AppContainerTests.swift and migration-plan.md with descriptions",
+    "potential_consequence": "Incomplete migration checklist; verification files not tracked"
+  },
+  {
+    "lens": "structure",
+    "location": "SPEC.md:71-85 (Tasks & Acceptance)",
+    "trigger_condition": "Tasks section mixes implementation tasks (file edits) with verification tasks (make check) without clear separation",
+    "guard_snippet": "Split into: Phase Tasks (1-7 from migration-plan), Verification Tasks, Acceptance Criteria",
+    "potential_consequence": "Hard to track progress; implementation and verification conflated"
+  },
+  {
+    "lens": "structure",
+    "location": "SPEC.md:86-92 (Acceptance Criteria)",
+    "trigger_condition": "ACs are written as Gherkin-style but mix build-time, runtime, and test-time verification without clear categorization",
+    "guard_snippet": "Group ACs by verification type: Build-time (Debug/Release compile), Runtime (singleton identity), Test-time (stub resolution)",
+    "potential_consequence": "Unclear which ACs are automated vs manual; verification gaps"
+  },
+  {
+    "lens": "structure",
+    "location": "SPEC.md:93-128 (Implementation Notes, Spec Change Log, Review Triage Log, Design Notes, Verification)",
+    "trigger_condition": "Four sections at end are mostly empty (Implementation Notes, Spec Change Log, Review Triage Log) or duplicate earlier content (Design Notes repeats migration-plan, Verification repeats ACs)",
+    "guard_snippet": "Remove empty sections; merge Design Notes into migration-plan.md reference; merge Verification into ACs with automation markers",
+    "potential_consequence": "Document bloat; empty sections suggest incomplete work; duplication creates maintenance burden"
+  },
+  {
+    "lens": "structure",
+    "location": "SPEC.md:39-48 (I/O & Edge-Case Matrix)",
+    "trigger_condition": "Matrix only covers 5 scenarios but migration has 7 phases with many more edge cases (config override precedence, test parallelization, Factory scope defaults)",
+    "guard_snippet": "Expand matrix to cover all phase transitions and cross-cutting concerns; or move detailed edge cases to migration-plan.md and reference it",
+    "potential_consequence": "Critical edge cases undocumented; reviewers can't verify completeness"
+  },
+  {
+    "lens": "structure",
+    "location": "SPEC.md:49-54 (Decisions)",
+    "trigger_condition": "Decisions section resolves 3 open questions from migration-plan.md but doesn't reference the open questions by number or link",
+    "guard_snippet": "Add references: 'Resolves migration-plan.md Open Questions #1, #2, #3' for traceability",
+    "potential_consequence": "Hard to trace decision rationale; migration-plan.md open questions appear unresolved"
+  }
+]

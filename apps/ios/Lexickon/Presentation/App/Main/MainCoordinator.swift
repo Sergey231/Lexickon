@@ -1,5 +1,6 @@
 import Observation
 import SwiftUI
+import FactoryKit
 
 enum MainStep: CoordinatorStep {
     case root
@@ -54,7 +55,7 @@ final class MainCoordinator: Coordinator {
 @MainActor
 struct MainCoordinatorView: View {
     @State private var coordinator: MainCoordinator
-    @Environment(\.useCases) private var useCases
+    @Injected(\.logoutUseCase) private var logoutUseCase
 
     init(onAuthenticationRequested: @escaping @MainActor () -> Void) {
         _coordinator = State(
@@ -120,7 +121,7 @@ struct MainCoordinatorView: View {
     private var searchTab: some View {
         MainSearchView(
             viewModel: MainSearchViewModel(
-                logoutUseCase: useCases.logoutUseCase,
+                logoutUseCase: logoutUseCase,
                 navigate: { step in
                     coordinator.navigate(to: step)
                 }

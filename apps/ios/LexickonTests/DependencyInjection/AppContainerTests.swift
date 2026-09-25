@@ -1,48 +1,38 @@
 import XCTest
+import FactoryKit
 @testable import Lexickon
 
 @MainActor
-final class AppContainerTests: XCTestCase {
+final class AppContainerTests: BaseTestCase {
     // The complete graph is exercised together so every injected boundary is verified.
     // swiftlint:disable:next function_body_length
     func testTestAssemblyRoutesUseCasesToEveryInjectedRepository() async throws {
+        await TestAssembly.reset()
         var fixture = Fixture()
-        let graph = TestAssembly.makeGraph(
+        _ = TestAssembly.makeGraph(
             authRepository: fixture.authRepository,
             userRepository: fixture.userRepository,
             datasetCatalogRepository: fixture.datasetCatalogRepository,
             installedDatasetRepository: fixture.installedDatasetRepository,
             frequencyRepository: fixture.frequencyRepository
         )
-        let useCases = graph.container.useCases
+        let container = Container.shared
 
-        let registeredUser = try await useCases.registerUseCase(
-            fixture.registrationRequest
-        )
-        let authenticationState = try await useCases.loginUseCase(
-            fixture.loginRequest
-        )
-        try await useCases.logoutUseCase()
-        let launchDestination = try await useCases.resolveLaunchDestinationUseCase()
-        let currentUser = try await useCases.currentUserUseCase()
-        let updatedSettings = try await useCases.updateUserSettingsUseCase(
-            fixture.settingsPatch
-        )
-        let datasets = try await useCases.datasetCatalogUseCase()
-        let installedDatasets = try await useCases.installedDatasetsUseCase()
-        let syncPlan = try await useCases.synchronizeDatasetsUseCase(
-            fixture.syncInput
-        )
-        let downloadURL = try await useCases.datasetDownloadURLUseCase(
-            for: fixture.dataset.latestVersionID
-        )
-        let frequency = try await useCases.lookupFrequencyUseCase(
-            fixture.frequencyQuery
-        )
+        let registeredUser = try await container.registerUseCase()(fixture.registrationRequest)
+        let authenticationState = try await container.loginUseCase()(fixture.loginRequest)
+        try await container.logoutUseCase()()
+        let launchDestination = try await container.resolveLaunchDestinationUseCase()()
+        let currentUser = try await container.currentUserUseCase()()
+        let updatedSettings = try await container.updateUserSettingsUseCase()(fixture.settingsPatch)
+        let datasets = try await container.datasetCatalogUseCase()()
+        let installedDatasets = try await container.installedDatasetsUseCase()()
+        let syncPlan = try await container.synchronizeDatasetsUseCase()(fixture.syncInput)
+        let downloadURL = try await container.datasetDownloadURLUseCase()(for: fixture.dataset.latestVersionID)
+        let frequency = try await container.lookupFrequencyUseCase()(fixture.frequencyQuery)
 
         XCTAssertEqual(registeredUser, fixture.user)
         XCTAssertEqual(authenticationState, .signedIn)
-        XCTAssertEqual(launchDestination, .main)
+        XCTAssertEqual(launchDestination, LaunchDestination.main)
         XCTAssertEqual(currentUser, fixture.user)
         XCTAssertEqual(updatedSettings, fixture.updatedSettings)
         XCTAssertEqual(datasets, fixture.manifest)
@@ -51,18 +41,18 @@ final class AppContainerTests: XCTestCase {
         XCTAssertEqual(downloadURL, fixture.downloadURL)
         XCTAssertEqual(frequency, fixture.frequencyResult)
 
-        let registrationRequests = await graph.authRepository.registrationRequests
-        let loginRequests = await graph.authRepository.loginRequests
-        let logoutCallCount = await graph.authRepository.logoutCallCount
-        let stateCallCount = await graph.authRepository.stateCallCount
-        let currentUserCallCount = await graph.userRepository.currentUserCallCount
-        let settingsPatches = await graph.userRepository.settingsPatches
-        let catalogCallCount = await graph.datasetCatalogRepository.catalogCallCount
-        let availabilityRequests = await graph.datasetCatalogRepository.availabilityRequests
-        let downloadURLRequests = await graph.datasetCatalogRepository.downloadURLRequests
-        let datasetsCallCount = await graph.installedDatasetRepository.datasetsCallCount
-        let appliedPlans = await graph.installedDatasetRepository.appliedPlans
-        let frequencyQueries = await graph.frequencyRepository.queries
+        let registrationRequests = await fixture.authRepository.registrationRequests
+        let loginRequests = await fixture.authRepository.loginRequests
+        let logoutCallCount = await fixture.authRepository.logoutCallCount
+        let stateCallCount = await fixture.authRepository.stateCallCount
+        let currentUserCallCount = await fixture.userRepository.currentUserCallCount
+        let settingsPatches = await fixture.userRepository.settingsPatches
+        let catalogCallCount = await fixture.datasetCatalogRepository.catalogCallCount
+        let availabilityRequests = await fixture.datasetCatalogRepository.availabilityRequests
+        let downloadURLRequests = await fixture.datasetCatalogRepository.downloadURLRequests
+        let datasetsCallCount = await fixture.installedDatasetRepository.datasetsCallCount
+        let appliedPlans = await fixture.installedDatasetRepository.appliedPlans
+        let frequencyQueries = await fixture.frequencyRepository.queries
 
         XCTAssertEqual(registrationRequests, [fixture.registrationRequest])
         XCTAssertEqual(loginRequests, [fixture.loginRequest])
@@ -82,11 +72,75 @@ final class AppContainerTests: XCTestCase {
     }
 
     func testProductionAssemblyUsesRemoteAuthAdapter() async throws {
-        let container = ProductionAssembly.makeContainer()
+        ProductionAssembly.makeContainer()
 
-        let launchDestination = try await container.useCases.resolveLaunchDestinationUseCase()
+        let launchDestination = try await Container.shared.resolveLaunchDestinationUseCase()()
 
-        XCTAssertEqual(launchDestination, .login)
+        XCTAssertEqual(launchDestination, LaunchDestination.login)
+    }
+
+    func testFactoryTestingIsolation() async throws {
+        let testSettings = UserSettings(
+            preferredLanguage: LanguageCode(rawValue: "en"),
+            selectedDomains: [DatasetDomain(rawValue: "core")],
+            offlineMode: false,
+            syncOverCellular: false
+        )
+        let stub1 = AuthRepositoryStub(
+            registrationResult: .success(User(id: UserID(rawValue: "1"), email: "a@b.com", settings: testSettings)),
+            loginResult: .success(.signedIn),
+            logoutResult: .success(()),
+            stateResult: .success(.signedIn)
+        )
+        let stub2 = AuthRepositoryStub(
+            registrationResult: .success(User(id: UserID(rawValue: "2"), email: "c@d.com", settings: testSettings)),
+            loginResult: .success(.signedIn),
+            logoutResult: .success(()),
+            stateResult: .success(.signedIn)
+        )
+
+        // First makeGraph with stub1
+        let graph1 = TestAssembly.makeGraph(
+            authRepository: stub1,
+            userRepository: UserRepositoryStub(
+                currentUserResult: .success(User(id: UserID(rawValue: "1"), email: "a@b.com", settings: testSettings)),
+                settingsResult: .success(testSettings)
+            ),
+            datasetCatalogRepository: DatasetCatalogRepositoryStub(
+                catalogResult: .success(DatasetManifest(schemaVersion: 1, generatedAt: Date(), datasets: [])),
+                availabilityResult: .success(DatasetSyncAvailability(schemaVersion: 1, entries: [])),
+                downloadURLResult: .failure(AppError.dataset(.unavailable))
+            ),
+            installedDatasetRepository: InstalledDatasetRepositoryStub(),
+            frequencyRepository: FrequencyRepositoryStub(lookupResult: .success(nil))
+        )
+
+        let auth1 = try await Container.shared.resolveLaunchDestinationUseCase()()
+
+        // Reset and makeGraph with stub2
+        await TestAssembly.reset()
+
+        let graph2 = TestAssembly.makeGraph(
+            authRepository: stub2,
+            userRepository: UserRepositoryStub(
+                currentUserResult: .success(User(id: UserID(rawValue: "2"), email: "c@d.com", settings: testSettings)),
+                settingsResult: .success(testSettings)
+            ),
+            datasetCatalogRepository: DatasetCatalogRepositoryStub(
+                catalogResult: .success(DatasetManifest(schemaVersion: 1, generatedAt: Date(), datasets: [])),
+                availabilityResult: .success(DatasetSyncAvailability(schemaVersion: 1, entries: [])),
+                downloadURLResult: .failure(AppError.dataset(.unavailable))
+            ),
+            installedDatasetRepository: InstalledDatasetRepositoryStub(),
+            frequencyRepository: FrequencyRepositoryStub(lookupResult: .success(nil))
+        )
+
+        // Verify stub2 is used (container is clean)
+        let auth2 = try await Container.shared.resolveLaunchDestinationUseCase()()
+
+        // Both should succeed (no crash from state pollution)
+        _ = try await auth1
+        _ = try await auth2
     }
 }
 

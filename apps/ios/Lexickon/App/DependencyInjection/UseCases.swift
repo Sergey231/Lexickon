@@ -1,43 +1,28 @@
-import SwiftUI
+import Foundation
 
-struct UseCases: Sendable {
-    let resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase
-    let registerUseCase: RegisterUseCase
-    let loginUseCase: LoginUseCase
-    let logoutUseCase: LogoutUseCase
-    let currentUserUseCase: GetCurrentUserUseCase
-    let updateUserSettingsUseCase: UpdateUserSettingsUseCase
-    let datasetCatalogUseCase: GetDatasetCatalogUseCase
-    let installedDatasetsUseCase: GetInstalledDatasetsUseCase
-    let synchronizeDatasetsUseCase: SynchronizeDatasetsUseCase
-    let datasetDownloadURLUseCase: GetDatasetDownloadURLUseCase
-    let lookupFrequencyUseCase: LookupFrequencyUseCase
-
-    static let unavailable = UseCases(
-        resolveLaunchDestinationUseCase: ResolveLaunchDestinationUseCase(repository: UnavailableAuthRepository()),
-        registerUseCase: RegisterUseCase(repository: UnavailableAuthRepository()),
-        loginUseCase: LoginUseCase(repository: UnavailableAuthRepository()),
-        logoutUseCase: LogoutUseCase(repository: UnavailableAuthRepository()),
-        currentUserUseCase: GetCurrentUserUseCase(repository: UnavailableUserRepository()),
-        updateUserSettingsUseCase: UpdateUserSettingsUseCase(repository: UnavailableUserRepository()),
-        datasetCatalogUseCase: GetDatasetCatalogUseCase(repository: UnavailableDatasetCatalogRepository()),
-        installedDatasetsUseCase: GetInstalledDatasetsUseCase(repository: UnavailableInstalledDatasetRepository()),
-        synchronizeDatasetsUseCase: SynchronizeDatasetsUseCase(
-            catalogRepository: UnavailableDatasetCatalogRepository(),
-            installedRepository: UnavailableInstalledDatasetRepository()
-        ),
-        datasetDownloadURLUseCase: GetDatasetDownloadURLUseCase(repository: UnavailableDatasetCatalogRepository()),
-        lookupFrequencyUseCase: LookupFrequencyUseCase(repository: UnavailableFrequencyRepository())
-    )
+private struct UnavailableAuthRepository: AuthRepository {
+    func register(_ request: RegistrationRequest) async throws -> User { throw AppError.unexpected(.dependencyNotConfigured(.authRepository)) }
+    func login(_ request: LoginRequest) async throws -> AuthenticationState { throw AppError.unexpected(.dependencyNotConfigured(.authRepository)) }
+    func logout() async throws { throw AppError.unexpected(.dependencyNotConfigured(.authRepository)) }
+    func authenticationState() async throws -> AuthenticationState { throw AppError.unexpected(.dependencyNotConfigured(.authRepository)) }
 }
 
-private struct UseCasesKey: EnvironmentKey {
-    static let defaultValue = UseCases.unavailable
+private struct UnavailableUserRepository: UserRepository {
+    func currentUser() async throws -> User { throw AppError.unexpected(.dependencyNotConfigured(.userRepository)) }
+    func updateSettings(_ patch: UserSettingsPatch) async throws -> UserSettings { throw AppError.unexpected(.dependencyNotConfigured(.userRepository)) }
 }
 
-extension EnvironmentValues {
-    var useCases: UseCases {
-        get { self[UseCasesKey.self] }
-        set { self[UseCasesKey.self] = newValue }
-    }
+private struct UnavailableDatasetCatalogRepository: DatasetCatalogRepository {
+    func catalog() async throws -> DatasetManifest { throw AppError.unexpected(.dependencyNotConfigured(.datasetCatalogRepository)) }
+    func availability(installed: [InstalledDataset], wanted: [WantedDataset]) async throws -> DatasetSyncAvailability { throw AppError.unexpected(.dependencyNotConfigured(.datasetCatalogRepository)) }
+    func downloadURL(for versionID: DatasetVersionID) async throws -> DatasetDownloadURL { throw AppError.unexpected(.dependencyNotConfigured(.datasetCatalogRepository)) }
+}
+
+private struct UnavailableInstalledDatasetRepository: InstalledDatasetRepository {
+    func datasets() async throws -> [InstalledDataset] { throw AppError.unexpected(.dependencyNotConfigured(.installedDatasetRepository)) }
+    func apply(_ plan: DatasetSyncPlan) async throws { throw AppError.unexpected(.dependencyNotConfigured(.installedDatasetRepository)) }
+}
+
+private struct UnavailableFrequencyRepository: FrequencyRepository {
+    func lookup(_ query: FrequencyQuery) async throws -> FrequencyResult? { throw AppError.unexpected(.dependencyNotConfigured(.frequencyRepository)) }
 }

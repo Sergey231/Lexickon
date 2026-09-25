@@ -1,5 +1,6 @@
 import Observation
 import SwiftUI
+import FactoryKit
 
 enum AppStep: CoordinatorStep {
     case launch
@@ -25,7 +26,7 @@ final class AppCoordinator: Coordinator {
 @MainActor
 struct AppCoordinatorView: View {
     @Bindable var coordinator: AppCoordinator
-    @Environment(\.useCases) private var useCases
+    @Injected(\.resolveLaunchDestinationUseCase) private var resolveLaunchDestinationUseCase
 
     var body: some View {
         Group {
@@ -33,7 +34,7 @@ struct AppCoordinatorView: View {
             case .launch:
                 LaunchView(
                     viewModel: LaunchViewModel(
-                        resolveLaunchDestinationUseCase: useCases.resolveLaunchDestinationUseCase,
+                        resolveLaunchDestinationUseCase: resolveLaunchDestinationUseCase,
                         navigate: { [weak coordinator] step in
                             coordinator?.navigate(to: step)
                         }

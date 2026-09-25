@@ -1,35 +1,39 @@
 import FactoryKit
 import Foundation
 
+private func dependencyUnavailable(_ dependency: Dependency) -> AppError {
+    .unexpected(.dependencyNotConfigured(dependency))
+}
+
 extension Container {
-    // MARK: - Infrastructure
+    // MARK: - Infrastructure (singleton)
     var apiBaseURL: Factory<URL> {
-        self { AppConfiguration.apiBaseURL }
+        self { AppConfiguration.apiBaseURL }.singleton
     }
 
     var httpTransport: Factory<any HTTPTransport> {
-        self { URLSessionTransport() }
+        self { URLSessionTransport() }.singleton
     }
 
     var tokenStore: Factory<any TokenStore> {
-        self { KeychainTokenStore(service: Bundle.main.bundleIdentifier ?? "com.lexickon.ios") }
+        self { KeychainTokenStore(service: Bundle.main.bundleIdentifier ?? "com.lexickon.ios") }.singleton
     }
 
     var sessionRefresher: Factory<any SessionRefreshing> {
-        self { RefreshNotConfigured() }
+        self { RefreshNotConfigured() }.cached
     }
 
     var datasetRegistryURL: Factory<URL> {
-        self { AppConfiguration.datasetRegistryURL }
+        self { AppConfiguration.datasetRegistryURL }.cached
     }
 
     var datasetRegistry: Factory<any InstalledDatasetRegistry> {
-        self { FileInstalledDatasetRegistry(fileURL: self.datasetRegistryURL()) }
+        self { FileInstalledDatasetRegistry(fileURL: self.datasetRegistryURL()) }.cached
     }
 
-    // MARK: - Data Sources
+    // MARK: - Data Sources (cached)
     var sessionController: Factory<SessionController> {
-        self { SessionController(tokenStore: self.tokenStore()) }
+        self { SessionController(tokenStore: self.tokenStore()) }.cached
     }
 
     var apiClient: Factory<APIClient> {
@@ -39,95 +43,88 @@ extension Container {
                 transport: self.httpTransport(),
                 session: self.sessionController()
             )
-        }
+        }.cached
     }
 
-    var dataSourcesAssembly: Factory<DataSourcesAssembly> {
-        self {
-            DataSourcesAssembly(
-                baseURL: self.apiBaseURL(),
-                transport: self.httpTransport(),
-                tokenStore: self.tokenStore(),
-                sessionRefresher: self.sessionRefresher(),
-                datasetRegistry: self.datasetRegistry()
-            )
-        }
-    }
-
-    // MARK: - Repositories
+    // MARK: - Repositories (cached)
     var authRepository: Factory<any AuthRepository> {
         self {
             #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--uitest-auth-repository") {
-                return UITestAuthRepository()
+                return UITestAuthRepository() as any AuthRepository
             }
             #endif
             return AuthRepositoryImpl(
                 apiClient: self.apiClient(),
                 session: self.sessionController()
-            )
-        }
+            ) as any AuthRepository
+        }.cached
     }
 
     var userRepository: Factory<any UserRepository> {
-        self { UnavailableUserRepository() }
+        self {
+            struct UnimplementedUserRepository: UserRepository {
+                func currentUser() async throws -> User {
+                    throw dependencyUnavailable(.userRepository)
+                }
+                func updateSettings(_ patch: UserSettingsPatch) async throws -> UserSettings {
+                    throw dependencyUnavailable(.userRepository)
+                }
+            }
+            return UnimplementedUserRepository() as any UserRepository
+        }.cached
     }
 
     var datasetCatalogRepository: Factory<any DatasetCatalogRepository> {
-        self { DatasetCatalogRepositoryImpl(apiClient: self.apiClient()) }
+        self { DatasetCatalogRepositoryImpl(apiClient: self.apiClient()) as any DatasetCatalogRepository }.cached
     }
 
     var installedDatasetRepository: Factory<any InstalledDatasetRepository> {
-        self { InstalledDatasetRepositoryImpl(registry: self.datasetRegistry()) }
+        self { InstalledDatasetRepositoryImpl(registry: self.datasetRegistry()) as any InstalledDatasetRepository }.cached
     }
 
     var frequencyRepository: Factory<any FrequencyRepository> {
-        self { UnavailableFrequencyRepository() }
-    }
-
-    var repositoriesAssembly: Factory<RepositoriesAssembly> {
         self {
-            RepositoriesAssembly(
-                authRepository: self.authRepository(),
-                userRepository: self.userRepository(),
-                datasetCatalogRepository: self.datasetCatalogRepository(),
-                installedDatasetRepository: self.installedDatasetRepository(),
-                frequencyRepository: self.frequencyRepository()
-            )
-        }
+            struct UnimplementedFrequencyRepository: FrequencyRepository {
+                func lookup(_ query: FrequencyQuery) async throws -> FrequencyResult? {
+                    throw dependencyUnavailable(.frequencyRepository)
+                }
+            }
+            return UnimplementedFrequencyRepository() as any FrequencyRepository
+        }.cached
     }
 
-    // MARK: - Use Cases
+    // MARK: - Use Cases (cached)
     var resolveLaunchDestinationUseCase: Factory<ResolveLaunchDestinationUseCase> {
-        self { ResolveLaunchDestinationUseCase(repository: self.authRepository()) }
+        self { ResolveLaunchDestinationUseCase(repository: self.authRepository()) }.cached
     }
 
     var registerUseCase: Factory<RegisterUseCase> {
-        self { RegisterUseCase(repository: self.authRepository()) }
+        self { RegisterUseCase(repository: self.authRepository()) }.cached
     }
 
     var loginUseCase: Factory<LoginUseCase> {
-        self { LoginUseCase(repository: self.authRepository()) }
+        self { LoginUseCase(repository: self.authRepository()) }.cached
     }
 
     var logoutUseCase: Factory<LogoutUseCase> {
-        self { LogoutUseCase(repository: self.authRepository()) }
+        self { LogoutUseCase(repository: self.authRepository()) }.cached
     }
 
     var currentUserUseCase: Factory<GetCurrentUserUseCase> {
-        self { GetCurrentUserUseCase(repository: self.userRepository()) }
+        self { GetCurrentUserUseCase(repository: self.userRepository()) }.cached
     }
 
     var updateUserSettingsUseCase: Factory<UpdateUserSettingsUseCase> {
-        self { UpdateUserSettingsUseCase(repository: self.userRepository()) }
+        self { UpdateUserSettingsUseCase(repository: self.userRepository()) }.cached
     }
 
     var datasetCatalogUseCase: Factory<GetDatasetCatalogUseCase> {
-        self { GetDatasetCatalogUseCase(repository: self.datasetCatalogRepository()) }
+        self { GetDatasetCatalogUseCase(repository: self.datasetCatalogRepository()) }.cached
     }
 
     var installedDatasetsUseCase: Factory<GetInstalledDatasetsUseCase> {
-        self { GetInstalledDatasetsUseCase(repository: self.installedDatasetRepository()) }
+        self { GetInstalledDatasetsUseCase(repository: self.installedDatasetRepository()) }.cached
     }
 
     var synchronizeDatasetsUseCase: Factory<SynchronizeDatasetsUseCase> {
@@ -136,32 +133,14 @@ extension Container {
                 catalogRepository: self.datasetCatalogRepository(),
                 installedRepository: self.installedDatasetRepository()
             )
-        }
+        }.cached
     }
 
     var datasetDownloadURLUseCase: Factory<GetDatasetDownloadURLUseCase> {
-        self { GetDatasetDownloadURLUseCase(repository: self.datasetCatalogRepository()) }
+        self { GetDatasetDownloadURLUseCase(repository: self.datasetCatalogRepository()) }.cached
     }
 
     var lookupFrequencyUseCase: Factory<LookupFrequencyUseCase> {
-        self { LookupFrequencyUseCase(repository: self.frequencyRepository()) }
-    }
-
-    var useCases: Factory<UseCases> {
-        self {
-            UseCases(
-                resolveLaunchDestinationUseCase: self.resolveLaunchDestinationUseCase(),
-                registerUseCase: self.registerUseCase(),
-                loginUseCase: self.loginUseCase(),
-                logoutUseCase: self.logoutUseCase(),
-                currentUserUseCase: self.currentUserUseCase(),
-                updateUserSettingsUseCase: self.updateUserSettingsUseCase(),
-                datasetCatalogUseCase: self.datasetCatalogUseCase(),
-                installedDatasetsUseCase: self.installedDatasetsUseCase(),
-                synchronizeDatasetsUseCase: self.synchronizeDatasetsUseCase(),
-                datasetDownloadURLUseCase: self.datasetDownloadURLUseCase(),
-                lookupFrequencyUseCase: self.lookupFrequencyUseCase()
-            )
-        }
+        self { LookupFrequencyUseCase(repository: self.frequencyRepository()) }.cached
     }
 }

@@ -1,0 +1,114 @@
+[
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:49-54 (Decisions section)",
+    "trigger_condition": "Repository scopes decision says all repos are .singleton() but migration-plan.md Phase 3 table shows all repos as 'cached' scope",
+    "guard_snippet": "Align SPEC.md Decisions with migration-plan.md or add explicit rationale for the scope change from cached to singleton",
+    "potential_consequence": "Implementation will use wrong scope (singleton vs cached) causing state sharing bugs or performance issues"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:52 (Decisions - Config scopes)",
+    "trigger_condition": "Config scopes decision says httpTransport, apiBaseURL, tokenStore remain .singleton() but migration-plan.md Phase 1 doesn't specify scope for these",
+    "guard_snippet": "Add explicit scope annotations in Container+Registrations.swift registrations (e.g., .singleton()) for config dependencies",
+    "potential_consequence": "Config dependencies default to cached scope, creating new instances per resolution instead of true singletons"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:53 (Decisions - UnavailableXRepository placeholders)",
+    "trigger_condition": "Decision says 'Remove entirely' but UseCases.swift:16-31 still references UnavailableAuthRepository, UnavailableUserRepository, UnavailableDatasetCatalogRepository, UnavailableInstalledDatasetRepository, UnavailableFrequencyRepository",
+    "guard_snippet": "Either update SPEC.md to say 'replace with proper implementations' or add task to update UseCases.unavailable to use new placeholder strategy",
+    "potential_consequence": "UseCases.unavailable will fail to compile after UnavailableXRepository types are deleted"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:75 (Task - Container+Registrations)",
+    "trigger_condition": "Task says 'remove dataSourcesAssembly and repositoriesAssembly registrations' but these are Factory registrations in Container+Registrations.swift:45-55 and :88-98 that other code may depend on",
+    "guard_snippet": "Add grep verification step: 'grep -r \"dataSourcesAssembly\\|repositoriesAssembly\" --include=\"*.swift\"' before deletion",
+    "potential_consequence": "Code referencing Container.dataSourcesAssembly or Container.repositoriesAssembly will fail to compile"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:79 (Task - ProductionAssembly)",
+    "trigger_condition": "Task says simplify to only register apiBaseURL and httpTransport (and tokenStore if not singleton), but current ProductionAssembly.makeContainer() at line 14-18 only registers those two",
+    "guard_snippet": "Verify current ProductionAssembly already matches desired state; if so, mark task as complete/no-op",
+    "potential_consequence": "Wasted effort on already-complete task; confusion about what actually needs changing"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:81 (Task - TestAssembly)",
+    "trigger_condition": "Task says refactor to use Container.shared + FactoryTesting scopes but current TestAssembly.makeGraph() at lines 24-32 already uses Container.shared for repo registrations",
+    "guard_snippet": "Clarify what specifically needs changing: FactoryTesting scopes for test doubles? reset() in setUp/tearDown? Remove manual stub parameters?",
+    "potential_consequence": "Unclear task scope leads to incomplete test migration or over-engineering"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:89-92 (Acceptance Criteria)",
+    "trigger_condition": "AC says 'APIClient is cached (new per resolution unless scoped)' but Factory default scope is cached, and SPEC doesn't explicitly register apiClient with .cached()",
+    "guard_snippet": "Add explicit .cached() scope to apiClient registration in Container+Registrations or verify default behavior matches expectation",
+    "potential_consequence": "If FactoryKit changes default scope or if scoped() is called elsewhere, APIClient may not be cached as expected"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:91 (Acceptance Criteria - Release build)",
+    "trigger_condition": "AC checks AppConfiguration.apiBaseURL equals https://api.lexickon.invalid but this is compile-time constant, not runtime verification",
+    "guard_snippet": "Add runtime check in ProductionAssembly or AppContainer init that validates Release configuration",
+    "potential_consequence": "Release build could accidentally point to debug URL if #if DEBUG logic is misconfigured"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:112 (Design Notes - Circular dependency)",
+    "trigger_condition": "Claims 'no cycles' but Container+Registrations shows sessionController depends on tokenStore, apiClient depends on sessionController, authRepository depends on apiClient and sessionController - this is a valid DAG but should be verified with tool",
+    "guard_snippet": "Add 'swift package dump-dependencies' or custom script to verify acyclic graph before merge",
+    "potential_consequence": "Hidden circular dependency crashes at runtime during container resolution"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:114 (Design Notes - Repository scopes)",
+    "trigger_condition": "States 'All repositories use .singleton() scope' but migration-plan.md Phase 3 table shows all as 'cached' and decision at line 51 says 'Only SessionController and all repositories promoted to .singleton()' - contradiction with plan",
+    "guard_snippet": "Resolve contradiction: either update migration-plan.md to match SPEC, or update SPEC to match plan with rationale",
+    "potential_consequence": "Team implements wrong scope; singleton repositories may leak state across tests or user sessions"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:71-85 (Tasks section)",
+    "trigger_condition": "No task for updating AppContainer.swift which has two initializers (init() and init(useCases:)) that may need updates after assembly removal",
+    "guard_snippet": "Add task: 'Verify AppContainer.swift initializers still work after DataSourcesAssembly/RepositoriesAssembly removal'",
+    "potential_consequence": "AppContainer tests fail because init(useCases:) expects certain assembly structure"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:59-69 (Code Map)",
+    "trigger_condition": "Code Map lists files but doesn't include AppContainerTests.swift which is mentioned in line 68 but not in Code Map",
+    "guard_snippet": "Add AppContainerTests.swift to Code Map with description of what it verifies",
+    "potential_consequence": "Missing test file from migration checklist; verification gaps"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:118-124 (Verification Commands)",
+    "trigger_condition": "Lists 'make -C apps/ios lint' expected exit 0 but project uses swiftlint, not ruff (ruff is Python/backend)",
+    "guard_snippet": "Verify correct lint command for iOS (likely 'swiftlint' or 'make lint' target); update if wrong",
+    "potential_consequence": "Wrong lint command passes incorrectly or fails, masking real issues"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:126-128 (Manual checks)",
+    "trigger_condition": "Manual check says 'Verify sessionController uses .singleton() scope explicitly' but Container+Registrations.swift:31-33 shows no explicit scope",
+    "guard_snippet": "Add .singleton() to sessionController registration: 'self { SessionController(...) }.singleton()'",
+    "potential_consequence": "sessionController defaults to cached scope, creating multiple instances and breaking auth state consistency"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:30-31 (Boundaries - Factory scopes)",
+    "trigger_condition": "Says 'must use Factory scopes (singleton, cached, new) intentionally per dependency type' but SPEC doesn't provide a complete scope matrix for all 20+ registrations",
+    "guard_snippet": "Add complete scope matrix table in SPEC covering every registration in Container+Registrations with intended scope",
+    "potential_consequence": "Inconsistent scope decisions across registrations; some singleton when should be cached and vice versa"
+  },
+  {
+    "lens": "adversarial",
+    "location": "SPEC.md:41-48 (I/O & Edge-Case Matrix)",
+    "trigger_condition": "Matrix covers only 5 scenarios; missing: Release build with DEBUG flag, test parallel execution with shared Container.shared, Factory registration override precedence, missing protocol conformance at resolution time",
+    "guard_snippet": "Expand matrix to cover: config override precedence, test isolation, missing registration error, protocol witness mismatch",
+    "potential_consequence": "Uncovered edge cases cause runtime crashes in production or flaky tests"
+  }
+]
