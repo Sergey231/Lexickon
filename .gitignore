@@ -3,6 +3,7 @@
 # BMAD installation output. Restore it with the pinned installer command in
 # README.md; keep project artifacts and team-owned customizations versioned.
 /.agents/skills/bmad-*/
+/.claude/skills/bmad-*/
 /.opencode/commands/bmad-*.md
 /_bmad/_config/
 /_bmad/bmm/
