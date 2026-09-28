@@ -26,9 +26,16 @@ For a fresh non-interactive installation matching the current module and tool
 selection, use:
 
 ```sh
-npx bmad-method@6.12.0 install --yes --modules bmm --tools opencode
+npx bmad-method@6.12.0 install --yes --modules bmm --tools opencode,claude-code
 ```
 
-The generated `.agents/`, `.opencode/`, and installer-owned `_bmad/`
+To add a tool to an existing installation, pass `--action update`: with
+`--yes` the installer otherwise runs a quick-update that keeps the previously
+selected tools and ignores `--tools`.
+
+The generated `.agents/`, `.opencode/`, `.claude/skills/bmad-*`, and installer-owned `_bmad/`
 subdirectories remain local and are excluded from Git. After installation,
-invoke `bmad-help` to verify that the integration is available.
+invoke `bmad-help` to verify that the integration is available. In Claude Code
+the BMAD skills are available as slash commands (for example `/bmad-help`,
+`/bmad-agent-pm`, `/bmad-build`). Claude Code reads `AGENTS.md` directly (v2.1.277+),
+so no `CLAUDE.md` is needed.
