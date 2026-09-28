@@ -33,5 +33,5 @@ The generated `.agents/`, `.opencode/`, `.claude/skills/bmad-*`, and installer-o
 subdirectories remain local and are excluded from Git. After installation,
 invoke `bmad-help` to verify that the integration is available. In Claude Code
 the BMAD skills are available as slash commands (for example `/bmad-help`,
-`/bmad-agent-pm`, `/bmad-build`); `CLAUDE.md` imports `AGENTS.md` so Claude Code
-sees the same project context as other agents.
+`/bmad-agent-pm`, `/bmad-build`). Claude Code reads `AGENTS.md` directly (v2.1.277+),
+so no `CLAUDE.md` is needed.
