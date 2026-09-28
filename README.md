@@ -29,6 +29,10 @@ selection, use:
 npx bmad-method@6.12.0 install --yes --modules bmm --tools opencode,claude-code
 ```
 
+To add a tool to an existing installation, pass `--action update`: with
+`--yes` the installer otherwise runs a quick-update that keeps the previously
+selected tools and ignores `--tools`.
+
 The generated `.agents/`, `.opencode/`, `.claude/skills/bmad-*`, and installer-owned `_bmad/`
 subdirectories remain local and are excluded from Git. After installation,
 invoke `bmad-help` to verify that the integration is available. In Claude Code
