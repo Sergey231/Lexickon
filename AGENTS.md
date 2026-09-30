@@ -26,7 +26,7 @@ Lexickon is a monorepo containing a Python/FastAPI backend and a native Swift iO
 - Build iOS Debug with `make -C apps/ios build`; build Release with `make -C apps/ios build CONFIGURATION=Release`.
 - Verify iOS with `make -C apps/ios lint`, `make -C apps/ios test`, or `make -C apps/ios check`; `check` runs lint plus both unit and UI tests.
 - iOS tests default to the latest `iPhone 17 Pro` simulator; when unavailable, use `make -C apps/ios test SIMULATOR='Exact Available Name'`.
-- Preserve the declared Swift 6 strict-concurrency and iOS 26 deployment settings.
+- Preserve the declared Swift 6 strict-concurrency and iOS 18 deployment settings.
 - TODO after the native Android project and wrapper are committed: verify and record its build, unit-test, device-test, lint, and formatting commands.
 
 ## Conventions that differ from defaults

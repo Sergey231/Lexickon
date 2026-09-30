@@ -1,0 +1,11 @@
+{
+  "claims": [
+    {"claim": "Jev exposes typed decision primitives, not corpus frequency", "class": "version", "pub_date": "2026-09-27"},
+    {"claim": "Jev Score is an ordinal-level expectation", "class": "version", "pub_date": "2026-09-27"},
+    {"claim": "Laya exposes typed decisions and requires task specialization", "class": "version", "pub_date": "2026-09-27"},
+    {"claim": "Independent classification benchmark favors Jev over Laya", "class": "ecosystem", "pub_date": "2026-09-27"},
+    {"claim": "Frequency per million is a normalized observed corpus count", "class": "methodology", "pub_date": "2009-01-01"},
+    {"claim": "wordfreq multi-token output is a token-frequency heuristic", "class": "version", "pub_date": "2026-09-27"},
+    {"claim": "Laya is published under Apache-2.0", "class": "version", "pub_date": "2026-09-27"}
+  ]
+}

@@ -1,6 +1,6 @@
 // Settings inherited by every target and build configuration.
 
-IPHONEOS_DEPLOYMENT_TARGET = 26.0
+IPHONEOS_DEPLOYMENT_TARGET = 18.0
 SWIFT_VERSION = 6.0
 
 CLANG_ENABLE_MODULES = YES

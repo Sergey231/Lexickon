@@ -29,6 +29,15 @@ selection, use:
 npx bmad-method@6.12.0 install --yes --modules bmm --tools opencode
 ```
 
-The generated `.agents/`, `.opencode/`, and installer-owned `_bmad/`
-subdirectories remain local and are excluded from Git. After installation,
-invoke `bmad-help` to verify that the integration is available.
+The generated `.agents/`, `.claude/`, `.opencode/`, and installer-owned
+`_bmad/` subdirectories remain local and are excluded from Git. After
+installation, invoke `bmad-help` to verify that the integration is
+available.
+
+## Third-party agent skills
+
+`skills-lock.json` pins additional agent skills the team has chosen to use
+(source, version, content hash) and is tracked. The skill content it
+installs under `.agents/skills/<name>/` is generated output and is
+excluded from Git; reinstall it from the lock file with that skill
+manager's own CLI.

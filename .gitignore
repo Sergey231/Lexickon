@@ -4,6 +4,7 @@
 # README.md; keep project artifacts and team-owned customizations versioned.
 /.agents/skills/bmad-*/
 /.opencode/commands/bmad-*.md
+/.claude/skills/bmad-*/
 /_bmad/_config/
 /_bmad/bmm/
 /_bmad/core/
@@ -11,3 +12,10 @@
 /_bmad/toolbox/
 /_bmad/config.user.toml
 /_bmad/render/
+
+# Stray backup files the installer/scripts sometimes leave behind.
+*.bak
+
+# Third-party agent skills installed via skills-lock.json. Keep the lock
+# file (it pins the source/version) but not the generated skill content.
+/.agents/skills/swiftui-expert-skill/

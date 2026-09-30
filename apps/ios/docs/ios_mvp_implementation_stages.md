@@ -8,7 +8,7 @@
 
 Базовые технические предпосылки:
 
-- UI — SwiftUI, минимальная версия — iOS 26;
+- UI — SwiftUI, минимальная версия — iOS 18;
 - асинхронность — Swift Concurrency;
 - состояние UI — Observation;
 - навигация — иерархический Step-Driven Coordinator;
@@ -29,7 +29,7 @@
 
 ### Ожидаемый результат
 
-Приложение запускается на iOS 26 simulator, показывает временный стартовый
+Приложение запускается на iOS 18+ simulator, показывает временный стартовый
 экран, а targets приложения, unit-тестов и UI-тестов собираются одной схемой.
 
 ### Границы задачи
@@ -62,7 +62,7 @@
 
 ### Проверка и тесты
 
-- Выполнить clean build Debug для iOS 26 simulator.
+- Выполнить clean build Debug для iOS 18+ simulator.
 - Запустить пустой unit-test target.
 - Запустить стартовый UI smoke test: launch и наличие placeholder-экрана.
 - Собрать Release-конфигурацию, чтобы выявить расхождения build settings.
@@ -612,7 +612,7 @@ Dataset Setup flow позволяет выбрать язык и домены, �
 - Нет утечек пароля, токена и signed URL в логах/analytics/crash context.
 - Root flows не остаются в back stack.
 - Все blocking/critical дефекты закрыты, остальные имеют владельца и решение.
-- Release build устанавливается, запускается и проходит smoke на iOS 26.
+- Release build устанавливается, запускается и проходит smoke на iOS 18.
 
 ### Проверка и тесты
 
