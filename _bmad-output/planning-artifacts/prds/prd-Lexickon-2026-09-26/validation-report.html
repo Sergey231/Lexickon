@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>PRD Validation: Lexickon</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --text: #1c1917;
+    --muted: #78716c;
+
+    --verdict-strong: #16a34a;
+    --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706;
+    --verdict-broken: #dc2626;
+
+    --sev-low: #64748b;
+    --sev-medium: #ca8a04;
+    --sev-high: #ea580c;
+    --sev-critical: #dc2626;
+
+    --grade-exc: #16a34a;
+    --grade-good: #65a30d;
+    --grade-fair: #d97706;
+    --grade-poor: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  header.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .grade {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: white;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .grade-excellent { background: var(--grade-exc); }
+  .grade-good { background: var(--grade-good); }
+  .grade-fair { background: var(--grade-fair); }
+  .grade-poor { background: var(--grade-poor); }
+
+  .synthesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    font-size: 15.5px;
+  }
+  .synthesis p { margin: 0 0 10px; }
+  .synthesis p:last-child { margin-bottom: 0; }
+
+  .dimension-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dim-card .dim-verdict { font-size: 14px; font-weight: 600; }
+
+  section.dimension, section.reviewer-section { margin-bottom: 14px; }
+  section.dimension details, section.reviewer-section details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  section summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section summary::-webkit-details-marker { display: none; }
+  section summary::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  section details[open] summary::before { transform: rotate(90deg); }
+  section summary h2 {
+    display: inline;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    flex: 1;
+  }
+  .verdict-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  .verdict-strong { background: var(--verdict-strong); }
+  .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); }
+  .verdict-broken { background: var(--verdict-broken); }
+
+  .dim-body { padding: 4px 20px 18px; }
+  .dim-judgment { color: var(--text); font-size: 14.5px; }
+  .dim-judgment p { margin: 0 0 10px; }
+
+  .findings-list { padding: 0 20px 4px; }
+  article.finding {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  article.finding:first-child { border-top: none; }
+  article.finding header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
+  .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
+  .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
+  .finding-fix strong { color: var(--muted); font-weight: 500; }
+
+  .reviewer-source {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  .mechanical {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mechanical ul { margin: 0; padding-left: 20px; }
+  .mechanical li { margin-bottom: 4px; color: var(--text); }
+
+  footer.report-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="container">
+<header class="report-header"><div class="title"><h1>Lexickon — отчёт проверки PRD</h1><div class="subtitle">_bmad-output/planning-artifacts/prds/prd-Lexickon-2026-09-26/prd.md</div></div><div class="grade grade-good">Good</div></header>
+<div class="synthesis"><p>PRD остаётся на уровне Good и ближе к верхней границе, чем в прошлом прогоне: все три средние находки закрыты по существу (измеренная неделя для EX-2, окно прохождения пилота с проверенной арифметикой, ключ JEV получен и срок назначен), а из десяти низких закрыто девять полностью или с мелким остатком. Правки в целом не внесли противоречий, ломающих документ. Под риском остаются: язык ввода определяет бэкенд по 1–6 словам без порога и без пути обхода, что может блокировать корректные запросы (особенно в домене разработки); §1.0 и приложение A по-разному описывают сравнение с LLM; пилот имеет неопределённые мелочи (рамка выборки, граничные размеры выборки). Критических и высоких проблем нет; одна средняя и одиннадцать низких.</p><p>Оценка по формуле: нет критических, есть одна высокая находка — Good (ревьюер формулировал «Good с оговорками»).</p></div>
+<div class="dimension-summary"><div class="dim-card"><div class="dim-name">Decision-readiness</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Substance over theater</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Strategic coherence</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div><div class="dim-card"><div class="dim-name">Done-ness clarity</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Scope honesty</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Downstream usability</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div><div class="dim-card"><div class="dim-name">Shape fit</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div></div>
+<section class="dimension"><details><summary><h2>Decision-readiness</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Решения оформлены как решения и несут цену: KR-1 «Решено» с пометкой «Обратимо», правило выхода пилота с тремя критериями (совпадение, ценность сверх частоты, стабильность A-4), правило решения после эксперимента с ветвями EX-2…EX-5 и оговоркой о смещении («испытуемый — автор и он же заказчик»). Окно прохождения пилота и последствия переключения на запасной вариант названы с числами, а риск «зачем платить за JEV, если можно спросить LLM» принят прямо, с датой решения. Ключ получен, поэтому главный блокер входа снят. Возражающий найдёт свои вопросы признанными; KR-13 честно выносит на свет отсутствие внешнего подтверждения проблемы.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Срок KR-12 назначен, но это дата устаревания фактов, а не план работ</h3><span class="finding-location">§1.1, строка KR-12: «До 2026-10-27 (срок актуальности фактов исследования, приложение §A</span></header><div class="finding-note">, до архитектуры»; шапка таблицы: «Целевые даты назначаются, когда работа переходит к архитектуре» — устарела, KR-12 уже с датой). Нет действия на случай, если пилот не успеет к 2026-10-27 (факты перепроверять? пилот идти дальше?), и нет дат для измеряемой базовой недели и четырёхнедельного эксперимента, хотя они стоят между пилотом и beta.</div><div class="finding-fix"><strong>Исправление:</strong> записать, что происходит после 2026-10-27 (перепроверка фактов, продление), и поставить ориентировочные даты базовой недели и начала эксперимента; поправить фразу в шапке таблицы.</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Substance over theater</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Видение и отличие специфичны: §1.0 признаёт Language Reactor, LingQ, Migaku и называет вывод отрицательным свидетельством средней уверенности. Одна персона управляет решениями (домен, лимит, офлайн). НФТ с порогами (p95 3 с, 100 мс, TTL 30 дней, 500 записей, 100 вызовов в сутки). Эмоциональная JTBD теперь не обещает больше видения. Театра правки не добавили.</p></div></div><div class="findings-list"></div></details></section>
+<section class="dimension"><details><summary><h2>Strategic coherence</h2><span class="verdict-pill verdict-adequate">adequate</span></summary><div class="dim-body"><div class="dim-judgment"><p>Тезис один и проверяемый: оценка полезности по домену до сохранения меняет решение автора. Цепочка «пилот, затем измеренная база, затем эксперимент, затем правило решения, затем beta» логична; EX-5 с тем же лимитом N защищает от смешения эффектов; контрметрики теперь покрывают и слепое доверие метке (C-3). Остаются мелкие швы между метриками и правилом решения.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">База EX-2 и EX-5 измерена, но границы измерения и условия снятия не определены</h3><span class="finding-location">§6, «Личный эксперимент»: «время на решение по слову», «прирост очереди повторений при обычном объёме чтения»; EX-5: «при том же дневном лимите новых карточек (N по FR-4</span></header><div class="finding-note">»). Не сказано, где начинается и где заканчивается «решение» без инструмента (ввод в словарь входит?), а база снята без приложения, где дневного лимита введения новых карточек не было, поэтому «тот же лимит» в базе нечем обеспечить. Время до сохранённой карточки (в исследовании около 10 минут) по-прежнему лишь «фиксируется» и не входит в правило решения.</div><div class="finding-fix"><strong>Исправление:</strong> определить события начала и конца решения; записать, как в базовой неделе моделируется N (например, считать прирост очереди только по первым N карточкам в день); включить время до сохранённой карточки в EX-2 или в условие beta.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Контрметрики не входят в правило решения</h3><span class="finding-location">§6 C-1…C-3 против «Правило решения после эксперимента»</span></header><div class="finding-note">. EX-3 («оценка меняет решение минимум в 20%») может быть выполнен слепым доверием метке; C-3 как раз это ловит, но что делать при его нарушении, не сказано. C-3 судит тот же автор, что и EX-3, на тех же словах.</div><div class="finding-fix"><strong>Исправление:</strong> добавить ветку: EX-3 выполнен, а C-3 нарушен → не считать EX-3 подтверждением, разобрать причину до beta.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">JTBD о контексте обещает «иногда без сети»</h3><span class="finding-location">§2.1: «пока я читаю бумажную книгу, еду в метро… иногда без сети»</span></header><div class="finding-note">, а V1 без сети умеет только показывать закешированные поиски и создавать карточку вручную (FR-8, FR-10, §2.2); новое слово без сети оценить нельзя. A-7 проверяет лишь трение набора, а не сетевое поведение.</div><div class="finding-fix"><strong>Исправление:</strong> в JTBD или в A-7 прямо записать, что сценарий без сети в V1 ограничен (оценки для новых слов недоступны) и как эксперимент это измеряет (доля поисков без сети).</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">§1.0 и приложение A.1 расходятся по статусу сравнения с LLM</h3><span class="finding-location">§1.0: «сравнение с запросом к LLM необязательно»; приложение A.1, «Прочие проверки»: «не проверяется до beta: риск принят осознанно»</span></header><div class="finding-note">. Принятый риск не имеет дома в beta: §6 beta ограничивается «вопросы и пороги следуют брифу».</div><div class="finding-fix"><strong>Исправление:</strong> привести §1.0 к формулировке приложения («не проверяется до beta») и добавить в вопросы beta проверку «JEV против простого запроса к LLM».</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Done-ness clarity</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Следствия FR проверяемы: FR-4 (порядок, лимиты, пустое состояние), FR-6 (100 мс), FR-8 (ключ, TTL, LRU), FR-15 (6 слов, 80 и 300 символов), FR-17 (карта кодов, два вида 429). Пилот KR-12 — проверяемая процедура с окном, добором выборки, фиксированными диапазонами и новой выборкой после переписывания. Слабое место новое и локальное: определение языка в FR-15.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Определение языка бэкендом по 1–6 словам без порога и без обхода может отклонять корректные запросы</h3><span class="finding-location">FR-15: «Язык ввода определяет бэкенд до вызова JEV. Если он не английский (<code>language_detected</code></span></header><div class="finding-note">, приложение сообщает „Поддерживается только английский“; такой запрос не расходует лимит поисков»). Для коротких терминов и терминов разработки («kubectl», «async/await», «confidence interval» в идентификаторах и слитных написаниях) автоматическое определение языка ненадёжно, а ложный отказ блокирует основной сценарий; способа продолжить нет, ложные отказы не покрыты метриками, механизм определения и его провайдер не названы (KR-4 касается только перевода). Не определено и то, что именно возвращает бэкенд для неанглийского ввода: 200 с пустым списком оценок, 400 или отдельный код (FR-17 и приложение D перечисляют только 400, 401, 429, 5xx), хотя приложение узнаёт об отказе из <code>language_detected</code>.</div><div class="finding-fix"><strong>Исправление:</strong> назвать способ определения и порог (при неуверенном определении пропускать запрос к JEV, а не отклонять); задать форму ответа для неанглийского ввода в FR-1/FR-17 и в приложении D; считать в эксперименте число ложных отказов.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Окно прохождения пилота сформулировано двусмысленно для разных размеров выборки</h3><span class="finding-location">KR-12: «для 200 слов 80–90%, для 400 слов 80–95%; выше окна — провал»; приложение A.1, «Метод»: «100–200 слов на домен»; «Окно прохождения»: «Для 100 слов окно — ровно 80%»</span></header><div class="finding-note">. Читатель KR-12 решит, что 92% на 200 словах — провал, хотя по приложению при менее чем 20 расхождениях выборка добирается до 400 и окно расширяется; при 100 словах окно вырождается в одну точку, и метод всё равно допускает 100.</div><div class="finding-fix"><strong>Исправление:</strong> записать в KR-12 порядок «200 слов → если расхождений меньше 20, добор до 400 → оценка по окну 400»; поднять нижнюю границу выборки до 200.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Рамка выборки пилота не определена</h3><span class="finding-location">приложение A.1, «Метод», п. 1: «Взять 100–200 отдельных слов на домен… из реальных материалов для чтения»</span></header><div class="finding-note">. Если брать все слова текста, подавляющее большинство будет высокочастотным, JEV будет согласен с частотой, расхождений наберётся меньше 20 и пилот «провалится» из-за выборки, а не из-за JEV; если брать только незнакомые автору слова, это ближе к реальному потоку, но надо сказать об этом.</div><div class="finding-fix"><strong>Исправление:</strong> записать рамку (слова, которые автор отметил как незнакомые) и при необходимости стратификацию по частотным диапазонам.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Часть «Прочих проверок» пилота не имеет последствий и не входит в правило выхода</h3><span class="finding-location">приложение A.1: «Задержка p95» без порога при FR-1 «3 с»; «порог уверенности»; проверка контекстного предложения «не менее чем в 7 парах» помечена «рабочие значения», а правило выхода и KR-12 её не называют</span></header><div class="finding-note">. Неясно, провал контекстной проверки — это провал пилота или сигнал для переписывания описаний.</div><div class="finding-fix"><strong>Исправление:</strong> для каждой «прочей проверки» записать порог и последствие (блокирует/информирует) и перенести контекстную проверку в KR-12, если она блокирует.</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Scope honesty</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Не-цели полные и с причинами (§5.2), <code>[NON-GOAL]</code>, <code>[NOTE FOR PM]</code>, <code>[DEFERRED]</code> стоят на реальных развилках. Правило переключения теперь «решено 2026-10-04» и согласовано между §1.0, EX-1 и приложением A; вопрос про запасной вариант закрыт и убран из §7. KR-13 (острота проблемы без внешних данных) честно отнесён к осознанно отложенным. Открытых пунктов столько, сколько соответствует стадии «до архитектуры».</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Критерий «по каждому домену» остался помеченным как предложение и не отражён в PRD</h3><span class="finding-location">приложение A.1, «Критерии прохождения»: «провал в любом домене — провал пилота (предложено 2026-10-04</span></header><div class="finding-note">»; KR-12 и A-3 в PRD говорят о проценте слов без деления по доменам). Остальные критерии пилота «решено 2026-10-04».</div><div class="finding-fix"><strong>Исправление:</strong> подтвердить или снять правило и добавить «по каждому домену» в KR-12 и в проверку A-3.</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Downstream usability</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Глоссарий покрывает уверенность, основание, источник полезности, обе «оценки», порог при null; <code>nextReviewDate</code> единообразен; опечатка FR-1 исправлена; приложения C и D синхронны с FR-1 и FR-8 (<code>version</code>, <code>estimate</code>, <code>translation</code>, <code>confidence: Double?</code>). Остаются определения и трассировка.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Определение <code>version</code> в FR-8 расходится с остальными</h3><span class="finding-location">FR-8: «смена провайдера перевода (KR-4</span></header><div class="finding-note">меняет <code>version</code>»; FR-1, приложение C, приложение D: версия модели JEV или источника «вместе с версией описаний уровней»). Если провайдер перевода входит в <code>version</code>, смена перевода сбрасывает все оценки, которые не изменились; в глоссарии <code>version</code> не определена. Кроме того, при дозапросе домена новая запись получает свой перевод (приложение C: «дублируется в записях»), а правило «не перезаписывается» относится только к старым записям, так что для одного термина офлайн могут лежать разные переводы, и не указано, какой показывается.</div><div class="finding-fix"><strong>Исправление:</strong> либо хранить перевод по ключу термина и версии провайдера, либо записать в FR-8, что новая запись наследует уже сохранённый перевод; определить <code>version</code> в глоссарии.</div></article><article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Трассировка FR-12 и FR-16 к UJ номинальная</h3><span class="finding-location">FR-12: «Реализует UJ-2 (напоминание, с которого начинается сессия</span></header><div class="finding-note">», но в UJ-2 нет напоминания: «Та же Мария, за 15 минут до сна, к повторению подошли 10 карточек»; FR-16 «Реализует UJ-1», но «Уже в вашей колоде» нет ни в пути, ни в граничных случаях UJ-1, как нет и валидации ввода FR-15).</div><div class="finding-fix"><strong>Исправление:</strong> добавить в UJ-2 исходное состояние «пришло напоминание» и в граничные случаи UJ-1 — «термин уже в колоде» и «слишком длинный ввод».</div></article></div></details></section>
+<section class="dimension"><details><summary><h2>Shape fit</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>Потребительский мобильный продукт, две UJ с именованной протагонисткой, вариант личного эксперимента внутри UJ-1, лёгкая оговорка «предварительно» для JSON-полей в FR-1. UJ-1 теперь использует домен Марии (science) и покрывает ключевые состояния отказа. Форма подходит; под беспокойство нет оснований.</p></div></div><div class="findings-list"></div></details></section>
+<div class="mechanical"><h3>Механические замечания</h3><ul><li><strong>ID continuity:</strong> KR-1…KR-13, FR-1…FR-17 (FR-9 заглушка намеренно), EX-1…EX-5, C-1…C-3 непрерывны и уникальны; §7 теперь шесть вопросов, внешние ссылки на него (приложение G «§7, п. 4» — телеметрия) разрешаются. «SM-1…SM-5» в KR-11 остаются исторической ссылкой. Строка KR-12 по-прежнему стоит перед KR-3 в таблице §1.1 (на читаемость влияет слабо).</li><li><strong>Assumptions roundtrip:</strong> A-1…A-10 есть в тексте и в индексе. Расхождения мелкие: теги A-1 и A-2 стоят в примечаниях FR-3, а индекс отсылает к FR-1 и FR-2; тег A-4 стоит на параметрах кеша в FR-8 и не поясняет, что проверяется стабильность JEV; A-5 стоит дважды (FR-4, EX-5), в индексе указан только FR-4; тег A-3 в строке KR-12 теперь стоит непосредственно перед фактом «Ключ JEV получен» и читается как допущение о ключе, а не об эталоне; проверка A-3 в индексе (80% и 70%) не называет верхнюю границу окна и минимум в 20 расхождений.</li><li><strong>Согласованность KR-12 и приложения A.1:</strong> критерии KR-12 (80%, 70% при не менее 20 словах, 95% стабильности, окно) совпадают с приложением; расхождение только в «по каждому домену» (см. Scope honesty) и в контекстной проверке (см. Done-ness).</li><li><strong>Глоссарий:</strong> «самооценка» из §6 убрана, определение «Уверенность» теперь учитывает null; в приложении E остаются <code>Frequency*</code> (оговорено).</li><li><strong>Порядок «пилот, затем эксперимент»:</strong> указан только в приложении A; §0, §1 и §6 о нём молчат, хотя видение говорит о личном эксперименте как о первом шаге. Однострочная отсылка в §6 избавила бы от расхождения.</li><li><strong>Обязательные разделы:</strong> присутствуют для заявленных ставок и типа продукта.</li></ul></div>
+<footer class="report-footer"><div class="meta"><span>Рубрика: _bmad-output/planning-artifacts/prds/prd-Lexickon-2026-09-26/review-rubric.md</span><span>Сформировано: 2026-10-04T21:25:28+05:00</span></div></footer>
+</div>
+</body>
+</html>

@@ -1,46 +1,52 @@
-# Lexickon Product Brief — Addendum
+# Lexickon Product Brief — Дополнение
 
-## Parked future direction
+## Отложенное будущее направление
 
-- A voice AI coach may eventually analyze a user's speech, identify recurring errors, and create personalized learning decks around the highest-value growth areas. This remains outside the initial product thesis until its connection to usefulness-based vocabulary selection is validated.
+- Голосовой AI-коуч в перспективе может анализировать речь пользователя, выявлять повторяющиеся ошибки и создавать персональные колоды по самым ценным зонам роста. Это остаётся вне исходного тезиса продукта, пока не подтверждена его связь с выбором лексики по полезности.
+- Геймификация через режимы сложности (идея от 2026-10-04, Сергей). Пользователь выбирает уровень сложности, который определяет, что происходит с просроченными карточками. Самый лёгкий уровень: карточки никогда не сгорают. Противоположный край, назовём его, например, «хардкор»: просроченная карточка сразу сгорает до нуля. Несколько уровней между ними: после того как карточка стала просроченной, сгорает процент её периода, в зависимости от выбранной сложности. Связано с FR-4, где в V1 просроченные карточки не сгорают и просто ждут в очереди. Не входит в V1 и beta; вернуться после beta.
 
-## Planning reconciliation
+## Согласование планирования
 
-- The chosen V1 includes usefulness assessment for words and phrases, card creation, and spaced repetition. The current iOS MVP implementation plan ends at frequency lookup and does not yet define card, deck, or SRS stages; downstream planning must reconcile that scope.
-- Current contracts do not yet settle side-by-side general/domain scoring, phrase scoring, sense or part-of-speech handling, or the operational definition of usefulness. These remain open after the 2026-09-30 update and must be settled in the PRD and architecture.
-- The PRD's frequency source (KR-1) is unresolved: the published JEV API returns choice / ordinal score / probability over caller-defined levels, not a corpus frequency. The four-level usefulness scale fits that shape, but per-domain evaluation, phrase handling and per-domain cost (KR-6 lookup cap) must be verified.
+- Выбранная V1 включает оценку полезности слов и фраз, создание карточек и интервальные повторения. Текущий план реализации iOS MVP заканчивается поиском частотности и пока не определяет этапы карточек, колод и SRS; последующее планирование должно согласовать этот объём.
+- Параллельная оценка общего английского и домена и оценка фраз закреплены в PRD (FR-1). Обработка значений и частей речи и операциональное определение полезности остаются открытыми для PRD и архитектуры.
+- KR-1 решён 2026-09-30: JEV System One по одному вызову на домен с пятью уровнями, задаваемыми вызывающей стороной, с пометкой «оценка модели»; корпусная частота добавляется до beta как основание. Реальный контракт JEV, обработка фраз и стоимость по домену проверяются пилотом (KR-12; ключа к API пока нет).
 
-## 2026-09-30 thesis update: rationale
+## Обновление тезиса 2026-09-30: обоснование
 
-- Why the brief changed: the PRD (2026-09-26/28) describes a wider product than the 2026-09-21 brief. The user decided the PRD is the master document (KR-11) and merged the two: audience framing and translation from the PRD; usefulness thesis, validation plan, simple card and plain interval SRS from the brief.
-- Domain model: usefulness assessments are a list per domain, not fixed "general" and "development" fields. Adding a domain is data and configuration work. The extended domain catalog is post-beta; the domain-selection setting and a short domain list move to before beta (see the beta scope update below).
-- Promise wording: "обоснованная уверенность" (level, confidence, short basis, honest insufficient-data state) replaces any claim that a word "will definitely be useful", consistent with the brief's principle that usefulness is an explainable signal, not objective truth.
-- Terminology: the user-facing term is "полезность". Frequency, corpus data or model output are only the source of the signal. Downstream documents (PRD glossary, UX, stories) should use one term.
-- Validation caveat: the personal experiment runs on the development domain because it already exists and the author is the first tester. This does not prove demand in other domains; the public beta covers that (see the beta scope update below).
+- Почему бриф изменился: PRD (2026-09-26/28) описывает более широкий продукт, чем бриф от 2026-09-21. Сергей решил, что PRD — главный документ (KR-11), и объединил их, сохранив для V1 тезис брифа: формулировку аудитории и перевод — из PRD; тезис о полезности, план проверки, простую карточку и обычные интервальные повторения — из брифа.
+- Модель доменов: оценки полезности — это список по доменам, а не фиксированные поля «общий» и «разработка». Добавление домена — это работа с данными и конфигурацией. Расширенный каталог доменов — после beta; настройка выбора домена и короткий список доменов переносятся на период до beta (см. обновление объёма beta ниже).
+- Формулировка обещания: «обоснованная уверенность» (уровень, уверенность, короткое основание, честное состояние «данных недостаточно») заменяет любое утверждение, что слово «точно будет полезным», в согласии с принципом брифа: полезность — ориентир, а не объективная истина.
+- Терминология: пользовательский термин — «полезность». Частотность, корпусные данные или результат модели — лишь источник сигнала. Последующие документы (глоссарий PRD, UX, истории) должны использовать один термин.
+- Оговорка о проверке: личный эксперимент идёт на домене разработки, потому что он уже существует, а автор — первый тестировщик. Это не доказывает спрос в других доменах; его проверяет публичная beta (см. обновление объёма beta ниже).
 
-## Superseded from the 2026-09-21 brief
+## Заменено относительно брифа от 2026-09-21
 
-- First user narrowed to a software developer (now: job-based description, developers first).
-- Differentiation as a side-by-side "general English versus software development" score (now: usefulness across user-chosen domains).
+- Первый пользователь сужен до разработчика ПО (теперь: описание по задаче, сначала разработчики).
+- Отличие как параллельная оценка «общий английский против разработки ПО» (теперь: полезность в выбранных пользователем доменах).
 
-## 2026-09-30 beta scope update
+## Обновление объёма beta 2026-09-30
 
-- The user decided the public beta should test the whole idea rather than one professional domain, so it runs on people who learn English and read materials in it, not only developers. The personal experiment stays on the development domain (author is the first tester).
-- Consequence: the domain-selection setting and a short list of 3–4 domains (for example development, science, business, medicine) move from post-V1 to "before beta". The extended domain catalog stays post-beta.
-- Planning impact: PRD and architecture must cover per-domain data for several domains by beta, per-domain cost against the lookup cap (KR-6), and a settings screen for domain selection. The "V1 = one domain" wording applies to the personal experiment only.
+- Пользователь решил, что публичная beta должна проверять идею целиком, а не один профессиональный домен, поэтому она проходит на людях, которые учат английский и читают на нём материалы, а не только на разработчиках. Личный эксперимент остаётся на домене разработки (автор — первый тестировщик).
+- Следствие: настройка выбора домена и короткий список из 3–4 доменов (например, разработка, наука, бизнес, медицина) переносятся из «после V1» в «до beta». Расширенный каталог доменов остаётся после beta.
+- Влияние на планирование: PRD и архитектура должны охватить данные по нескольким доменам к beta, стоимость по домену относительно лимита поиска (KR-6) и экран настроек для выбора домена. Формулировка «V1 = один домен» относится только к личному эксперименту.
 
-## Details moved out of the brief (2026-09-30)
+## Детали, вынесенные из брифа (2026-09-30)
 
-- Summary of changes: thesis widened from "general English vs development" to usefulness across user-chosen domains; first user described by job, not profession; Russian translation added to V1; public beta moved to a general audience with domain choice from a short list.
-- Personal experiment, full measurement list: the number of items met, the decision taken, decision time, confidence (1–5), cards created, review queue state.
-- Personal experiment, additional criterion moved out of the brief: the review queue does not grow faster than in the recorded self-assessment of the usual process, at comparable reading volume.
-- Personal experiment, self-assessment recorded before the start: average time per word decision, confidence (1–5), queue growth at normal reading volume. Baseline replaces the earlier separate two-week observation period because the author already uses another card app with no usefulness scoring.
-- Secondary signal: repeat encounters with learned vocabulary in real reading are recorded, but four weeks may be too short for a reliable conclusion.
-- Public beta, full list of questions: do participants recognise the problem of choosing useful vocabulary; do they go from checking a real word or phrase to the first card; do the assessments change their decisions; do they choose domains and find domain assessments useful; do they return to checking new vocabulary and to reviews in week two; do they find the assessments understandable and trustworthy; do they want to keep using the product after the beta. Thresholds are set after the personal experiment; willingness to pay is tested separately after repeat use is confirmed.
-- Risk moved out of the brief: the development domain is broad (documentation, interviews, team communication, individual stacks); wording may differ noticeably.
+- Сводка изменений: тезис расширен с «общий английский против разработки» до полезности в выбранных пользователем доменах; первый пользователь описан по задаче, а не по профессии; в V1 добавлен русский перевод; публичная beta переведена на широкую аудиторию с выбором домена из короткого списка.
+- Личный эксперимент, полный список измерений: число встреченных единиц, принятое решение, время решения, уверенность (1–5), созданные карточки, состояние очереди повторений.
+- Личный эксперимент, дополнительный критерий, вынесенный из брифа: очередь повторений растёт не быстрее, чем в записанной самооценке привычного процесса, при сопоставимом объёме чтения.
+- Личный эксперимент, базовая линия (решено 2026-10-04): одна неделя измерений перед началом, а не воспоминание автора: медианное время на решение по слову, время до сохранённой карточки, уверенность (1–5) в момент решения, прирост очереди при обычном объёме чтения. Одна неделя заменяет прежний двухнедельный период наблюдения, потому что автор уже использует другое приложение для карточек без оценки полезности; ретроспективная самооценка отвергнута как смещённая.
+- Вторичный сигнал: повторные встречи с выученной лексикой в реальном чтении фиксируются, но четыре недели могут быть слишком коротким сроком для надёжного вывода.
+- Публичная beta, полный список вопросов: узнают ли участники проблему выбора полезной лексики; переходят ли они от проверки реального слова или фразы к первой карточке; меняют ли оценки их решения; выбирают ли они домены и находят ли оценки по доменам полезными; возвращаются ли они к проверке новой лексики и к повторениям на второй неделе; понятны ли им оценки и доверяют ли они им; хотят ли они продолжать пользоваться продуктом после beta. Пороги устанавливаются после личного эксперимента; готовность платить проверяется отдельно, после подтверждения повторного использования.
+- Риск, вынесенный из брифа: домен разработки широк (документация, собеседования, командное общение, индивидуальные стеки); формулировки могут заметно различаться.
 
-## 2026-09-30 reconciliation decisions (KR-11)
+## Решения по согласованию 2026-09-30 (KR-11)
 
-- Cards and SRS: the brief wins over the PRD for V1 — simple user-built card, plain interval algorithm, no LLM card generation and no LLM difficulty. This reverses the PRD's FR-3, FR-7 and the decided KR-2 (SM-2 with LLM modifier) for V1; the PRD must be edited. LLM generation and difficulty stay possible later (stage after beta). Rationale: the thesis under test is the usefulness decision, and LLM features add cost and an undecided provider (KR-3) to the experiment.
-- Domain thesis: the brief keeps usefulness per domain; the PRD has no domain concept and must gain one (affects FR-1, KR-1, glossary, UJ-1).
-- Metrics: the brief's validation plan (personal experiment, then beta) stands; PRD metrics SM-1…SM-5 (week-1 retention 40%, lookup-to-save 25%, cache hit rates) are not brief gates and are revisited after the beta.
+- Карточки и SRS: для V1 PRD принимает тезис брифа — простая карточка, которую собирает пользователь, обычный интервальный алгоритм, без LLM-генерации карточек и без LLM-оценки сложности. Это отменило прежние FR-3, FR-7 и KR-2 из PRD (SM-2 с модификатором LLM); PRD отредактирован соответственно. LLM-генерация и оценка сложности остаются возможными позже (этап после beta). Обоснование: проверяемый тезис — это решение о полезности, а LLM-функции добавляют в эксперимент стоимость и нерешённый выбор провайдера (KR-3).
+- Тезис о доменах: бриф сохраняет полезность по доменам; в PRD добавлено понятие домена (FR-1, FR-11, KR-1, глоссарий, UJ-1).
+- Метрики: план проверки брифа (личный эксперимент, затем beta) остаётся в силе; метрики PRD SM-1…SM-5 (удержание на первой неделе 40%, переход от поиска к сохранению 25%, доли попаданий в кеш) не являются порогами брифа и пересматриваются после beta.
+
+## Решение об источнике 2026-10-04: сначала JEV, собственный датасет как запасной вариант
+
+- V1 использует только JEV System One для сигнала полезности, потому что интеграция намного проще, чем построение датасета. Решение обратимо. Запасной вариант — локальный датасет SQLite, который строит отдельный проект Lemma Atlas на собственных корпусах автора и который отдаёт бэкенд; лицензия сторонних датасетов не требуется. Тогда сигнал меняется с оценки модели на корпусную частоту, а значит, меняется и основание, которое видит пользователь. Пилот (KR-12) определяет, что запускает запасной вариант.
+- Правило позиционирования: не утверждать, что оценка полезности нова. Ранги частотности и метки уровней уже есть в других инструментах; заявляется связный путь (оценка до сохранения, по доменам, заканчивающаяся карточкой). См. PRD §1.0 и конкурентное исследование от 2026-10-01.

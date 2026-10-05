@@ -1,70 +1,72 @@
-# PRD Quality Review — prd-Lexickon-2026-09-26
+# Оценка качества PRD — Lexickon
 
-*Run 2026-09-28 against the updated `prd.md` (status: draft) and reconciled `addendum.md`. Supersedes the earlier review, which was written against the pre-proxy version. Inputs cross-checked: product brief + brief addendum (2026-09-20/21), technical research "JEV vs Laya" (2026-09-27).*
+## Общий вердикт
+PRD остаётся на уровне Good и ближе к верхней границе, чем в прошлом прогоне: все три средние находки закрыты по существу (измеренная неделя для EX-2, окно прохождения пилота с проверенной арифметикой, ключ JEV получен и срок назначен), а из десяти низких закрыто девять полностью или с мелким остатком. Правки в целом не внесли противоречий, ломающих документ. Под риском остаются: язык ввода определяет бэкенд по 1–6 словам без порога и без пути обхода, что может блокировать корректные запросы (особенно в домене разработки); §1.0 и приложение A по-разному описывают сравнение с LLM; пилот имеет неопределённые мелочи (рамка выборки, граничные размеры выборки). Критических и высоких проблем нет; одна средняя и одиннадцать низких.
 
-## Overall verdict
-The PRD is well structured, its FRs mostly carry testable bounds, and the open decisions are now honestly tracked in §1.1. But two upstream inputs contradict its core: the JEV research says the published JEV API does not return `frequency_per_million` at all (the whole of FR-1 rests on that field), and the product brief defines a different product (developer audience, two side-by-side usefulness assessments on a four-level scale, no LLM card builder). Until both are reconciled the PRD is not safe to feed UX, architecture or epics.
+### Статус находок прошлого прогона
+Прошлый прогон: 0 critical, 0 high, 3 medium, 10 low.
+1. **medium — срок и ключ пилота KR-12 — решено, остаток низкий.** Ключ получен (2026-10-04), срок «До 2026-10-27». Остаток: дата совпадает со сроком актуальности фактов исследования, а не с планом работ; нет действия при просрочке и нет дат для измеряемой недели и эксперимента (низкая находка ниже).
+2. **medium — база EX-2 — решено.** Теперь это «неделя измерений привычного процесса без Lexickon» с ручным журналом, «медианы этой недели… а не воспоминание», и правило решения требует записать базу до первого поиска. Остаток: границы измерения («решение» начинается и заканчивается где) не заданы; время до сохранённой карточки по-прежнему только «фиксировать» и не входит в правило решения (низкая).
+3. **medium — окно прохождения пилота — решено.** Приложение A.1 и KR-12 называют окно «от 80% до 1 − 20/N»; арифметика проверена: 100 слов — ровно 80%, 200 — 80–90%, 400 — 80–95%; поведение выше окна определено (провал, переключение по правилу выхода). Остаток: формулировка в KR-12 читается как немедленный провал при 200 слов выше 90%, хотя приложение допускает добор до 400 (низкая).
+4. **low — JTBD сильнее видения — решено.** Эмоциональная формулировка смягчена («быстрее понимать, стоит ли»), `basis` в приложении C помечен производным от `level` и `version`, журнал фиксирует, читал ли автор основание.
+5. **low — EX-5 против лимита — решено.** «При том же дневном лимите новых карточек (N по FR-4)». Остаток в низкой находке про базовую неделю: база снята без приложения, где лимита N не было.
+6. **low — контрметрики технические — решено.** Добавлен C-3 (слепое доверие метке, доля признанных нужными < 20%, раз в неделю). Остаток: C-3 не входит в правило решения (низкая).
+7. **low — сравнение с LLM — решено по сути, внесено расхождение.** Приложение A.1 теперь прямо: «сравнение с универсальной LLM не проверяется до beta… риск принят осознанно», но §1.0 по-прежнему пишет «необязательно» (низкая).
+8. **low — «нижняя планка» в A-3 — решено.** Слово убрано в A-3 и A.1: «приближённый эталон… но не потолок».
+9. **low — A-4 вне правила выхода — решено.** A-4 есть в KR-12 (≥95%) и в правиле выхода приложения A.1.
+10. **low — критерий для контекстного предложения — решено с остатком.** Появился критерий (не менее 10 пар, различие не менее чем в 7), но он не в KR-12 и не в правиле выхода (низкая).
+11. **low — порядок пилот и эксперимент — решено.** Приложение A: «пилот KR-12 идёт до архитектуры, личный эксперимент после; „повторить эксперимент“ относится только к переключению после первого эксперимента». Правило переключения теперь «решено 2026-10-04».
+12. **low — правило кеша перевода — решено с остатком.** FR-8: перевод закешированных записей не перезаписывается при дозапросе доменов; смена провайдера меняет `version`. Остаток в находках ниже (определение `version`).
+13. **low — UJ-1: пример и граничные случаи — решено.** «Confidence interval» в домене science; добавлены граничные случаи дневного лимита и запасного варианта KR-1.
+Прочее: опечатка в FR-1 (запятая) исправлена; язык определяет бэкенд (FR-15) — закрыто формально, но породило среднюю находку ниже; трассировка UJ для FR-13 и FR-14 закрыта (FR-14 через граничный случай UJ-2 с лейчем, FR-13 честно помечен «в путях не показана»), для FR-12 остаётся номинальной.
 
-## Decision-readiness — thin
-Decisions are now stated as decisions (§1.1: KR-2, KR-5, KR-9, KR-10 decided; KR-6 assumed). The proxy architecture is confirmed and consistent between PRD and addendum. What holds the dimension back is that the central decision, "frequency lookup returns `frequency_per_million`", was made against a contract nobody has verified, and the research (`research.md`, "Резюме решения") states the published contracts do not support it. KR-1 is listed as an open question, but the PRD body treats its answer as settled (FR-1 response fields, UJ-1 "Common / 120 per million").
-
-### Findings
-- **[critical]** Core metric contradicts the research (§4.1 FR-1, §2.3 UJ-1, §3 Glossary "Frequency Metric", §7 SM-2) — FR-1 requires `frequency_per_million` and `confidence` from JEV; the research concludes JEV `/v1/systemone` returns choice / ordinal score / probability over caller-defined levels, not a corpus count, and recommends a corpus-based frequency source with JEV or Laya as an auxiliary component. *Fix:* decide the frequency source (corpus data, JEV ordinal score, or a hybrid), then rewrite FR-1, UJ-1, the Glossary entry and the shared-cache semantics (FR-9) to match.
-- **[high]** KR-1 is open but downstream text presumes its answer (§1.1 KR-1 vs §4.1 FR-1 consequences) — *Fix:* until KR-1 is resolved, mark the FR-1 response fields as provisional or restate them at the level the source actually supports.
-
-## Substance over theater — adequate
-One persona (Maria) with concrete context; NFRs carry numbers (3 s p95, 100 ms write, 2 s LLM call); differentiation is stated. The persona, however, does not match the brief (see Strategic coherence), so it is content that is specific but possibly for the wrong user.
-
-### Findings
-- **[medium]** Vision is generic across language apps (§1) — "type, see, decide, learn" would fit any vocabulary app. The brief's real differentiator (transparent dual assessment: general English vs developer written English) is absent. *Fix:* restate the thesis after the brief reconciliation.
-
-## Strategic coherence — thin
-The PRD has an internal thesis (on-demand frequency + LLM-adaptive SRS replaces packs), but it diverges from the brief on nearly every axis:
-
-| | Brief (2026-09-20/21) | PRD (2026-09-26/28) |
-|---|---|---|
-| First user | Developer reading docs and technical articles | Maria, linguistics PhD student reading novels |
-| Core value | Two independent, explainable usefulness assessments (general English; developer written English), four levels, confidence, short explanation, no total score | One `frequency_per_million` number plus confidence |
-| Cards | Simple card, user may edit | LLM generates 1–3 cards with examples and audio hint; brief lists "умный конструктор карточек" as out of V1 |
-| Validation | 2-week baseline + 4-week personal experiment, then beta with 20–30 developers, explicit thresholds | Generic retention/save-rate metrics (SM-1…SM-5) with no experiment or beta plan |
-| Excluded | Android, extra domains, feed, role/stack specialization, voice AI | Same exclusions, but adds LLM difficulty scoring and Russian translation |
+## Decision-readiness — strong
+Решения оформлены как решения и несут цену: KR-1 «Решено» с пометкой «Обратимо», правило выхода пилота с тремя критериями (совпадение, ценность сверх частоты, стабильность A-4), правило решения после эксперимента с ветвями EX-2…EX-5 и оговоркой о смещении («испытуемый — автор и он же заказчик»). Окно прохождения пилота и последствия переключения на запасной вариант названы с числами, а риск «зачем платить за JEV, если можно спросить LLM» принят прямо, с датой решения. Ключ получен, поэтому главный блокер входа снят. Возражающий найдёт свои вопросы признанными; KR-13 честно выносит на свет отсутствие внешнего подтверждения проблемы.
 
 ### Findings
-- **[critical]** PRD and brief describe different products (§1, §2, §4, §7 vs brief "Первая версия", "Проверка идеи") — no document records a decision to drop the developer audience, the dual-domain assessment, or the personal-experiment validation plan. *Fix:* decide explicitly which document wins; either update the PRD to the brief's product or amend the brief and log why the thesis changed.
-- **[high]** Success Metrics do not test the brief's hypotheses (§7) — SM-1…SM-5 measure activity; the brief's criteria (decision time −30%, confidence +1, decision changed in ≥20% of cases) are missing. *Fix:* carry the brief's criteria into §7 or state why they were replaced.
-- **[medium]** Brief addendum flags unresolved planning items (phrase scoring, sense / part-of-speech handling, operational definition of usefulness) that the PRD neither resolves nor lists (§8). *Fix:* add them to §8 or defer them explicitly in §6.2.
+- **low** Срок KR-12 назначен, но это дата устаревания фактов, а не план работ (§1.1, строка KR-12: «До 2026-10-27 (срок актуальности фактов исследования, приложение §A), до архитектуры»; шапка таблицы: «Целевые даты назначаются, когда работа переходит к архитектуре» — устарела, KR-12 уже с датой). Нет действия на случай, если пилот не успеет к 2026-10-27 (факты перепроверять? пилот идти дальше?), и нет дат для измеряемой базовой недели и четырёхнедельного эксперимента, хотя они стоят между пилотом и beta. *Fix:* записать, что происходит после 2026-10-27 (перепроверка фактов, продление), и поставить ориентировочные даты базовой недели и начала эксперимента; поправить фразу в шапке таблицы.
 
-## Done-ness clarity — adequate
-Most FRs have bounded consequences (FR-1 timeouts and errors, FR-6 100 ms, FR-8 30 days / 500 entries). Weak spots are contradictions between journeys and FRs and dependence on unresolved KRs.
+## Substance over theater — strong
+Видение и отличие специфичны: §1.0 признаёт Language Reactor, LingQ, Migaku и называет вывод отрицательным свидетельством средней уверенности. Одна персона управляет решениями (домен, лимит, офлайн). НФТ с порогами (p95 3 с, 100 мс, TTL 30 дней, 500 записей, 100 вызовов в сутки). Эмоциональная JTBD теперь не обещает больше видения. Театра правки не добавили.
 
-### Findings
-- **[high]** LLM difficulty timing contradicts itself (§2.3 UJ-2 step 5 vs §4.2 FR-7) — UJ-2 says the LLM assesses difficulty for each rating plus history; FR-7 says difficulty is assessed once per card on first review and cached. *Fix:* pick one behavior and align both.
-- **[medium]** FR-2 "Translation appears within 500 ms" has no source (KR-4 open, KR-1 unresolved on whether JEV returns translation). *Fix:* keep the bound but mark it conditional on the provider.
-- **[medium]** Audio scope is inconsistent (§4.1 FR-3 "optional TTS audio hint", UJ-2 "audio play button", §5 "Audio is TTS hint only", §6.2 "Text-to-speech … NON-GOAL for MVP"). *Fix:* decide whether any audio ships in v1 and remove the rest.
-- **[low]** FR-5 VoiceOver spec omits the frequency badge (§4.2 FR-5). *Fix:* add it to the announced labels.
-
-## Scope honesty — adequate
-Non-goals are explicit and the Assumptions Index roundtrips. Open-items density is high for a green-light PRD: five open KRs (KR-1, 3, 4, 7, 8), six Open Questions in §8, and several `[NOTE FOR PM]` callouts, all owned by one person with target dates "at architecture".
+## Strategic coherence — adequate
+Тезис один и проверяемый: оценка полезности по домену до сохранения меняет решение автора. Цепочка «пилот, затем измеренная база, затем эксперимент, затем правило решения, затем beta» логична; EX-5 с тем же лимитом N защищает от смешения эффектов; контрметрики теперь покрывают и слепое доверие метке (C-3). Остаются мелкие швы между метриками и правилом решения.
 
 ### Findings
-- **[medium]** Open Questions in §8 predate the KR table and partly overlap it (§8 items 1, 2 vs KR-1, KR-6) — *Fix:* merge or cross-reference so each open item lives in one place.
-- **[low]** Target dates for open KRs are "At architecture" rather than dates (§1.1). *Fix:* acceptable for now; set dates when architecture starts.
+- **low** База EX-2 и EX-5 измерена, но границы измерения и условия снятия не определены (§6, «Личный эксперимент»: «время на решение по слову», «прирост очереди повторений при обычном объёме чтения»; EX-5: «при том же дневном лимите новых карточек (N по FR-4)»). Не сказано, где начинается и где заканчивается «решение» без инструмента (ввод в словарь входит?), а база снята без приложения, где дневного лимита введения новых карточек не было, поэтому «тот же лимит» в базе нечем обеспечить. Время до сохранённой карточки (в исследовании около 10 минут) по-прежнему лишь «фиксируется» и не входит в правило решения. *Fix:* определить события начала и конца решения; записать, как в базовой неделе моделируется N (например, считать прирост очереди только по первым N карточкам в день); включить время до сохранённой карточки в EX-2 или в условие beta.
+- **low** Контрметрики не входят в правило решения (§6 C-1…C-3 против «Правило решения после эксперимента»). EX-3 («оценка меняет решение минимум в 20%») может быть выполнен слепым доверием метке; C-3 как раз это ловит, но что делать при его нарушении, не сказано. C-3 судит тот же автор, что и EX-3, на тех же словах. *Fix:* добавить ветку: EX-3 выполнен, а C-3 нарушен → не считать EX-3 подтверждением, разобрать причину до beta.
+- **low** JTBD о контексте обещает «иногда без сети» (§2.1: «пока я читаю бумажную книгу, еду в метро… иногда без сети»), а V1 без сети умеет только показывать закешированные поиски и создавать карточку вручную (FR-8, FR-10, §2.2); новое слово без сети оценить нельзя. A-7 проверяет лишь трение набора, а не сетевое поведение. *Fix:* в JTBD или в A-7 прямо записать, что сценарий без сети в V1 ограничен (оценки для новых слов недоступны) и как эксперимент это измеряет (доля поисков без сети).
+- **low** §1.0 и приложение A.1 расходятся по статусу сравнения с LLM (§1.0: «сравнение с запросом к LLM необязательно»; приложение A.1, «Прочие проверки»: «не проверяется до beta: риск принят осознанно»). Принятый риск не имеет дома в beta: §6 beta ограничивается «вопросы и пороги следуют брифу». *Fix:* привести §1.0 к формулировке приложения («не проверяется до beta») и добавить в вопросы beta проверку «JEV против простого запроса к LLM».
 
-## Downstream usability — adequate
-Glossary present, FR-1…FR-10 contiguous, UJ-1/UJ-2 have a named protagonist, addendum now consistent with the PRD.
-
-### Findings
-- **[medium]** Glossary drifts from the brief's vocabulary (§3) — the brief uses "полезность" / usefulness levels; the PRD uses "Frequency Metric". Whatever the reconciliation decides, one term must be used across PRD, UX and stories. *Fix:* settle the term with the frequency-source decision.
-
-## Shape fit — adequate
-Consumer product with two journeys: UJs are load-bearing, shape is right. Brownfield aspects (existing backend and auth) live in the addendum (§D–E), which is acceptable; the PRD body only notes "Auth: existing".
+## Done-ness clarity — strong
+Следствия FR проверяемы: FR-4 (порядок, лимиты, пустое состояние), FR-6 (100 мс), FR-8 (ключ, TTL, LRU), FR-15 (6 слов, 80 и 300 символов), FR-17 (карта кодов, два вида 429). Пилот KR-12 — проверяемая процедура с окном, добором выборки, фиксированными диапазонами и новой выборкой после переписывания. Слабое место новое и локальное: определение языка в FR-15.
 
 ### Findings
-- **[low]** Brownfield baseline is thin in the body (§6.1 "Auth … (existing)") — KR-7 asks what auth already has. *Fix:* inventory the backend's current auth in the same pass that closes KR-7.
+- **medium** Определение языка бэкендом по 1–6 словам без порога и без обхода может отклонять корректные запросы (FR-15: «Язык ввода определяет бэкенд до вызова JEV. Если он не английский (`language_detected`), приложение сообщает „Поддерживается только английский“; такой запрос не расходует лимит поисков»). Для коротких терминов и терминов разработки («kubectl», «async/await», «confidence interval» в идентификаторах и слитных написаниях) автоматическое определение языка ненадёжно, а ложный отказ блокирует основной сценарий; способа продолжить нет, ложные отказы не покрыты метриками, механизм определения и его провайдер не названы (KR-4 касается только перевода). Не определено и то, что именно возвращает бэкенд для неанглийского ввода: 200 с пустым списком оценок, 400 или отдельный код (FR-17 и приложение D перечисляют только 400, 401, 429, 5xx), хотя приложение узнаёт об отказе из `language_detected`. *Fix:* назвать способ определения и порог (при неуверенном определении пропускать запрос к JEV, а не отклонять); задать форму ответа для неанглийского ввода в FR-1/FR-17 и в приложении D; считать в эксперименте число ложных отказов.
+- **low** Окно прохождения пилота сформулировано двусмысленно для разных размеров выборки (KR-12: «для 200 слов 80–90%, для 400 слов 80–95%; выше окна — провал»; приложение A.1, «Метод»: «100–200 слов на домен»; «Окно прохождения»: «Для 100 слов окно — ровно 80%»). Читатель KR-12 решит, что 92% на 200 словах — провал, хотя по приложению при менее чем 20 расхождениях выборка добирается до 400 и окно расширяется; при 100 словах окно вырождается в одну точку, и метод всё равно допускает 100. *Fix:* записать в KR-12 порядок «200 слов → если расхождений меньше 20, добор до 400 → оценка по окну 400»; поднять нижнюю границу выборки до 200.
+- **low** Рамка выборки пилота не определена (приложение A.1, «Метод», п. 1: «Взять 100–200 отдельных слов на домен… из реальных материалов для чтения»). Если брать все слова текста, подавляющее большинство будет высокочастотным, JEV будет согласен с частотой, расхождений наберётся меньше 20 и пилот «провалится» из-за выборки, а не из-за JEV; если брать только незнакомые автору слова, это ближе к реальному потоку, но надо сказать об этом. *Fix:* записать рамку (слова, которые автор отметил как незнакомые) и при необходимости стратификацию по частотным диапазонам.
+- **low** Часть «Прочих проверок» пилота не имеет последствий и не входит в правило выхода (приложение A.1: «Задержка p95» без порога при FR-1 «3 с»; «порог уверенности»; проверка контекстного предложения «не менее чем в 7 парах» помечена «рабочие значения», а правило выхода и KR-12 её не называют). Неясно, провал контекстной проверки — это провал пилота или сигнал для переписывания описаний. *Fix:* для каждой «прочей проверки» записать порог и последствие (блокирует/информирует) и перенести контекстную проверку в KR-12, если она блокирует.
+
+## Scope honesty — strong
+Не-цели полные и с причинами (§5.2), `[NON-GOAL]`, `[NOTE FOR PM]`, `[DEFERRED]` стоят на реальных развилках. Правило переключения теперь «решено 2026-10-04» и согласовано между §1.0, EX-1 и приложением A; вопрос про запасной вариант закрыт и убран из §7. KR-13 (острота проблемы без внешних данных) честно отнесён к осознанно отложенным. Открытых пунктов столько, сколько соответствует стадии «до архитектуры».
+
+### Findings
+- **low** Критерий «по каждому домену» остался помеченным как предложение и не отражён в PRD (приложение A.1, «Критерии прохождения»: «провал в любом домене — провал пилота (предложено 2026-10-04)»; KR-12 и A-3 в PRD говорят о проценте слов без деления по доменам). Остальные критерии пилота «решено 2026-10-04». *Fix:* подтвердить или снять правило и добавить «по каждому домену» в KR-12 и в проверку A-3.
+
+## Downstream usability — strong
+Глоссарий покрывает уверенность, основание, источник полезности, обе «оценки», порог при null; `nextReviewDate` единообразен; опечатка FR-1 исправлена; приложения C и D синхронны с FR-1 и FR-8 (`version`, `estimate`, `translation`, `confidence: Double?`). Остаются определения и трассировка.
+
+### Findings
+- **low** Определение `version` в FR-8 расходится с остальными (FR-8: «смена провайдера перевода (KR-4) меняет `version`»; FR-1, приложение C, приложение D: версия модели JEV или источника «вместе с версией описаний уровней»). Если провайдер перевода входит в `version`, смена перевода сбрасывает все оценки, которые не изменились; в глоссарии `version` не определена. Кроме того, при дозапросе домена новая запись получает свой перевод (приложение C: «дублируется в записях»), а правило «не перезаписывается» относится только к старым записям, так что для одного термина офлайн могут лежать разные переводы, и не указано, какой показывается. *Fix:* либо хранить перевод по ключу термина и версии провайдера, либо записать в FR-8, что новая запись наследует уже сохранённый перевод; определить `version` в глоссарии.
+- **low** Трассировка FR-12 и FR-16 к UJ номинальная (FR-12: «Реализует UJ-2 (напоминание, с которого начинается сессия)», но в UJ-2 нет напоминания: «Та же Мария, за 15 минут до сна, к повторению подошли 10 карточек»; FR-16 «Реализует UJ-1», но «Уже в вашей колоде» нет ни в пути, ни в граничных случаях UJ-1, как нет и валидации ввода FR-15). *Fix:* добавить в UJ-2 исходное состояние «пришло напоминание» и в граничные случаи UJ-1 — «термин уже в колоде» и «слишком длинный ввод».
+
+## Shape fit — strong
+Потребительский мобильный продукт, две UJ с именованной протагонисткой, вариант личного эксперимента внутри UJ-1, лёгкая оговорка «предварительно» для JSON-полей в FR-1. UJ-1 теперь использует домен Марии (science) и покрывает ключевые состояния отказа. Форма подходит; под беспокойство нет оснований.
 
 ## Mechanical notes
-- Assumptions Index: inline `[ASSUMPTION]` tags (FR-1 ×2, FR-7 ×1) all indexed; revised entries for #5, #6, #7 and KR-6 added.
-- ID continuity: FR-1…FR-10, UJ-1/2, SM-1…SM-5, SM-C1/C2, KR-1…KR-10 contiguous; no unresolved cross-references found.
-- Naming: "Jeff" fully replaced by JEV in PRD and addendum; addendum enum `.remote` replaces `.jeff`.
-- §9 lists the memlog assumptions as "Memlog assumption #n"; the numbering refers to an internal log, not to a document the reader can open. Consider renaming to "Assumption A-n".
-- The deletion of `epics.md` and `stage-7-stories.md` leaves no reference in the PRD; nothing to fix.
+- **ID continuity:** KR-1…KR-13, FR-1…FR-17 (FR-9 заглушка намеренно), EX-1…EX-5, C-1…C-3 непрерывны и уникальны; §7 теперь шесть вопросов, внешние ссылки на него (приложение G «§7, п. 4» — телеметрия) разрешаются. «SM-1…SM-5» в KR-11 остаются исторической ссылкой. Строка KR-12 по-прежнему стоит перед KR-3 в таблице §1.1 (на читаемость влияет слабо).
+- **Assumptions roundtrip:** A-1…A-10 есть в тексте и в индексе. Расхождения мелкие: теги A-1 и A-2 стоят в примечаниях FR-3, а индекс отсылает к FR-1 и FR-2; тег A-4 стоит на параметрах кеша в FR-8 и не поясняет, что проверяется стабильность JEV; A-5 стоит дважды (FR-4, EX-5), в индексе указан только FR-4; тег A-3 в строке KR-12 теперь стоит непосредственно перед фактом «Ключ JEV получен» и читается как допущение о ключе, а не об эталоне; проверка A-3 в индексе (80% и 70%) не называет верхнюю границу окна и минимум в 20 расхождений.
+- **Согласованность KR-12 и приложения A.1:** критерии KR-12 (80%, 70% при не менее 20 словах, 95% стабильности, окно) совпадают с приложением; расхождение только в «по каждому домену» (см. Scope honesty) и в контекстной проверке (см. Done-ness).
+- **Глоссарий:** «самооценка» из §6 убрана, определение «Уверенность» теперь учитывает null; в приложении E остаются `Frequency*` (оговорено).
+- **Порядок «пилот, затем эксперимент»:** указан только в приложении A; §0, §1 и §6 о нём молчат, хотя видение говорит о личном эксперименте как о первом шаге. Однострочная отсылка в §6 избавила бы от расхождения.
+- **Обязательные разделы:** присутствуют для заявленных ставок и типа продукта.

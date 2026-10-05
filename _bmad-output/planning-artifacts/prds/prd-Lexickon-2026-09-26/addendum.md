@@ -1,259 +1,246 @@
-# Lexickon PRD Addendum
-*Supplemental depth for downstream workflows (architecture, UX, stories). Not required for PRD decision-readiness.*
-
-*Reconciled 2026-09-28 with the PRD: the iOS client reaches JEV only through the Lexickon backend proxy (client never holds the IP key); deployment target is iOS 18; brand name is JEV.*
+# Дополнение к PRD Lexickon
+*Подробности для архитектуры, UX и историй. Не нужны для принятия PRD. Источник оценки полезности — JEV через прокси на бэкенде Lexickon (ключ у клиента не хранится); платформа — iOS 18.*
 
 ---
 
-## A. JEV Upstream Contract Sketch (INVALIDATED 2026-09-28: not derived from JEV's real API; kept only as a record, do not design against it, see KR-1)
+## A. Решение KR-1: источник полезности
 
-*The published JEV API is System One (`/v1/systemone`: choice / ordinal score / probability over caller-defined levels); see `research/technical-jev-vs-laya-for-english-word-frequency-2026-09-27/research.md`. The request and response below were an assumption and do not describe a real endpoint.*
+**Решение.** JEV System One — источник для V1. Бэкенд делает один вызов `score` на домен (общий английский плюс каждый выбранный домен) с пятью уровнями, заданными вызывающей стороной: очень высокая, высокая, средняя, ограниченная, низкая полезность. Уровень определяется по оценке (score); уверенность — по возвращённому распределению вероятностей; основание — фиксированное описание уровня; результаты помечаются как оценка модели. Ниже порога уверенности уровень равен `insufficient_data`. Корпусная частота может добавляться как свидетельство для общего английского из датасетов проекта Lemma Atlas.
 
-### Request (backend → JEV)
-```http
-POST /v1/frequency
-Authorization: Bearer <IP_KEY>   # server-side only
-Content-Type: application/json
+**Обратимость.** Источник находится за эндпоинтом поиска на бэкенде. Запасной вариант — датасет, который строит проект Lemma Atlas вне этого репозитория на собственных корпусах автора, без сторонних лицензий. Датасет хранится и читается на бэкенде за тем же эндпоинтом (локальное использование на устройстве слишком дорого для первых версий), приложение его не видит. Сигнал меняется с оценки модели на корпусную частоту, поэтому меняется и основание. Деградация: только отдельные слова в доменах с корпусом; фразы и прочие домены — `insufficient_data`; `confidence` может быть null. Это снижение объёма V1, а не равноценная замена (FR-1).
 
-{
-  "text": "transformer architecture",
-  "language": "en",           // optional; auto-detect if omitted
-  "context": "general"        // optional: "general" | "academic" | "technical" | "social"
-}
-```
+**Что происходит при переключении** (решено 2026-10-04). Переключение — это не техническая подмена, а повод пересмотреть тезис: (1) отличие из §1.0 при запасном варианте не сохраняется, потому что частотный ранг уже есть у Language Reactor, а оценка по домену с уверенностью остаётся только для слов разработки; (2) EX-1 сужается до слов (без фраз), а домены beta по FR-11 ограничиваются теми, для которых у Lemma Atlas есть корпус; (3) EX-3 после переключения измеряет влияние метки частоты, поэтому личный эксперимент повторяется на слове разработки (не менее 50 слов) и решение о beta принимается заново; (4) если EX-3 при этом ниже 20%, проект не запускает beta без нового источника: тезис «оценка по домену до сохранения» не подтверждён ни моделью, ни частотой. Порядок: пилот KR-12 идёт до архитектуры, личный эксперимент после; «повторить эксперимент» относится только к переключению, случившемуся после первого эксперимента.
 
-### Response (success)
-```json
-{
-  "frequency_per_million": 12.4,
-  "confidence": 0.87,
-  "language_detected": "en",
-  "tokenization": ["transformer", "architecture"],
-  "metadata": {
-    "model_version": "jev-2026-09",
-    "corpus": "common-crawl-2024",
-    "request_id": "req_abc123"
-  }
-}
-```
+**Почему.** Проверяемый тезис — решение о полезности, а примитив JEV (выбор / порядковая оценка по уровням, заданным вызывающей стороной) напрямую соответствует пятиуровневой шкале. Он поддерживает фразы и любой домен через переписывание описаний уровней, без создания новых данных до личного эксперимента. Исследование 2026-09-27 не нашло опубликованного контракта корпусной частотности ни у JEV, ни у Laya, поэтому сигнал честен только при пометке «оценка».
 
-### Response (error)
-```json
-{
-  "error": {
-    "code": "RATE_LIMITED",
-    "message": "Rate limit exceeded. Retry after 60s.",
-    "retry_after_seconds": 60
-  }
-}
-```
+**Факты для повторной проверки (из исследования, до 2026-10-27).** Эндпоинт `POST /v1/systemone`; до десяти уровней; цена около $0.042 за 1M входных токенов; 1200 запросов в минуту; рекомендуется закрепить версию модели; дообучение клиентом не документировано; JEV не объясняет свои ответы текстом.
 
-### Open Items for Architecture
-- [ ] Confirm endpoint path, auth header name (`Authorization: Bearer` vs `X-IP-Key`)
-- [ ] Rate limits: requests/minute, burst allowance
-- [ ] Supported languages list
-- [ ] Whether `context` parameter affects output
-- [ ] SLA: latency p50/p95/p99, availability target
-- [ ] IP key rotation procedure
-- [ ] Whether JEV returns translation (if yes, can drop separate translation service)
+**Заметки по проектированию для архитектуры.**
+- Ключ локального кеша (общего кеша в V1 нет, KR-9): нормализованный термин, домен, версия, хеш контекста (если задан). Версию модели закрепить, чтобы закешированные уровни оставались сопоставимыми; запись с другой версией отбрасывается.
+- Стоимость растёт с числом доменов в одном поиске; каждый домен засчитывается в лимит поисков на пользователя (KR-6).
+- Описания уровней по доменам — конфигурация, версионируется вместе с версией модели.
+- Пилот (KR-12) фиксирует порог «данных недостаточно» и проверяет стабильность при повторных вызовах.
+
+**Отклонено или отложено.** Laya: слабее на независимом бенчмарке с одинаковым входом (0.69 против 0.91, это не тест частотности), нагрузка локальной эксплуатации и закрепления версии. Сначала корпус: требует собственного датасета до первого эксперимента; сохранён как запасной вариант (см. «Обратимость»). Основание, написанное LLM: функции LLM вне V1.
+
+### A.1 План пилота KR-12 (JEV против датасета Lemma Atlas)
+
+**Эталон.** Датасет Lemma Atlas даёт частотность слов на миллион токенов. Он принимается как точка истины для отдельных слов, для общего английского и для домена разработки (корпус по разработке существует). Допущение A-3, принятое автором: для этих слов частотность — приближённый эталон полезности, но не потолок (JEV вправе и должен расходиться с ней осмысленно, см. «Ценность сверх частоты»). В датасете пока нет фраз, поэтому фразы вне объёма пилота, а их оценка в V1 остаётся непроверенной (ручная выборка автора не менее 30 фраз, см. «Что пилот не покрывает»).
+
+**Метод.**
+1. Взять 100–200 отдельных слов на домен (общий английский и разработка) из реальных материалов для чтения.
+2. Преобразовать каждую частотность в одну из пяти точек шкалы полезности по фиксированным диапазонам, заданным по датасету до запуска: диапазоны записывает автор в это приложение до первого вызова JEV и не меняет после; набор диапазонов отдельный для каждого домена, по его корпусу.
+3. Отправить те же слова в JEV и сопоставить возвращённый уровень с той же шкалой.
+4. Сравнить слово за словом.
+
+**Критерии прохождения.**
+- По слову: уровень JEV должен совпасть с точкой датасета на пятиточечной шкале один в один. Если датасет даёт 4, JEV должен дать 4.
+- В целом: не менее 80% слов с точным совпадением (решено 2026-10-04). Оба критерия считаются отдельно по каждому домену пилота (общий английский, разработка); провал в любом домене — провал пилота (предложено 2026-10-04).
+- Слова, где уровни не совпали, разбираются вручную. Они показывают, ошибся ли JEV или уловил то, чего не отражает частотность (например, редкое, но нужное слово), и пополняют описания уровней.
+- **Ценность сверх частоты** (решено 2026-10-04). Совпадение с частотой доказывает только, что JEV не хуже частотного словаря; оправдать вызов внешнего сервиса может лишь то, что он добавляет. Поэтому из слов с расхождением берётся выборка не менее 20 слов. Если расхождений меньше 20, набор слов увеличивается до 400 на домен; если и тогда их меньше 20, JEV почти не отличается от частоты и ничего не добавляет, что приравнивается к провалу критерия. Автор вслепую, не видя, какая оценка чья, выбирает для каждого слова одну из трёх позиций: оценка JEV точнее, оценка по частоте точнее, равноценно. «Равноценно» входит в знаменатель. JEV проходит критерий, если его оценку выбрали не менее чем в 70% слов выборки. Иначе источник переключается на Lemma Atlas по правилу выхода: платить за внешний сервис, который не даёт ничего сверх частоты, нет смысла. Критерий проверяет суждение одного автора на небольшой выборке, поэтому это сигнал, а не статистическое доказательство.
+
+**Окно прохождения** (решено 2026-10-04). Два критерия вместе задают окно по доле совпадения уровня с частотой: нижняя граница 80%, верхняя — доля, при которой ещё остаётся 20 расхождений для выборки ценности: 1 − 20/N, где N — число слов домена. Для 100 слов окно — ровно 80%, для 200 — 80–90%, для 400 — 80–95%. Совпадение выше окна означает, что JEV почти не отличается от частоты и ничего не добавляет (после добора до 400 слов): это провал критерия «ценности сверх частоты» и повод для переключения на Lemma Atlas по правилу выхода. Размер набора поэтому выбирается заранее: по умолчанию 200 слов на домен (окно 80–90%), добор до 400 только если расхождений меньше 20.
+
+**Шкала.** Пять точек — в продукте так же, как и в пилоте (решено 2026-10-04): очень высокая, высокая, средняя, ограниченная, низкая. JEV поддерживает до десяти уровней, поэтому вызывается с пятью описаниями уровней.
+
+**Прочие проверки.** Задержка p95; стабильность при повторных вызовах (не менее 95% повторов дают тот же уровень, иначе провал, допущение A-4); порог уверенности для «данных недостаточно»; обработка значений слова через контекстное предложение (не менее 10 пар многозначных слов с разными контекстами, уровни различаются не менее чем в 7 парах; рабочие значения); сравнение с универсальной LLM не проверяется до beta: риск «зачем платить за JEV, если можно спросить LLM» принят осознанно (KR-3 отложен, решено 2026-10-04).
+
+**Что пилот не покрывает.** Фразы и домены, кроме разработки (в том числе «science», «бизнес», «медицина» для beta): эталона для них нет. Оценки фраз проверяет автор на ручной выборке (не менее 30 фраз) в личном эксперименте; для доменов beta эталон появляется, когда Lemma Atlas получит соответствующие корпуса. До этого оценки таких доменов остаются непроверенными (допущение A-1).
+
+**Правило выхода.** Если любой из критериев прохождения (совпадение с частотой, ценность сверх частоты или стабильность при повторных вызовах, A-4) не выполнен после одного раунда переписывания описаний уровней (повторный прогон идёт на новой выборке слов, чтобы описания не подгонялись под прежнюю), источник переключается на датасет Lemma Atlas (KR-1).
 
 ---
 
-## B. SRS Algorithm Detail (for Architecture/Stories)
+## B. Детали алгоритма SRS (для архитектуры и историй)
 
-*Decision (KR-2): SM-2 is the base algorithm; the LLM difficulty score modulates the interval; fallback difficulty 0.5; all parameters come from remote config. The values below are the strawman starting point for those parameters.*
+*V1: простой SM-2 без модификатора сложности от LLM (KR-2, KR-11). Значения ниже — рабочие; параметры поступают из удалённой конфигурации.*
 
-### Current Formula (Strawman)
-```
-interval_days = base_interval * ease_factor^(repetition - 1) * difficulty_multiplier
+### Расписание
+- Первое успешное повторение — через 1 день, второе — через 6 дней; далее `интервал = предыдущий интервал * коэффициент лёгкости`, с округлением вверх до целых дней.
+- Коэффициент лёгкости: начальное значение 2.3, диапазон [1.3, 2.5], обновляется после каждой оценки.
+- Unknown — провал: счётчик повторений обнуляется, интервал возвращается к 1 дню, `lapses` растёт на 1.
+- Poor — не провал: интервал не растёт, счётчик повторений не меняется.
+- Good и Excellent — успех: счётчик повторений растёт, интервал считается по формуле.
 
-where:
-- base_interval = 1 (first review), 6 (second), then exponential
-- ease_factor ∈ [1.3, 2.5] per card, updated per rating
-- difficulty_multiplier = 1 + (difficulty_score - 0.5) * 0.5  // ∈ [0.75, 1.25]
-- difficulty_score ∈ [0.0, 1.0] from LLM assessment
-```
-
-### Rating → Ease Factor Delta
-| Rating | Ease Factor Delta |
-|--------|-------------------|
+### Оценка → изменение коэффициента лёгкости
+| Оценка | Изменение коэффициента лёгкости |
+|--------|---------------------------------|
 | Unknown | -0.2 |
 | Poor | -0.05 |
 | Good | 0.0 |
 | Excellent | +0.05 |
 
-### LLM Difficulty Prompt (Draft)
-```
-You are assessing the intrinsic memorability of a flashcard for a Russian-speaking English learner.
-
-Card:
-- Target: "transformer architecture"
-- Translation: "трансформерная архитектура"
-- Example 1: "The transformer architecture revolutionized NLP."
-- Example 2: "BERT uses a transformer architecture with bidirectional attention."
-- User history: 2 reviews, ratings: Good, Excellent
-
-Output JSON only:
-{
-  "difficulty_score": 0.35,
-  "reasoning": "Technical term, but transparent morphology ('transformer' + 'architecture'). High cognate potential for Russian speaker. Examples provide clear context."
-}
-```
-
-### Leech Handling
-- `lapsed_count > 3` → card flagged as "Leeched"
-- Leeched cards: interval reset to 1 day, ease_factor = 1.3, shown at session end
-- User can "Suspend" leeched cards (move to suspended deck)
+### Обработка лейчей
+- `lapses > 3` → карточка помечается как «Лейч»
+- Лейчи: интервал сбрасывается до 1 дня, коэффициент лёгкости = 1.3 (один раз, в момент пометки), показываются в конце сессии; `lapses` продолжает считаться
+- Пользователь может отложить лейч (перенести в колоду отложенных); при возврате из отложенных `lapses` обнуляется, и карточка перестаёт быть лейчем
 
 ---
 
-## C. Data Model (for Architecture/Stories)
+## C. Модель данных (для архитектуры и историй)
 
 ### Flashcard (SwiftData / SQLite)
 ```swift
 struct Flashcard {
   let id: UUID
-  var front: String              // target term/phrase
+  var front: String              // целевой термин/фраза
+  var normalizedFront: String    // front в нижнем регистре, без лишних пробелов; индексируется для проверки «Уже в вашей колоде» (FR-16)
   var backTranslation: String
   var exampleSentences: [String] // 1-2
-  var frequencyPerMillion: Double?  // nil for manual cards
-  var confidence: Double?        // from JEV
+  var assessments: [DomainAssessment]?  // снимок оценок при создании; nil для карточек, созданных вручную
+  var sourceQuery: String?       // исходный запрос; nil для карточек, созданных вручную
   var source: Source             // .lookup | .manual
   var createdAt: Date
   var srs: SRSMetadata
 }
 
+struct DomainAssessment {
+  var domain: String
+  var level: Level               // very_high | high | medium | limited | low | insufficient_data
+  var confidence: Double?        // nil только при запасном варианте KR-1 (частота без собственной уверенности); UI скрывает строку уверенности
+  var basis: String              // производное от level и version (при JEV — фиксированный текст уровня); при запасном варианте — «частота N на млн, корпус, версия»
+  var estimate: Bool             // true: оценка модели (JEV); false: корпусный подсчёт (запасной вариант)
+  var version: String            // версия источника на момент снимка: карточки до и после смены источника различимы
+}
+
 struct SRSMetadata {
-  var intervalDays: Int          // 0 = new
-  var easeFactor: Double         // 1.3 - 2.5
-  var repetitions: Int           // successful reviews
-  var lapses: Int                // times rated Unknown/Poor
+  var intervalDays: Int          // 0 = новая
+  var easeFactor: Double         // 1.3 - 2.5, начальное 2.3
+  var repetitions: Int           // успешные повторения
+  var lapses: Int                // сколько раз оценено как Unknown
+  var isNew: Bool                // true до первой оценки
+  var firstShownAt: Date?        // когда впервые введена в сессии; учитывается в дневном лимите новых карточек
   var nextReviewDate: Date
-  var difficultyScore: Double?   // LLM-assessed, cached
-  var lastRating: Rating?        // for streak tracking
-  var difficultyAssessedAt: Date?
+  var lastRating: Rating?        // для подсчёта серий
 }
 ```
 
-### Lookup Cache
+### Кеш поиска
 ```swift
-struct CachedLookup {
-  let queryText: String          // normalized (lowercased, trimmed)
-  let response: FrequencyResponse   // backend response, see PRD FR-1
+struct CachedAssessment {
+  let normalizedTerm: String     // нормализованный (нижний регистр, без пробелов по краям)
+  let domain: String
+  let contextHash: String?       // nil, если контекст не задан; сам контекст не хранится
+  let version: String            // версия модели JEV вместе с версией описаний уровней
+  let assessment: DomainAssessment
+  let translation: String?       // перевод термина из того же ответа (общий для всех доменов запроса, дублируется в записях), чтобы офлайн-попадание в кеш не теряло перевод (FR-2, FR-3)
   let cachedAt: Date
-  let expiresAt: Date            // cachedAt + 30 days
+  let expiresAt: Date            // cachedAt + 30 дней
 }
 ```
 
 ---
 
-## D. API Contract Changes (Backend)
+## D. Изменения контракта API (бэкенд)
 
-### Remove (from current `api_contract.md`)
+*Предварительно, до KR-8 и KR-12. Файл `backend/docs/api_contract.md` обновляется вместе с реализацией.*
+
+### Удалить (из текущего `api_contract.md`)
 - `GET /datasets`
 - `GET /datasets/{dataset_key}`
 - `GET /datasets/manifest`
 - `POST /datasets/sync`
 - `POST /datasets/versions/{version_id}/download-url`
-- All Dataset/Version models and storage adapter
+- Все модели Dataset/Version и адаптер хранилища
 
-### Add
+### Добавить
 ```http
-GET /api/v1/frequency?q=<text>[&language=<ISO 639-1>]
-Authorization: Bearer <user session token>   # user token vs anonymous: open, KR-8
+POST /api/v1/lookup
+Authorization: Bearer <user session token>   # токен пользователя; анонимного доступа нет
+Content-Type: application/json
+
+{
+  "term": "transformer architecture",
+  "context": "The transformer architecture revolutionized NLP.",   // необязательно, до 300 символов
+  "domains": ["general", "development"]
+}
 ```
+Метод POST, потому что контекстное предложение — пользовательский текст и не должно попадать в URL.
 
-The backend checks the shared cache (KR-9), calls JEV (Section A) with the server-side IP key on a miss, enforces the per-user lookup cap (KR-6), and returns the fields listed in PRD FR-1 (`frequency_per_million`, `confidence`, `language_detected`, `tokenization`, `cache_hit`, `cache_source`). Path, query parameters, cache headers and auth are finalized under KR-8.
+Бэкенд проверяет вход (термин до 6 слов и 80 символов, контекст до 300 символов), вызывает JEV с серверным ключом по одному вызову на домен, применяет лимит поисков на пользователя (KR-6) и возвращает поля из PRD FR-1: список оценок по доменам (`domain`, `level`, `confidence` — число или null при запасном варианте, `basis`, `estimate`), `version` (версия источника вместе с версией описаний уровней; ключ локального кеша, FR-8), `language_detected`, `translation` (предварительное поле, провайдер определяется в KR-4). `estimate` относится к каждой оценке, а не к ответу целиком, чтобы источник можно было сменить, не ломая сохранённые снимки. Лимит поисков (KR-6) считает каждый оцениваемый домен, включая общий английский, за один вызов.
 
-### User Settings Changes
-Remove: `selected_domains`, `offline_mode`, `sync_over_cellular`
-Keep: `preferred_language` (for UI locale), add `study_reminder_time`, `max_cards_per_session`
+Ошибки: 400 (недопустимый или слишком длинный ввод), 401 (токен), 422 (`unsupported_language`: язык уверенно определён как не английский, до вызова JEV; лимит не расходуется), 429 (лимит), 5xx (сервис недоступен). Путь, параметры и авторизацию окончательно определяет KR-8.
+
+### Изменения пользовательских настроек
+Удалить: `selected_domains`, `offline_mode`, `sync_over_cellular`
+Оставить: `preferred_language` (для локали интерфейса), добавить `domains` (выбранные домены, FR-11), `study_reminder_time`, `max_cards_per_session`, `new_cards_per_day` (дневной лимит новых карточек, по умолчанию 10, удалённая конфигурация)
 
 ---
 
-## E. iOS Architecture Impact (for Architecture/Stories)
+## E. Влияние на архитектуру iOS (для архитектуры и историй)
 
-### Domain Layer Changes
-**Remove:**
+*Имена `Frequency*` ниже — прежние названия в кодовой базе; при реализации переименовать в `Usefulness*` вместе с интерфейсом («индикатор полезности»).*
+
+### Изменения слоя Domain
+**Удалить:**
 - `Dataset`, `DatasetManifest`, `DatasetKey`, `DatasetDomain`, `DatasetVersion`, `DatasetVersionID`, `DatasetCompression`, `AccessPlan`, `DatasetStatus`, `DatasetAvailability`, `DatasetCatalogState`, `InstalledDataset`
-- `FrequencyQuery.datasetKey` → replace with `language: LanguageCode?`
+- `FrequencyQuery.datasetKey` → заменить на `language: LanguageCode?`
 - `FrequencyRepository.lookup(query:)` → `lookup(text: String, language: LanguageCode?)`
 - `DatasetCatalogRepository`, `InstalledDatasetRepository`, `DatasetSyncPlanner`, `SynchronizeDatasetsUseCase`, `GetDatasetCatalogUseCase`, `GetDatasetDownloadURLUseCase`, `GetInstalledDatasetsUseCase`
 
-**Add/Modify:**
+**Добавить/изменить:**
 - `FrequencyQuery` → `{ text: String, language: LanguageCode? }`
-- `FrequencyResult` → add `source: LookupSource (.remote | .cache | .manual)`, `cached: Bool`
-- `LookupFrequencyUseCase` → calls `FrequencyRepository` (talks to the Lexickon backend, never to JEV)
-- `FrequencyRepository` protocol: `lookup(text: String, language: LanguageCode?) async throws -> FrequencyResult?`
-- `CachedLookupRepository` protocol for offline cache
-- `FlashcardRepository` for deck CRUD + SRS metadata
-- `StudySessionUseCase` for due card selection, rating submission, schedule update
+- `FrequencyResult` → добавить `source: LookupSource (.remote | .cache | .manual)`, `cached: Bool`
+- `LookupFrequencyUseCase` → обращается к `FrequencyRepository` (который работает с бэкендом Lexickon, но не с JEV)
+- Протокол `FrequencyRepository`: `lookup(text: String, language: LanguageCode?) async throws -> FrequencyResult?`
+- Протокол `CachedLookupRepository` для офлайн-кеша
+- `FlashcardRepository` для CRUD колоды и метаданных SRS
+- `StudySessionUseCase` для выбора карточек к повторению, отправки оценок и обновления расписания
 
-### Data Layer Changes
-**Remove:**
-- `Data/Repositories/Dataset/` entire folder
+### Изменения слоя Data
+**Удалить:**
+- Папку `Data/Repositories/Dataset/` целиком
 - `Data/DataSources/Remote/API/DTO/Dataset*.swift`
 - `DatasetSyncDTOs.swift`, `DatasetManifestDTO.swift`, `DatasetDownloadURLDTO.swift`
 
-**Add:**
-- `Data/Repositories/Frequency/FrequencyRepositoryImpl.swift` (existing name may be reused)
+**Добавить:**
+- `Data/Repositories/Frequency/FrequencyRepositoryImpl.swift` (допустимо использовать прежнее имя)
 - `Data/Repositories/Frequency/CachedLookupRepositoryImpl.swift`
 - `Data/Repositories/Flashcard/FlashcardRepositoryImpl.swift`
-- `Data/DataSources/Remote/API/` — typed client for the backend frequency endpoint (no JEV client on the device)
-- `Data/DataSources/Local/Database/` — SwiftData models for Flashcard, CachedLookup, SRSMetadata
+- `Data/DataSources/Remote/API/` — типизированный клиент для эндпоинта поиска на бэкенде (клиента JEV на устройстве нет)
+- `Data/DataSources/Local/Database/` — модели SwiftData для Flashcard, CachedAssessment, SRSMetadata
 
-### Presentation Layer Changes
-**Remove:**
-- Dataset Setup flow (Stage 8)
-- Dataset Catalog/Management screens
-- Sync/Download progress UI
+### Изменения слоя Presentation
+**Удалить:**
+- Процесс Dataset Setup (этап 8)
+- Экраны каталога и управления датасетами
+- Интерфейс синхронизации и хода загрузки
 
-**Add/Modify:**
-- Home tab → FrequencyLookup screen (replaces Dataset Setup as first-launch)
-- Study tab → Session screen with 4-grade rating
-- Settings → remove dataset sync options, add study preferences
+**Добавить/изменить:**
+- Вкладка Home → экран FrequencyLookup (заменяет Dataset Setup как экран первого запуска)
+- Вкладка «Учёба» → экран сессии с 4 оценками
+- Настройки → убрать параметры синхронизации датасетов, добавить параметры обучения
 
 ---
 
-## F. Rejected Alternatives (for Architecture Decision Log)
+## F. Отклонённые альтернативы (для журнала архитектурных решений)
 
-| Alternative | Reason for Rejection |
+| Альтернатива | Причина отклонения |
 |-------------|---------------------|
-| Keep SQLite packs + add JEV as fallback | Dual maintenance burden; packs become stale; sync complexity remains |
-| Client calls JEV directly (earlier draft of this addendum) | IP key would ship inside the app and could be extracted; no shared cache across users; no central rate limiting or per-user cap. Replaced by the backend proxy (decision 2026-09-28) |
-| Use Anki SM-2 algorithm unchanged | Doesn't leverage LLM difficulty; fixed parameters don't adapt to card content |
-| CloudKit sync for deck (v1) | Scope creep; local-first simpler; sync conflicts with SRS scheduling need resolution |
-| Single "Know/Don't Know" binary rating | Loses gradient signal for SRS; 4-grade is standard for adaptive algorithms |
+| Оставить пакеты SQLite и добавить JEV как запасной вариант | Двойная нагрузка на сопровождение; пакеты устаревают; сложность синхронизации сохраняется. Запасной вариант на датасете Lemma Atlas остаётся, но как замена источника за эндпоинтом на бэкенде, а не параллельный путь или пак в приложении |
+| Клиент обращается к JEV напрямую | Ключ поставлялся бы внутри приложения и мог быть извлечён; нет централизованного лимита запросов и лимита на пользователя. Заменено прокси на бэкенде (решение 2026-09-28) |
+| Общий кеш на бэкенде в V1 | У одного пользователя, затем у 20–30, доля попаданий ничтожна, а JEV дёшев; кеш порождает вопросы ключа и приватности контекста. Возвращается после beta (KR-9) |
+| Сложность от LLM и генерация карточек LLM в V1 | Отложено 2026-09-30 (KR-11): проверяемый тезис — решение о полезности; функции LLM добавляют расходы и неопределённого провайдера (KR-3). Могут вернуться после beta |
+| Синхронизация колоды через CloudKit (V1) | Расширение объёма; локальный подход проще; конфликты синхронизации с расписанием SRS требуют решения |
+| Одна бинарная оценка «Знаю/Не знаю» | Теряется градиент сигнала для SRS; 4 оценки — стандарт для адаптивных алгоритмов |
 
 ---
 
-## G. Research Notes (for UX/Architecture)
+## G. Открытые вопросы для последующих процессов
 
-### Competitive Landscape
-- **Anki**: SM-2/FSRS, no frequency lookup, manual card creation, steep learning curve
-- **Pleco**: Dictionary + flashcards, frequency from built-in corpus, no neural frequency
-- **LingQ**: Frequency from web corpus, LingQs (highlighted words), no SRS customization
-- **Memrise/Quizlet**: Pre-made decks, basic SRS, no on-demand frequency
+*Блокирующие решения ведутся в PRD §1.1; здесь вопросы, которых нет в PRD.*
 
-### Differentiation
-- **JEV neural frequency** > static corpus frequency (handles neologisms, domain shifts)
-- **LLM difficulty per card** > fixed ease factors
-- **Lookup → instant card generation** > manual entry friction
-
----
-
-## H. Open Questions for Downstream (tagged for UX/Architecture/Stories)
-
-*Numbering aligned with PRD §1.1 (KR-n) on 2026-09-28. Resolved: KR-2 (SM-2 base; parameters via remote config), KR-5 (iOS 18), KR-9, KR-10.*
-
-| ID | Question | Owner | Blocking? |
+| ID | Вопрос | Ответственный | Блокирует? |
 |----|----------|-------|-----------|
-| KR-1 | JEV API exact contract (endpoint, auth, schema, rate limits) | Sergei | Yes |
-| KR-4 | Translation provider selection & cost (check whether JEV returns translation) | Sergei | Yes |
-| KR-3 | LLM provider and call path for flashcards/difficulty (cloud vs local; client vs backend) | Sergei | Yes |
-| KR-8 | Backend frequency endpoint contract | Sergei | Yes |
-| KR-7 | Auth completeness | Sergei | No |
-| OQ-4 | SRS parameter values (base intervals, ease bounds, difficulty curve) for remote config | Sergei | No |
-| OQ-6 | Telemetry events schema (anonymous, no PII) | PM/Arch | No |
-| OQ-7 | iCloud sync design (v1.1) — conflict resolution for SRS state | Arch/UX | No (v2) |
-| OQ-8 | Accessibility: VoiceOver labels for frequency badge, rating buttons | UX | No |
+| OQ-4 | Значения параметров SRS (базовые интервалы, границы коэффициента лёгкости) для удалённой конфигурации | Sergei | Нет |
+| OQ-6 | Схема событий телеметрии (анонимных, без персональных данных); см. PRD §7, п. 4 | PM/Arch | Нет |
+| OQ-7 | Проектирование синхронизации iCloud (V1.1) — разрешение конфликтов состояния SRS | Arch/UX | Нет (V2) |
+| OQ-8 | Доступность: метки VoiceOver для индикатора полезности и кнопок оценки | UX | Нет |
+
+---
+
+## H. Детали для архитектуры и историй
+
+**Проверка «Уже в вашей колоде» (FR-16).**
+- Ссылка на существующую карточку разрешается в момент нажатия. Если карточку тем временем удалили, уведомление исчезает, а не ведёт в пустоту.
+- Если совпадает несколько карточек (дубль создан осознанно через «Создать ещё одну»), ссылка открывает самую свежую.
