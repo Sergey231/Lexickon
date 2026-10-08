@@ -1,0 +1,21 @@
+domain,lemma,pos,zipf,freq_level,jev_level,match,distance,jev_score,jev_confidence,repeats,stable,repeat_levels
+general,cuke,NOUN,1.330,low,limited,0,1,0.95,0.43,3,1,limited limited limited
+general,pseudomembranous,ADJ,1.618,low,low,1,0,0.35,0.71,3,1,low low low
+general,unmake,VERB,2.057,limited,limited,1,0,0.87,0.84,3,1,limited limited limited
+general,filigree,ADJ,2.343,limited,limited,1,0,0.65,0.71,3,1,limited limited limited
+general,filament,NOUN,3.700,medium,limited,0,-1,0.95,0.89,3,1,limited limited limited
+general,astounding,ADJ,3.327,medium,medium,1,0,1.65,0.69,3,1,medium medium medium
+general,learning,NOUN,4.964,high,medium,0,-1,2.55,0.51,3,1,medium medium medium
+general,wellness,NOUN,4.196,high,medium,0,-1,2.06,0.87,3,1,medium medium medium
+general,poor,ADJ,5.250,very_high,high,0,-1,2.92,0.74,3,1,high high high
+general,thank,VERB,5.432,very_high,very_high,1,0,3.41,0.52,3,1,very_high very_high very_high
+programming,slant,NOUN,2.021,low,limited,0,1,1.21,0.73,3,1,limited limited limited
+programming,hike,VERB,2.021,low,limited,0,1,0.79,0.58,3,1,limited limited limited
+programming,delicate,ADJ,2.729,limited,limited,1,0,1.04,0.79,3,1,limited limited limited
+programming,reprint,VERB,2.990,limited,limited,1,0,0.70,0.72,3,1,limited limited limited
+programming,colorization,NOUN,3.003,medium,limited,0,-1,0.90,0.74,3,1,limited limited limited
+programming,contour,NOUN,3.054,medium,limited,0,-1,1.13,0.77,3,1,limited limited limited
+programming,meet,VERB,4.776,high,medium,0,-1,2.28,0.37,3,1,medium medium medium
+programming,shareable,ADJ,4.386,high,limited,0,-2,1.33,0.68,3,1,limited limited limited
+programming,think,VERB,5.469,very_high,medium,0,-2,2.35,0.34,3,1,medium medium medium
+programming,text,NOUN,5.800,very_high,very_high,1,0,3.19,0.32,3,1,very_high very_high very_high

@@ -1,0 +1,12 @@
+{
+  "general": {
+    "index": "data/core/artifacts/core_frequency_index.json",
+    "version": "1.0.0",
+    "generated_at": "2026-07-05T08:29:32+00:00"
+  },
+  "programming": {
+    "index": "data/domains/programming/artifacts/domain_frequency_index.json",
+    "version": "0.1.0",
+    "generated_at": "2026-07-10T11:25:49.762883+00:00"
+  }
+}
