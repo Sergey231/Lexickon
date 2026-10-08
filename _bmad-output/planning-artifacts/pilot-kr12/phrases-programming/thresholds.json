@@ -1,0 +1,9 @@
+{
+  "zipf": {
+    "high": 4.0,
+    "medium": 3.4
+  },
+  "npmi_fixed": 0.5,
+  "npmi_free": 0.3,
+  "seed": 12
+}

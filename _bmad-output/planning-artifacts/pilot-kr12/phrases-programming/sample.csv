@@ -1,0 +1,151 @@
+phrase,n,count,sources_seen,freq_per_million,zipf,npmi,freq_level,assoc_class
+spread syntax,2,84,3,11.6079,4.065,0.531,high,fixed
+best practice,2,83,3,18.4643,4.266,0.589,high,fixed
+way of doing,3,35,3,10.3563,4.015,0.519,high,fixed
+left hand,2,127,4,15.8876,4.201,0.573,high,fixed
+case insensitive,2,176,4,34.9112,4.543,0.654,high,fixed
+input and output,3,59,4,14.5396,4.163,0.507,high,fixed
+master branch,2,58,3,11.8873,4.075,0.539,high,fixed
+working as expected,3,47,4,14.8080,4.170,0.523,high,fixed
+easier to read,3,66,4,21.3013,4.328,0.516,high,fixed
+curly braces,2,117,4,20.6485,4.315,0.858,high,fixed
+take precedence,2,63,4,11.8813,4.075,0.530,high,fixed
+low level,2,187,4,36.5889,4.563,0.673,high,fixed
+command line,2,1862,4,379.6414,5.579,0.692,high,fixed
+strict mode,2,489,3,86.9041,4.939,0.720,high,fixed
+wait until,2,58,4,12.6147,4.101,0.545,high,fixed
+prepared statement,2,107,3,15.1645,4.181,0.568,high,fixed
+home directory,2,118,4,32.0272,4.506,0.540,high,fixed
+automatically detect,2,59,2,16.2932,4.212,0.538,high,fixed
+denial of service,3,232,4,25.7007,4.410,0.763,high,fixed
+figure out,2,196,4,68.2107,4.834,0.681,high,fixed
+high level,2,163,4,27.9777,4.447,0.596,high,fixed
+side effects,2,296,4,61.8394,4.791,0.737,high,fixed
+news article,2,15,2,10.4831,4.020,0.735,high,fixed
+virtual machine,2,116,3,16.3714,4.214,0.571,high,fixed
+maximum number,2,171,4,31.4489,4.498,0.531,high,fixed
+used on,2,159,4,25.9325,4.414,0.067,high,free
+new function,2,155,4,44.9447,4.653,0.191,high,free
+used instead,2,180,4,29.6579,4.472,0.236,high,free
+new commit,2,47,4,10.2253,4.010,0.198,high,free
+other way,2,66,4,16.5061,4.218,0.174,high,free
+cannot use,2,126,4,25.2907,4.403,0.222,high,free
+use cargo,2,27,2,12.5189,4.098,0.056,high,free
+new directory,2,40,4,11.0806,4.045,0.147,high,free
+query string,2,102,4,23.5224,4.371,0.278,high,free
+line number,2,112,4,20.5451,4.313,0.264,high,free
+exist on,2,77,4,13.5353,4.131,0.208,high,free
+more specific,2,76,4,18.6875,4.272,0.249,high,free
+use redux,2,97,2,31.6735,4.501,0.187,high,free
+need to set,3,84,4,18.5169,4.268,0.192,high,free
+turn on,2,65,4,10.2433,4.010,0.218,high,free
+implemented in,2,133,4,26.2978,4.420,0.201,high,free
+install docker,2,103,2,11.8158,4.072,0.239,high,free
+test function,2,113,4,42.2951,4.626,0.222,high,free
+saved in,2,46,4,10.7534,4.032,0.204,high,free
+new array,2,191,3,26.9868,4.431,0.247,high,free
+open up,2,31,4,12.0738,4.082,0.277,high,free
+rust code,2,59,2,39.1586,4.593,0.246,high,free
+data directory,2,156,3,26.4420,4.422,0.235,high,free
+like the following,3,86,4,17.7329,4.249,0.185,high,free
+add support,2,124,3,14.8828,4.173,0.250,high,free
+slightly differently,2,18,3,3.6145,3.558,0.575,medium,fixed
+lower and upper,3,14,4,2.8112,3.449,0.676,medium,fixed
+condition is met,3,11,4,3.4936,3.543,0.691,medium,fixed
+startup and shutdown,3,15,2,3.9889,3.601,0.759,medium,fixed
+prune unused,2,22,2,6.9251,3.840,0.635,medium,fixed
+days ago,2,14,2,4.4955,3.653,0.599,medium,fixed
+standard error stream,3,25,3,4.7881,3.680,0.583,medium,fixed
+static analysis,2,30,4,9.7509,3.989,0.518,medium,fixed
+connection is closed,3,17,4,3.5648,3.552,0.540,medium,fixed
+internal server error,3,25,3,6.7966,3.832,0.502,medium,fixed
+turn it off,3,14,3,2.7820,3.444,0.558,medium,fixed
+auto incrementing,2,12,3,2.8503,3.455,0.588,medium,fixed
+signal is sent,3,22,2,5.3793,3.731,0.637,medium,fixed
+bare repository,2,70,2,8.9370,3.951,0.539,medium,fixed
+absolute or relative,3,15,3,3.4970,3.544,0.683,medium,fixed
+favorite color,2,6,2,4.0872,3.611,0.574,medium,fixed
+non existent,2,53,3,8.8261,3.946,0.643,medium,fixed
+infinite recursion,2,19,3,2.7492,3.439,0.616,medium,fixed
+little endian,2,54,3,6.5540,3.817,0.688,medium,fixed
+looping through,2,18,2,4.9115,3.691,0.534,medium,fixed
+without worrying,2,17,4,3.1786,3.502,0.517,medium,fixed
+insertion order,2,51,3,8.5626,3.933,0.530,medium,fixed
+licensed under,2,14,4,3.4737,3.541,0.587,medium,fixed
+dollar sign,2,24,4,5.0411,3.703,0.652,medium,fixed
+take into account,3,34,3,7.1810,3.856,0.551,medium,fixed
+library reference,2,22,2,2.5640,3.409,0.134,medium,free
+floating point value,3,17,3,4.2326,3.627,0.267,medium,free
+test flag,2,15,2,4.6514,3.668,0.157,medium,free
+applied on,2,20,3,4.0129,3.603,0.125,medium,free
+handle error,2,13,4,3.8125,3.581,0.117,medium,free
+works the same,3,32,4,7.9451,3.900,0.195,medium,free
+available memory,2,15,4,2.9707,3.473,0.172,medium,free
+tell react,2,27,3,3.8019,3.580,0.263,medium,free
+state field,2,17,3,7.9709,3.902,0.167,medium,free
+nested object,2,14,3,3.3890,3.530,0.173,medium,free
+merge commit,2,63,2,7.3801,3.868,0.283,medium,free
+new model,2,14,3,2.6710,3.427,0.054,medium,free
+release manager,2,10,3,2.8620,3.457,0.291,medium,free
+attempt to create,3,13,2,3.2639,3.514,0.243,medium,free
+following statement,2,22,3,4.3319,3.637,0.166,medium,free
+find the first,3,16,3,3.4065,3.532,0.177,medium,free
+per thread,2,31,2,3.7762,3.577,0.279,medium,free
+execute method,2,14,4,6.9118,3.840,0.253,medium,free
+use any other,3,19,4,5.3239,3.726,0.151,medium,free
+operate in,2,18,2,2.7007,3.431,0.116,medium,free
+see the next,3,16,2,2.5471,3.406,0.120,medium,free
+add multiple,2,19,4,4.8781,3.688,0.131,medium,free
+using the first,3,13,3,2.8433,3.454,0.016,medium,free
+sequence object,2,22,2,2.5640,3.409,0.137,medium,free
+special character,2,18,2,2.9771,3.474,0.288,medium,free
+pseudo tty,2,10,2,1.8689,3.272,0.604,low,fixed
+sooner or later,3,5,3,2.2072,3.344,0.569,low,fixed
+opening bracket,2,5,2,1.7351,3.239,0.559,low,fixed
+userland proxy,2,21,2,2.4600,3.391,0.629,low,fixed
+scale factor,2,13,2,1.6281,3.212,0.588,low,fixed
+post mortem,2,11,2,1.4202,3.152,0.574,low,fixed
+straight forward,2,7,3,1.2251,3.088,0.534,low,fixed
+strict equality operator,3,11,2,1.6965,3.230,0.512,low,fixed
+brute force,2,13,2,2.4572,3.390,0.688,low,fixed
+scattered throughout,2,7,3,1.6416,3.215,0.693,low,fixed
+progress indicator,2,13,3,2.3461,3.370,0.567,low,fixed
+struct or union,3,5,2,1.6796,3.225,0.601,low,fixed
+lowercase letter,2,16,2,2.1054,3.323,0.545,low,fixed
+escaped by doubling,3,8,2,1.3846,3.141,0.731,low,fixed
+enterprise grade,2,6,2,0.8447,2.927,0.679,low,fixed
+relatively expensive,2,10,3,2.2550,3.353,0.584,low,fixed
+semantically equivalent,2,20,2,2.3560,3.372,0.552,low,fixed
+double or single,3,12,3,2.4075,3.382,0.562,low,fixed
+policy enforcement,2,10,2,1.4815,3.171,0.533,low,fixed
+reduce the probability,3,9,2,1.5984,3.204,0.623,low,fixed
+public or private,3,12,3,2.1060,3.323,0.629,low,fixed
+meaning of life,3,6,2,1.7281,3.238,0.558,low,fixed
+protecting against,2,6,2,0.9002,2.954,0.530,low,fixed
+antivirus software,2,7,2,1.0042,3.002,0.615,low,fixed
+five million,2,5,2,1.0726,3.030,0.519,low,fixed
+match the version,3,5,2,1.1573,3.063,0.157,low,free
+function you provide,3,7,2,1.8320,3.263,0.264,low,free
+generally safe,2,7,2,1.3904,3.143,0.289,low,free
+designed to support,3,8,3,1.6054,3.206,0.276,low,free
+found in section,3,5,2,0.7963,2.901,0.228,low,free
+used the default,3,10,2,1.6772,3.225,0.012,low,free
+level set,2,7,4,1.8624,3.270,0.051,low,free
+multiple build,2,5,2,1.1824,3.073,0.024,low,free
+command to see,3,13,2,1.6281,3.212,0.119,low,free
+loop statement,2,6,2,0.9002,2.954,0.104,low,free
+call without,2,14,2,2.2848,3.359,0.061,low,free
+anything more,2,5,3,1.5698,3.196,0.085,low,free
+generate new,2,7,3,1.4459,3.160,0.089,low,free
+diff program,2,5,2,1.0726,3.030,0.164,low,free
+immediately call,2,6,2,0.8447,2.927,0.117,low,free
+added directly,2,5,2,0.7408,2.870,0.080,low,free
+key relationship,2,8,2,1.3846,3.141,0.293,low,free
+call signature,2,5,2,0.7408,2.870,0.117,low,free
+unless specified,2,8,2,1.7152,3.234,0.185,low,free
+value is added,3,8,2,1.4693,3.167,0.177,low,free
+using the id,3,5,2,1.0726,3.030,0.065,low,free
+window text,2,5,2,1.6253,3.211,0.209,low,free
+look more,2,10,3,2.3660,3.374,0.059,low,free
+define the property,3,5,2,0.7963,2.901,0.215,low,free
+case block,2,18,2,2.0926,3.321,0.099,low,free

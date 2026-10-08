@@ -191,6 +191,11 @@ def call_jev(key, model, domain, lemma, timeout=30.0):
             "usefulness": {"type": "score", "instructions": spec["instructions"], "criteria": spec["criteria"]},
         },
     }
+    return post_jev(key, body, f"'{lemma}' ({domain})", timeout)
+
+
+def post_jev(key, body, label, timeout=30.0):
+    """POST в JEV с повтором при 429/529; возвращает (ответ, задержка в мс)."""
     request = urllib.request.Request(
         JEV_URL,
         data=json.dumps(body).encode("utf-8"),
@@ -210,7 +215,7 @@ def call_jev(key, model, domain, lemma, timeout=30.0):
                 delay *= 2
                 continue
             detail = e.read().decode("utf-8", "replace")[:500]
-            raise RuntimeError(f"JEV {e.code} для '{lemma}' ({domain}): {detail}") from None
+            raise RuntimeError(f"JEV {e.code} для {label}: {detail}") from None
     raise RuntimeError("JEV: попытки исчерпаны")
 
 
@@ -352,12 +357,42 @@ def cmd_report(args):
           f"не открывая .blind_key.csv, затем запустите judge.")
 
 
+# ---------- blind ----------
+
+def key_path(out, sheet):
+    return out / (".blind_key.csv" if sheet == "blind_judging.csv" else f".{Path(sheet).stem}_key.csv")
+
+
+def cmd_blind(args):
+    """Короткий лист слепой оценки: случайные расхождения на домен, новое перемешивание A/B и новый ключ."""
+    sheet = args.sheet if args.sheet != "blind_judging.csv" else "blind_short.csv"
+    if (args.out / sheet).exists():
+        sys.exit(f"{args.out / sheet} уже есть; удалите его или задайте другое имя через --sheet")
+    rng = random.Random(args.seed)
+    rows = [r for r in read_csv(args.out / "comparison.csv") if r["match"] == "0"]
+    blind, key_rows = [], []
+    for domain in args.domains:
+        pool = [r for r in rows if r["domain"] == domain]
+        if len(pool) < args.per_domain:
+            sys.exit(f"{domain}: расхождений только {len(pool)}, нужно {args.per_domain}")
+        for r in rng.sample(pool, args.per_domain):
+            options = [("jev", r["jev_level"]), ("freq", r["freq_level"])]
+            rng.shuffle(options)
+            blind.append({"domain": domain, "lemma": r["lemma"], "A": options[0][1], "B": options[1][1],
+                          "choice": ""})
+            key_rows.append({"domain": domain, "lemma": r["lemma"], "A": options[0][0], "B": options[1][0]})
+    rng.shuffle(blind)
+    write_csv(args.out / sheet, blind, ["domain", "lemma", "A", "B", "choice"])
+    write_csv(key_path(args.out, sheet), key_rows, ["domain", "lemma", "A", "B"])
+    print(f"{len(blind)} слов -> {args.out / sheet}; ключ: {key_path(args.out, sheet).name} (не открывать до judge)")
+
+
 # ---------- judge ----------
 
 def cmd_judge(args):
-    key = {(r["domain"], r["lemma"]): r for r in read_csv(args.out / ".blind_key.csv")}
+    key = {(r["domain"], r["lemma"]): r for r in read_csv(key_path(args.out, args.sheet))}
     by_domain = {}
-    for r in read_csv(args.out / "blind_judging.csv"):
+    for r in read_csv(args.out / args.sheet):
         choice = r["choice"].strip().upper()
         if choice not in ("A", "B", "="):
             sys.exit(f"Не заполнено или неверно: {r['domain']}/{r['lemma']} -> '{r['choice']}'")
@@ -372,7 +407,7 @@ def cmd_judge(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("command", choices=["sample", "run", "report", "judge"])
+    parser.add_argument("command", choices=["sample", "run", "report", "blind", "judge"])
     parser.add_argument("--out", type=Path, required=True, help="папка прогона")
     parser.add_argument("--domains", nargs="+", default=["general", "programming"], choices=list(DOMAINS))
     parser.add_argument("--per-domain", type=int, default=10)
@@ -381,8 +416,11 @@ def main():
     parser.add_argument("--workers", type=int, default=8, help="параллельных вызовов JEV (лимит JEV ~1200 в минуту)")
     parser.add_argument("--verbose", action="store_true", help="печатать каждый вызов")
     parser.add_argument("--seed", type=int, default=12)
+    parser.add_argument("--sheet", default="blind_judging.csv",
+                        help="лист слепой оценки для blind/judge (blind по умолчанию пишет blind_short.csv)")
     args = parser.parse_args()
-    {"sample": cmd_sample, "run": cmd_run, "report": cmd_report, "judge": cmd_judge}[args.command](args)
+    {"sample": cmd_sample, "run": cmd_run, "report": cmd_report, "blind": cmd_blind,
+     "judge": cmd_judge}[args.command](args)
 
 
 if __name__ == "__main__":
